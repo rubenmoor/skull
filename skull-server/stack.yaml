@@ -1,0 +1,7 @@
+resolver: lts-8.6
+packages:
+- '.'
+- location:
+    git: git@github.com:themoritz/diener.git
+    commit: 31f7de2a2d8a8dedcd117a8f69a2f0a993a64ee2
+  extra-dep: true

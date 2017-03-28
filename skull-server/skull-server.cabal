@@ -1,0 +1,64 @@
+name:                skull-server
+version:             0.1.0.0
+synopsis:            game server for the simple game skull
+description:         Please see README.md
+homepage:            https://github.com/rubenmoor/skull
+license:             MIT
+license-file:        LICENSE
+author:              Ruben Moor
+maintainer:          ruben.moor@gmail.com
+copyright:           (c) 2016 Ruben Moor
+category:            development
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Api
+                     , Api.Types
+                     , Database.Postgres.Class
+                     , Handler.Types
+                     , Handler
+                     , Types
+  build-depends:       aeson
+                     , base >= 4.7 && < 5
+                     , diener
+                     , lifted-base
+                     , monad-control
+                     , mtl
+                     , opaleye
+                     , parsec
+                     , postgresql-simple
+                     , product-profunctors
+                     , servant-server
+                     , text
+                     , time
+                     , transformers
+                     , transformers-base
+  default-language:    Haskell2010
+  default-extensions:  OverloadedStrings
+                     , LambdaCase
+                     , RecordWildCards
+  ghc-options:         -Wall
+
+executable skull-server-exe
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  other-modules:       Options
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:       base
+                     , bytestring
+                     , data-default
+                     , diener
+                     , mtl
+                     , optparse-applicative
+                     , servant-server
+                     , skull-server
+                     , text
+                     , warp
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/rubenmoor/herculus-subscribers
