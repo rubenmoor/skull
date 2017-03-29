@@ -6,19 +6,18 @@
 -- |
 
 module Handler.Types
-  ( HandlerT
+  ( HandlerT (..)
   ) where
 
-import           Control.Monad.Except    (ExceptT)
 import           Control.Monad.IO.Class  (MonadIO, liftIO)
 import           Control.Monad.Reader    (MonadReader (..), asks)
 import           Diener                  (DienerT, LogEnv (logEnv))
 import qualified Opaleye
 
 import qualified Database.Postgres.Class as Db
-import           Types                   (AppError (..), Env (..), GameErrorMsg)
+import           Types                   (AppError (..), Env (..))
 
-newtype HandlerT m a = HandlerT { unHandlerT :: ExceptT GameErrorMsg (DienerT AppError Env m) a }
+newtype HandlerT m a = HandlerT { unHandlerT :: DienerT AppError Env m a }
   deriving (Functor, Applicative, Monad, MonadIO)
 
 instance Monad m => MonadReader Env (HandlerT m) where

@@ -1,18 +1,15 @@
+{-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 module Handler
   ( handlers
   ) where
 
-import           Control.Monad.Except    (MonadError, throwError)
-import           Control.Monad.IO.Class  (MonadIO, liftIO)
-import           Data.Text               (Text)
-import           Data.Time.Clock         (getCurrentTime)
+import           Control.Monad.Except    (MonadError, runExceptT, throwError)
 import           Servant                 ((:<|>) (..), ServerT)
 
 import qualified Api
 import qualified Database.Postgres.Class as Db
-import qualified Database.Schema         as Db
 import           Handler.Types           (HandlerT)
 
 import           Api.Types
@@ -23,9 +20,9 @@ handlers =
        gameJoin
   :<|> playFirstCard
 
-gameJoin :: Db.Insert m
+gameJoin :: (Db.Insert m, Monad m)
          => GameJoinRequest
-         -> m GameState
+         -> m (ErrorOr GameState)
 gameJoin GameJoinRequest { gjrGameId = gameId, gjrBotId = botId } = do
   -- find game by id or throw error
   let numPlayers = undefined
@@ -36,7 +33,7 @@ gameJoin GameJoinRequest { gjrGameId = gameId, gjrBotId = botId } = do
   -- save botId and playerId in game
   -- poll the database every second until timeout
   -- once the game is full, reply with game state
-  pure $ GameState
+  pure $ Result $ GameState
     { gsPlayerId = playerId
     , gsRound = 1
     , gsPhase = FirstCard
@@ -46,27 +43,38 @@ gameJoin GameJoinRequest { gjrGameId = gameId, gjrBotId = botId } = do
     , gsBets = Bets $ replicate numPlayers 0
     }
 
-playFirstCard :: Db.Insert m
+playFirstCard :: (Db.Insert m, Monad m)
               => PlayFirstCard
-              -> m GameState
-playFirstCard PlayFirstCard { pfcCard = card, pfcAuth = auth } = do
-  let AuthInfo { aiGameId = gameId, aiBotId = botId, aiPlayerId = playerId } = auth
-  -- lookup game by id
-  let numPlayers = undefined
-  -- check if bot and player id are in the game
-  let round = undefined
-  let hand = undefined
-  newHand <- case card of
-    Skull -> playSkullOrError hand
-    Plain -> playPlainOrError hand
-  -- poll the db every second until timeout
-  -- once everyone has played, reply with game state
-  pure $ GameState
-    { gsPlayerId = playerId
-    , gsRound = round
-    , gsPhase = CardOrBet
-    , gsMyStack = MyStack [card]
-    , gsHand = newHand
-    , gsStacks = Stacks $ replicate numPlayers 1
-    , gsBets = Bets $ replicate numPlayers 0
-    }
+              -> m (ErrorOr GameState)
+playFirstCard PlayFirstCard { pfcCard = card, pfcAuth = auth } =
+    withError $ do
+      let AuthInfo { aiGameId = gameId, aiBotId = botId, aiPlayerId = playerId } = auth
+      -- lookup game by id
+      let numPlayers = undefined
+      -- check if bot and player id are in the game
+      let round = undefined
+      let hand = undefined
+      newHand <- case card of
+        Skull -> playSkullOrError hand
+        Plain -> playPlainOrError hand
+      -- poll the db every second until timeout
+      -- once everyone has played, reply with game state
+      pure $ GameState
+        { gsPlayerId = playerId
+        , gsRound = round
+        , gsPhase = CardOrBet
+        , gsMyStack = MyStack [card]
+        , gsHand = newHand
+        , gsStacks = Stacks $ replicate numPlayers 1
+        , gsBets = Bets $ replicate numPlayers 0
+        }
+  where
+    withError action = either Error Result <$> runExceptT action
+    playSkullOrError h@Hand{ handHasSkull = hasSkull} =
+      if hasSkull
+      then pure $ h { handHasSkull = False }
+      else throwError $ GameError "Illegal play: skull. Your hand doesn't have the skull card."
+    playPlainOrError h@Hand{ handNumPlains = numPlains } =
+      if numPlains > 0
+      then pure $ h { handNumPlains = numPlains - 1}
+      else throwError $ GameError "Illegal play: plain. Your hand doesn't have a plain card."

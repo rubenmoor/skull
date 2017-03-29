@@ -23,10 +23,6 @@ data AppError
 
 -- game types
 
-type GameErrorMsg = Text
-data GameError = GameError { geMsg :: GameErrorMsg }
-  deriving (Generic, ToJSON)
-
 type Round = Int
 
 data Phase

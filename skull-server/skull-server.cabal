@@ -18,6 +18,7 @@ library
   exposed-modules:     Api
                      , Api.Types
                      , Database.Postgres.Class
+                     , Database.Schema
                      , Handler.Types
                      , Handler
                      , Types
@@ -53,6 +54,7 @@ executable skull-server-exe
                      , diener
                      , mtl
                      , optparse-applicative
+                     , postgresql-simple
                      , servant-server
                      , skull-server
                      , text

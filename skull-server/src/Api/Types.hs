@@ -8,6 +8,14 @@ import           Data.Text    (Text)
 import           GHC.Generics (Generic)
 import           Types
 
+newtype GameError = GameError { unGameError :: Text }
+  deriving (Generic, ToJSON)
+
+data ErrorOr a
+  = Error { geMsg :: GameError }
+  | Result a
+  deriving (Generic, ToJSON)
+
 type GameId = Text
 type BotId = Text
 type PlayerId = Text
