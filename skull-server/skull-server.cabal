@@ -16,15 +16,37 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Api
-                     , Api.Types
-                     , Database.Postgres.Class
+                     , Auth
+                     , Auth.Api
+                     , Auth.Api.Types
+                     , Auth.Types
+                     , Auth.Model
+                     , BotKey.Api
+                     , BotKey.Api.Types
+                     , BotKey.Types
+                     , BotKey.Model
+                     , Game.Api
+                     , Game.Types
+                     , Game.Api.Types
+                     , Database.Adaptor
+                     , Database.Class
                      , Database.Schema
+                     , Database.Schema.Types
+                     , Database.Query
+                     , Database.Common
                      , Handler.Types
                      , Handler
                      , Types
+                     , Util.Base64
   build-depends:       aeson
                      , base >= 4.7 && < 5
+                     , base64-bytestring
+                     , bytestring
+                     , case-insensitive
                      , diener
+                     , entropy
+                     , http-types
+                     , lens
                      , lifted-base
                      , monad-control
                      , mtl
@@ -32,11 +54,15 @@ library
                      , parsec
                      , postgresql-simple
                      , product-profunctors
+                     , pwstore-fast
+                     , servant
                      , servant-server
                      , text
+                     , text-show
                      , time
                      , transformers
                      , transformers-base
+                     , wai
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
                      , LambdaCase

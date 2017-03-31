@@ -1,12 +1,13 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric  #-}
 
-module Api.Types where
+module Game.Api.Types where
+
+import           Game.Types
 
 import           Data.Aeson   (FromJSON, ToJSON)
 import           Data.Text    (Text)
 import           GHC.Generics (Generic)
-import           Types
 
 newtype GameError = GameError { unGameError :: Text }
   deriving (Generic, ToJSON)
@@ -15,11 +16,6 @@ data ErrorOr a
   = Error { geMsg :: GameError }
   | Result a
   deriving (Generic, ToJSON)
-
-type GameId = Text
-type BotId = Text
-type PlayerId = Text
-
 data GameJoinRequest = GameJoinRequest
   { gjrGameId :: GameId
   , gjrBotId  :: BotId

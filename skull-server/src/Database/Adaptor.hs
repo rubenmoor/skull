@@ -1,0 +1,41 @@
+{-# LANGUAGE RecordWildCards #-}
+
+module Database.Adaptor where
+
+import           Data.Time.Clock       (UTCTime)
+import           Opaleye
+import           TextShow
+
+import           Auth.Model            (Email, PwHash, UserName)
+import qualified Auth.Model            as Model
+import           Database.Schema
+import           Database.Schema.Types
+
+pgUserId :: Model.UserId -> UserId
+pgUserId = UserId . pgInt8 . unUserId
+
+mkUser :: UserName -> PwHash -> Email -> UserW
+mkUser name pwHash email = User
+  { _userId = UserId Nothing
+  , _userName = pgStrictText name
+  , _userPwHash = pgStrictText $ showt pwHash
+  , _userEmail = pgStrictText email
+  }
+
+pgSessionId :: Model.SessionId -> SessionId
+pgSessionId = SessionId . pgInt8 . unSessionId
+
+pgSessionKey :: Model.SessionKey -> SessionKey
+pgSessionKey = SessionKey . pgStrictText . showt . unSessionKey
+
+sessionRW :: SessionR -> SessionW
+sessionRW Session {..} =
+  Session (SessionId Nothing) _sessionFkUser _sessionKey _sessionExpiry
+
+mkSession :: Model.UserId -> Model.SessionKey -> UTCTime -> SessionW
+mkSession uId key expiry = Session
+  { _sessionId     = SessionId Nothing
+  , _sessionFkUser = pgUserId uId
+  , _sessionKey    = pgSessionKey key
+  , _sessionExpiry = pgUTCTime expiry
+  }

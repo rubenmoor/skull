@@ -8,13 +8,14 @@ module Api
 
 import           Servant
 
-import           Api.Types
+import qualified Auth.Api   as Auth
+import qualified BotKey.Api as BotKey
+import qualified Game.Api   as Game
 
 type Routes =
-       "user" :> "new" :> ReqBod '[JSON] UserNewRequest :> Get '[JSON] ()
-       "game" :> "join" :> ReqBody '[JSON] GameJoinRequest :> Get '[JSON] (ErrorOr GameState)
-  :<|> "play" :> "firstcard" :> ReqBody '[JSON] PlayFirstCard :> Get '[JSON] (ErrorOr GameState)
-
+       "auth"   :> Auth.Routes
+  :<|> "botkey" :> BotKey.Routes
+  :<|> "game"   :> Game.Routes
 
 api :: Proxy Routes
 api = Proxy
