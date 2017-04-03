@@ -10,6 +10,6 @@ import           Auth.Api.Types
 import           Auth.Types     (SessionProtect)
 
 type Routes =
-       "user" :> "new" :> ReqBody '[JSON] UserNewRequest :> Post '[JSON] UserNewResponse -- todo: login
-  :<|> "login" :> ReqBody '[JSON] LoginRequest :> Post '[JSON] LoginResponse -- todo: session key
+       "user" :> "new" :> ReqBody '[JSON] UserNewRequest :> Post '[JSON] UserNewResponse
+  :<|> "login" :> ReqBody '[JSON] LoginRequest :> Post '[JSON] LoginResponse
   :<|> SessionProtect :> "logout" :> Get '[JSON] ()

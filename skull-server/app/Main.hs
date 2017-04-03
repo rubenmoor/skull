@@ -15,8 +15,8 @@ import qualified Network.Wai.Handler.Warp   as Warp
 import           Servant
 
 import qualified Api
-import           Api.Auth                   (authHandler)
-import           Api.Auth.Types             (AuthMiddleware)
+import           Auth                       (authHandler)
+import           Auth.Types                 (AuthMiddleware)
 import           Handler                    (handlers)
 import           Handler.Types              (transform)
 import           Options                    (Options (..), getOptions)

@@ -1,9 +1,15 @@
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric  #-}
+
 module BotKey.Types where
 
-import           Data.Text (Text)
+import           Data.Aeson   (ToJSON)
+import           Data.Text    (Text)
+import           GHC.Generics (Generic)
 
 type Label = Text
 type Secret = Text
 
 data BotKey = BotKey
-  { bkLabel :: Label }
+  { bkLabel :: Label
+  } deriving (Generic, ToJSON)

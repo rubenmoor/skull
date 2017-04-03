@@ -19,15 +19,18 @@ library
                      , Auth
                      , Auth.Api
                      , Auth.Api.Types
+                     , Auth.Handler
                      , Auth.Types
                      , Auth.Model
                      , BotKey.Api
                      , BotKey.Api.Types
+                     , BotKey.Handler
                      , BotKey.Types
                      , BotKey.Model
                      , Game.Api
-                     , Game.Types
                      , Game.Api.Types
+                     , Game.Handler
+                     , Game.Types
                      , Database.Adaptor
                      , Database.Class
                      , Database.Schema
