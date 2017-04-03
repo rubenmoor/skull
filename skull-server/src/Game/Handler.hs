@@ -11,7 +11,7 @@ import qualified Database.Class       as Db
 import qualified Game.Api             as Api
 import           Game.Api.Types
 import           Game.Types
-import           Handler.Types        (HandlerT)
+import           Handler              (HandlerT)
 
 handlers :: ServerT Api.Routes (HandlerT IO)
 handlers =

@@ -1,2 +1,4 @@
 *.swp
 .stack-work
+assets/js/
+logfile.log

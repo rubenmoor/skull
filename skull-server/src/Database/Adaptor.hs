@@ -14,12 +14,12 @@ import           Database.Schema.Types
 pgUserId :: Model.UserId -> UserId
 pgUserId = UserId . pgInt8 . unUserId
 
-mkUser :: UserName -> PwHash -> Email -> UserW
+mkUser :: UserName -> PwHash -> Maybe Email -> UserW
 mkUser name pwHash email = User
   { _userId = UserId Nothing
   , _userName = pgStrictText name
   , _userPwHash = pgStrictText $ showt pwHash
-  , _userEmail = pgStrictText email
+  , _userEmail = maybeToNullable $ pgStrictText . showt <$> email
   }
 
 pgSessionId :: Model.SessionId -> SessionId

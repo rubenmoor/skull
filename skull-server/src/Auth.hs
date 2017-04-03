@@ -26,7 +26,7 @@ import qualified Database.Class                   as Db
 import           Database.Common                  (deleteSession, updateSession)
 import qualified Database.Query                   as Query
 import           Database.Schema.Types
-import           Handler.Types                    (transform)
+import           Handler                          (transform)
 import           Opaleye                          (pgUTCTime)
 import           Types                            (AppError (ErrForbidden, ErrUnauthorized),
                                                    Env)

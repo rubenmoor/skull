@@ -16,7 +16,7 @@ import           Servant                ((:<|>) (..), ServerT)
 import           Auth                   (mkPwHash, verifyPassword)
 import qualified Auth.Api               as Api
 import           Auth.Api.Types
-import           Auth.Model             (Session, User)
+import           Auth.Model             (Session, User, UserName)
 import           Auth.Types             (UserInfo, uiUserId)
 import           Database.Adaptor       (mkUser)
 import qualified Database.Class         as Db
@@ -24,12 +24,13 @@ import           Database.Common        (createSession, deleteSession)
 import qualified Database.Query         as Query
 import           Database.Schema        (users)
 import           Database.Schema.Types
-import           Handler.Types          (HandlerT)
+import           Handler                (HandlerT)
 import           Types                  (AppError (..))
 
 handlers :: ServerT Api.Routes (HandlerT IO)
 handlers =
        userNew
+  :<|> userExists
   :<|> authLogin
   :<|> authLogout
 
@@ -43,9 +44,15 @@ userNew UserNewRequest { unrUserName = name
     Right (_ :: User) -> pure $ UserNewFailed "username already exists"
     Left  _           -> do
       pwHash <- mkPwHash password
-      uId <- Db.insert users (mkUser name pwHash "") (view userId)
+      uId <- Db.insert users (mkUser name pwHash Nothing) (view userId)
       key <- createSession uId
       pure $ UserNewSuccess name key
+
+userExists :: Db.Read m
+           => UserName
+           -> m Bool
+userExists name =
+  not . null <$> (Db.getByQuery (Query.userByUserName name) :: Db.Read m => m [User])
 
 authLogin :: (Db.Read m, Db.Delete m, Db.Insert m, MonadIO m)
           => LoginRequest

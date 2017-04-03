@@ -15,8 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Api
-                     , Auth
+  exposed-modules:     Auth
                      , Auth.Api
                      , Auth.Api.Types
                      , Auth.Handler
@@ -37,7 +36,6 @@ library
                      , Database.Schema.Types
                      , Database.Query
                      , Database.Common
-                     , Handler.Types
                      , Handler
                      , Types
                      , Util.Base64
@@ -47,6 +45,7 @@ library
                      , bytestring
                      , case-insensitive
                      , diener
+                     , email-validate
                      , entropy
                      , http-types
                      , lens
@@ -87,6 +86,7 @@ executable skull-server-exe
                      , servant-server
                      , skull-server
                      , text
+                     , text-show
                      , warp
   default-language:    Haskell2010
 

@@ -19,7 +19,6 @@ import           Servant.API.Experimental.Auth    (AuthProtect)
 import           Servant.Server.Experimental.Auth (AuthHandler, AuthServerData)
 
 import           Auth.Model
-import           Util.Base64                      (Base64)
 
 type SessionProtect = AuthProtect "session-auth"
 type AuthMiddleware = AuthHandler Request UserInfo
@@ -28,7 +27,7 @@ type instance AuthServerData SessionProtect = UserInfo
 data UserInfo = UserInfo
   { _uiUserId     :: UserId
   , _uiUserName   :: UserName
-  , _uiEmail      :: Email
+  , _uiEmail      :: Maybe Email
   , _uiSessionKey :: SessionKey
   }
 

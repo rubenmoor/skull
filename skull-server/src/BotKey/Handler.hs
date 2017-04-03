@@ -7,7 +7,7 @@ import qualified BotKey.Api       as Api
 import           BotKey.Api.Types
 import           BotKey.Types
 import qualified Database.Class   as Db
-import           Handler.Types    (HandlerT)
+import           Handler          (HandlerT)
 
 handlers :: ServerT Api.Routes (HandlerT IO)
 handlers =

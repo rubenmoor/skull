@@ -8,11 +8,11 @@ type UserId = UserId' (Column PGInt8)
 type UserW = User' (UserId' (Maybe (Column PGInt8)))
                    (Column PGText)
                    (Column PGText)
-                   (Column PGText)
+                   (Column (Nullable PGText))
 type UserR = User' UserId
                    (Column PGText)
                    (Column PGText)
-                   (Column PGText)
+                   (Column (Nullable PGText))
 
 users :: Table UserW UserR
 users = Table "users" (pUser User

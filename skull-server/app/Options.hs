@@ -17,6 +17,7 @@ data Options = Options
   , optDbName     :: Text
   , optDbUser     :: Text
   , optDbPassword :: Text
+  , optAssetDir   :: FilePath
   }
 
 txtOption :: Mod OptionFields String -> Parser Text
@@ -65,3 +66,9 @@ options = Options
                 <> value "skull"
                 <> showDefault
                 <> help "Password for user skull of Postgres database")
+  <*> strOption (  long "asset-directory"
+                <> short 'd'
+                <> metavar "ASSETDIR"
+                <> value "assets"
+                <> showDefault
+                <> help "Directory of static assets")
