@@ -6,3 +6,5 @@
 /.psc*
 /.psa*
 /dist/
+/src/HttpApp/
+/src/ServerAPI.purs

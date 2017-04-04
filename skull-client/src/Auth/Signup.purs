@@ -4,6 +4,7 @@ module Auth.Signup
 
 import Prelude
 import Auth.Signup.Types
+import HttpApp.User.Api.Types
 import Auth.Signup.Render (render)
 import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (CONSOLE, log)

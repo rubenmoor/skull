@@ -14,6 +14,7 @@ import           Control.Monad.Reader   (MonadReader, asks)
 import           Data.Foldable          (for_)
 import           Data.Text              (Text)
 import           Servant                ((:<|>) (..), ServerT)
+import           TextShow               (showt)
 
 import           Auth.Types             (UserInfo, uiUserId)
 import           Database.Adaptor       (mkUser)
@@ -50,8 +51,8 @@ userNew UserNewRequest { unrUserName = name
     Left  _           -> do
       pwHash <- mkPwHash password
       uId <- Db.insert users (mkUser name pwHash Nothing) (view userId)
-      key <- createSession uId
-      pure $ UserNewSuccess name key
+      SessionKey key <- createSession uId
+      pure $ UserNewSuccess name $ showt key
 
 
 userExists :: Db.Read m
@@ -69,8 +70,8 @@ login LoginRequest { lrUserName = name
     checkLogin >>= \case
       Left  err    -> pure $ LoginFailed err
       Right user -> do
-        key <- getSession $ user ^. userId
-        pure $ LoginSuccess (user ^. userName) key
+        SessionKey key <- getSession $ user ^. userId
+        pure $ LoginSuccess (user ^. userName) $ showt key
   where
     checkLogin = runExceptT $ do
       user <- getUser

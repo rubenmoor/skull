@@ -29,12 +29,3 @@ data Query a
   | SetPassword String a
   | CheckUserName a
   | Submit a
-
--- api
-
-data UserNewRequest = UserNewRequest
-  { unrUserName :: String
-  , unrPassword :: String
-  }
-
-derive instance genericUserNewRequest :: Generic UserNewRequest

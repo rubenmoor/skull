@@ -14,6 +14,7 @@ import           Servant.PureScript                  (HasBridge (..),
 
 import           Api.Types
 import           HttpApp.Api                         (Routes)
+import           HttpApp.BotKey.Types                (BotKey)
 
 types :: [SumType 'Haskell]
 types =
@@ -22,6 +23,7 @@ types =
   , mkSumType (Proxy :: Proxy LoginRequest)
   , mkSumType (Proxy :: Proxy LoginResponse)
   , mkSumType (Proxy :: Proxy BotKeyNewRequest)
+  , mkSumType (Proxy :: Proxy BotKey)
   ]
 
 bridge :: BridgePart
@@ -34,6 +36,6 @@ instance HasBridge Bridge where
 
 main :: IO ()
 main = do
-  let outDir = "skull-client/src"
+  let outDir = "../skull-client/src"
   writeAPIModule outDir (Proxy :: Proxy Bridge) (Proxy :: Proxy Routes)
   writePSTypes outDir  (buildBridge bridge) types

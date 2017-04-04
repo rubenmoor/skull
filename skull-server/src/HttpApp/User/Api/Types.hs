@@ -7,7 +7,6 @@ import           Data.Aeson         (FromJSON, ToJSON)
 import           Data.Text          (Text)
 import           GHC.Generics       (Generic)
 
-import           HttpApp.User.Model (SessionKey)
 import           HttpApp.User.Types (UserName)
 
 data UserNewRequest = UserNewRequest
@@ -16,7 +15,7 @@ data UserNewRequest = UserNewRequest
   } deriving (Generic, FromJSON)
 
 data UserNewResponse
-  = UserNewSuccess UserName SessionKey
+  = UserNewSuccess UserName Text
   | UserNewFailed Text
   deriving (Generic, ToJSON)
 
@@ -26,6 +25,6 @@ data LoginRequest = LoginRequest
   } deriving (Generic, FromJSON)
 
 data LoginResponse
-  = LoginSuccess UserName SessionKey
+  = LoginSuccess UserName Text
   | LoginFailed Text
   deriving (Generic, ToJSON)
