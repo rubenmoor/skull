@@ -12,7 +12,8 @@ module Util.Base64
   , toByteString
   )where
 
-import           Data.Aeson                           (ToJSON (..))
+import           Data.Aeson                           (FromJSON (..),
+                                                       ToJSON (..))
 import           Data.ByteString                      (ByteString)
 import qualified Data.ByteString.Base64               as Base64
 import           Data.Text                            (Text)
@@ -27,6 +28,9 @@ newtype Base64 = Base64 { unBase64 :: ByteString }
 
 instance ToJSON Base64 where
   toJSON = toJSON . Text.decodeUtf8 . unBase64
+
+instance FromJSON Base64 where
+  parseJSON = fmap (Base64 . Text.encodeUtf8) . parseJSON
 
 -- postgres: a base64 object can be constructed by a text object
 --           (which has a sql representation as PGText)

@@ -7,10 +7,11 @@ module Types where
 
 import           Data.Text                  (Text)
 import           Database.PostgreSQL.Simple (Connection)
+import           Diener                     (LogEnv)
 
--- technical types
+type Env = LogEnv AppEnv
 
-data Env = Env
+data AppEnv = AppEnv
   { envDbConnection :: Connection
   }
 

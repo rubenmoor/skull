@@ -1,44 +1,47 @@
-{-# LANGUAGE LambdaCase          #-}
-{-# LANGUAGE ScopedTypeVariables #-}
--- |
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE LambdaCase            #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeOperators         #-}
 
-module Auth where
+module Auth
+  ( authHandler
+  ) where
 
-import           Control.Lens                     ((.~), (^.))
-import           Control.Monad.IO.Class           (MonadIO, liftIO)
-import           Crypto.PasswordStore             (makePassword, verifyPassword)
-import qualified Data.List                        as List
-import           Data.Monoid
-import           Data.Text                        (Text)
-import qualified Data.Text.Encoding               as Text
-import qualified Data.Time.Clock                  as Clock
-import           Diener                           (LogEnv, throwError)
-import           Network.Wai                      (requestHeaders)
-import           Servant.Server.Experimental.Auth (mkAuthHandler)
+import           Control.Lens           ((.~), (^.))
+import           Control.Monad.Except   (ExceptT (..))
+import           Control.Monad.IO.Class (MonadIO, liftIO)
+import           Control.Monad.Reader   (ReaderT (..))
+import           Data.Text              (Text)
+import qualified Data.Time.Clock        as Clock
+import           Diener                 (DienerT (..), throwError)
+import           Servant                ((:~>) (..), enter)
+import           Servant.Utils.Enter    (Enter)
 
-import           Auth.Model                       (PwHash, Session, SessionKey,
-                                                   User)
-import           Auth.Types                       (AuthMiddleware,
-                                                   UserInfo (..), sessionLength,
-                                                   sessionParam,
-                                                   sessionParamStr)
-import qualified Database.Class                   as Db
-import           Database.Common                  (deleteSession, updateSession)
-import qualified Database.Query                   as Query
+import           Auth.Types             (AuthToken (..), UserInfo (..),
+                                         sessionLength)
+import qualified Database.Class         as Db
+import           Database.Common        (deleteSession, updateSession)
+import qualified Database.Query         as Query
 import           Database.Schema.Types
-import           Handler                          (transform)
-import           Opaleye                          (pgUTCTime)
-import           Types                            (AppError (ErrForbidden, ErrUnauthorized),
-                                                   Env)
-import qualified Util.Base64                      as Base64
+import           Handler                (HandlerProtectedT, HandlerT (..),
+                                         runHandlerT)
+import           HttpApp.User.Model     (Session, SessionKey, User)
+import           Opaleye                (pgUTCTime)
+import           Types                  (AppError (ErrForbidden, ErrUnauthorized))
 
-mkPwHash :: MonadIO m => Text -> m PwHash
-mkPwHash str =
-  liftIO $ Base64.fromByteStringUnsafe <$> makePassword (Text.encodeUtf8 str) 17
-
-verifyPassword :: Text -> PwHash -> Bool
-verifyPassword str pwHash =
-  Crypto.PasswordStore.verifyPassword (Text.encodeUtf8 str) (Base64.toByteString pwHash)
+-- middleware
+authHandler :: (Enter h1 (HandlerProtectedT IO :~> HandlerT IO) h2)
+            => h1 -> Maybe AuthToken -> h2
+authHandler h mAuth =
+  flip enter h $ Nat $ \action -> do
+    AuthToken sKey <- maybe (throwError $ ErrForbidden "Missing auth token")
+                            pure
+                            mAuth
+    userInfo <- lookupSession sKey >>= either (throwError . ErrUnauthorized) pure
+    HandlerT $ DienerT $ ExceptT $ ReaderT $ \env ->
+      runReaderT (runHandlerT env action) userInfo
 
 lookupSession :: (Db.Read m, Db.Delete m, Db.Update m, MonadIO m)
               => SessionKey
@@ -63,12 +66,3 @@ lookupSession key = do
             , _uiEmail      = user ^. userEmail
             , _uiSessionKey = session ^. sessionKey
             }
-
-authHandler :: LogEnv Env -> AuthMiddleware
-authHandler env = mkAuthHandler $ transform env $ \request ->
-  case List.lookup sessionParam (requestHeaders request) of
-    Nothing -> throwError $ ErrForbidden $ "Missing session parameter " <> sessionParamStr
-    Just bs -> case Base64.fromByteString bs of
-      Left  err -> throwError $ ErrUnauthorized err
-      Right b64 -> lookupSession (SessionKey b64)
-        >>= either (throwError . ErrUnauthorized) pure

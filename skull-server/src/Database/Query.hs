@@ -6,10 +6,11 @@ import           Control.Arrow         (returnA)
 import           Control.Lens          ((^.))
 import           Opaleye
 
-import qualified Auth.Model            as Model
 import           Database.Adaptor
 import           Database.Schema
 import           Database.Schema.Types
+import qualified HttpApp.User.Model    as Model
+import           HttpApp.User.Types
 
 sessionByKey :: QueryArr SessionKey SessionR
 sessionByKey = proc key -> do
@@ -24,7 +25,7 @@ userAndSessionBySessionKey key = proc () -> do
   restrict -< user ^. userId .=== session ^. sessionFkUser
   returnA -< (user, session)
 
-userByUserName :: Model.UserName -> Query UserR
+userByUserName :: UserName -> Query UserR
 userByUserName name = proc () -> do
   user <- queryTable users -< ()
   restrict -< user ^. userName .== pgStrictText name

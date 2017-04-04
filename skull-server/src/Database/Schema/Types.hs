@@ -8,7 +8,7 @@
 module Database.Schema.Types where
 
 import           Control.Lens               (makeLenses)
-import           Data.Aeson                 (ToJSON)
+import           Data.Aeson                 (FromJSON, ToJSON)
 import           Data.Profunctor.Product.TH (makeAdaptorAndInstance)
 import           GHC.Generics               (Generic)
 
@@ -43,6 +43,7 @@ newtype SessionKey' a = SessionKey
   { unSessionKey :: a
   } deriving Generic
 deriving instance ToJSON a => ToJSON (SessionKey' a)
+deriving instance FromJSON a => FromJSON (SessionKey' a)
 makeAdaptorAndInstance "pSessionKey" ''SessionKey'
 
 data Session' a b c d = Session

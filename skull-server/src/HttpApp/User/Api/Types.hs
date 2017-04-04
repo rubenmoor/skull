@@ -1,13 +1,14 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric  #-}
 
-module Auth.Api.Types where
+module HttpApp.User.Api.Types where
 
-import           Data.Aeson   (FromJSON, ToJSON)
-import           Data.Text    (Text)
-import           GHC.Generics (Generic)
+import           Data.Aeson         (FromJSON, ToJSON)
+import           Data.Text          (Text)
+import           GHC.Generics       (Generic)
 
-import           Auth.Model   (SessionKey, UserName)
+import           HttpApp.User.Model (SessionKey)
+import           HttpApp.User.Types (UserName)
 
 data UserNewRequest = UserNewRequest
   { unrUserName :: UserName

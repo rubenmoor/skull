@@ -6,10 +6,10 @@ import           Data.Time.Clock       (UTCTime)
 import           Opaleye
 import           TextShow
 
-import           Auth.Model            (Email, PwHash, UserName)
-import qualified Auth.Model            as Model
 import           Database.Schema
 import           Database.Schema.Types
+import qualified HttpApp.User.Model    as Model
+import           HttpApp.User.Types    (Email, PwHash, UserName)
 
 pgUserId :: Model.UserId -> UserId
 pgUserId = UserId . pgInt8 . unUserId

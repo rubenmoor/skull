@@ -1,22 +1,20 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 
-module Auth.Handler where
+module HttpApp.User.Handler where
 
 import           Control.Lens
 import           Control.Monad.Except   (ExceptT (ExceptT), MonadError,
                                          runExceptT, throwError)
 import           Control.Monad.IO.Class (MonadIO)
+import           Control.Monad.Reader   (MonadReader, asks)
 import           Data.Foldable          (for_)
 import           Data.Text              (Text)
 import           Servant                ((:<|>) (..), ServerT)
 
-import           Auth                   (mkPwHash, verifyPassword)
-import qualified Auth.Api               as Api
-import           Auth.Api.Types
-import           Auth.Model             (Session, User, UserName)
 import           Auth.Types             (UserInfo, uiUserId)
 import           Database.Adaptor       (mkUser)
 import qualified Database.Class         as Db
@@ -24,15 +22,22 @@ import           Database.Common        (createSession, deleteSession)
 import qualified Database.Query         as Query
 import           Database.Schema        (users)
 import           Database.Schema.Types
-import           Handler                (HandlerT)
+import           Handler                (HandlerProtectedT, HandlerT)
+import qualified HttpApp.User.Api       as Api
+import           HttpApp.User.Api.Types
+import           HttpApp.User.Model     (Session, User)
+import           HttpApp.User.Types     (UserName, mkPwHash, verifyPassword)
 import           Types                  (AppError (..))
 
-handlers :: ServerT Api.Routes (HandlerT IO)
-handlers =
+public :: ServerT Api.Public (HandlerT IO)
+public =
        userNew
   :<|> userExists
-  :<|> authLogin
-  :<|> authLogout
+  :<|> login
+
+protected :: ServerT Api.Protected (HandlerProtectedT IO)
+protected =
+       logout
 
 userNew :: (MonadIO m, Db.Read m, Db.Insert m)
         => UserNewRequest
@@ -48,18 +53,19 @@ userNew UserNewRequest { unrUserName = name
       key <- createSession uId
       pure $ UserNewSuccess name key
 
+
 userExists :: Db.Read m
            => UserName
            -> m Bool
 userExists name =
   not . null <$> (Db.getByQuery (Query.userByUserName name) :: Db.Read m => m [User])
 
-authLogin :: (Db.Read m, Db.Delete m, Db.Insert m, MonadIO m)
+login :: (Db.Read m, Db.Delete m, Db.Insert m, MonadIO m)
           => LoginRequest
           -> m LoginResponse
-authLogin LoginRequest { lrUserName = name
-                       , lrPassword = password
-                       } =
+login LoginRequest { lrUserName = name
+                   , lrPassword = password
+                   } =
     checkLogin >>= \case
       Left  err    -> pure $ LoginFailed err
       Right user -> do
@@ -85,10 +91,10 @@ authLogin LoginRequest { lrUserName = name
       -- and create brand-new session
       createSession uId
 
-authLogout :: (MonadError AppError m, Db.Read m, Db.Delete m)
-           => UserInfo
-           -> m ()
-authLogout userInfo =
-  Db.getOneByQuery (Query.sessionByUserId $ userInfo ^. uiUserId) >>= \case
+logout :: (MonadError AppError m, Db.Read m, Db.Delete m, MonadReader UserInfo m)
+       => m ()
+logout = do
+  uId <- asks $ view uiUserId
+  Db.getOneByQuery (Query.sessionByUserId uId) >>= \case
     Left msg -> throwError $ ErrBug msg
     Right session -> deleteSession $ (session :: Session) ^. sessionId

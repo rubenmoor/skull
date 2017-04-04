@@ -1,28 +1,32 @@
-{-# LANGUAGE DataKinds       #-}
-{-# LANGUAGE DeriveAnyClass  #-}
-{-# LANGUAGE DeriveGeneric   #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeFamilies    #-}
--- |
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE DeriveAnyClass    #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TypeFamilies      #-}
 
 module Auth.Types where
 
-import           Control.Lens                     (makeLenses)
-import           Data.ByteString                  (ByteString)
-import           Data.CaseInsensitive             (original)
-import           Data.Text                        (Text)
-import qualified Data.Text.Encoding               as Text
-import qualified Data.Time.Clock                  as Clock
-import           Network.HTTP.Types.Header        (HeaderName)
-import           Network.Wai                      (Request)
-import           Servant.API.Experimental.Auth    (AuthProtect)
-import           Servant.Server.Experimental.Auth (AuthHandler, AuthServerData)
+import           Control.Lens
+import           Data.Aeson         (FromJSON)
+import           GHC.Generics       (Generic)
+import           Servant.API        (Header)
+import           Servant.PureScript (jsonParseHeader, jsonParseUrlPiece)
+import           Web.HttpApiData    (FromHttpApiData (..))
 
-import           Auth.Model
+import qualified Data.Time.Clock    as Clock
+import           HttpApp.User.Model (SessionKey, UserId)
+import           HttpApp.User.Types (Email, UserName)
 
-type SessionProtect = AuthProtect "session-auth"
-type AuthMiddleware = AuthHandler Request UserInfo
-type instance AuthServerData SessionProtect = UserInfo
+type AuthProtect = Header "AuthToken" AuthToken
+
+data AuthToken
+  = AuthToken SessionKey
+  deriving (Generic, FromJSON)
+
+instance FromHttpApiData AuthToken where
+  parseUrlPiece = jsonParseUrlPiece
+  parseHeader   = jsonParseHeader
 
 data UserInfo = UserInfo
   { _uiUserId     :: UserId
@@ -35,12 +39,3 @@ sessionLength :: Clock.NominalDiffTime
 sessionLength = 60 * 60 * 24 * 60 -- 2 months
 
 makeLenses ''UserInfo
-
-sessionParam :: HeaderName
-sessionParam = "auth-session"
-
-sessionParamBStr :: ByteString
-sessionParamBStr = original sessionParam
-
-sessionParamStr :: Text
-sessionParamStr = Text.decodeUtf8 sessionParamBStr

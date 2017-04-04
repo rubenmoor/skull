@@ -7,12 +7,12 @@ import qualified Data.Time.Clock        as Clock
 import           Opaleye                ((.===))
 import           System.Entropy         (getEntropy)
 
-import           Auth.Model
 import           Auth.Types             (sessionLength)
 import           Database.Adaptor       (mkSession, pgSessionId, sessionRW)
 import qualified Database.Class         as Db
 import           Database.Schema        (SessionW, sessions)
 import           Database.Schema.Types  (SessionKey' (SessionKey), _sessionId)
+import           HttpApp.User.Model
 import qualified Util.Base64            as Base64
 
 deleteSession :: Db.Delete m

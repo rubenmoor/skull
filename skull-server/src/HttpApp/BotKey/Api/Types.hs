@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module BotKey.Api.Types where
+module HttpApp.BotKey.Api.Types where
 
 import           Data.Aeson      (FromJSON)
 import           GHC.Generics    (Generic)

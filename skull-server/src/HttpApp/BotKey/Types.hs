@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric  #-}
 
-module BotKey.Types where
+module HttpApp.BotKey.Types where
 
 import           Data.Aeson   (ToJSON)
 import           Data.Text    (Text)
