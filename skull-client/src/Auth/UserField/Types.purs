@@ -1,6 +1,10 @@
-module Auth.Signup.Types where
+module Auth.UserField.Types where
 
-import Data.Generic (class Generic)
+-- input
+
+type Input = String
+
+-- state
 
 data UserNameCheck
   = UserNameNothing
@@ -11,21 +15,18 @@ data UserNameCheck
 
 type State =
   { userNameLookup :: UserNameCheck
-  , username :: String
-  , password :: String
-  , formError :: String
+  , userName :: String
   }
 
 initialState :: State
 initialState =
   { userNameLookup: UserNameNothing
-  , username: ""
-  , password: ""
-  , formError: ""
+  , userName: ""
   }
 
+-- query
+
 data Query a
-  = SetUsername String a
-  | SetPassword String a
+  = HandleInput String a
+  | SetUsername String a
   | CheckUserName a
-  | Submit a
