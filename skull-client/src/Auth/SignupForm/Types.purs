@@ -2,6 +2,7 @@ module Auth.SignupForm.Types where
 
 import Auth.UserNameField.Types as UserNameField
 import Data.Unit (Unit)
+import Data.Lens (Lens', lens)
 
 -- Input
 
@@ -21,6 +22,15 @@ initialState =
   , password: ""
   , formError: ""
   }
+
+_userName :: Lens' State String
+_userName = lens _.userName (\r str -> r { userName = str })
+
+_formError :: Lens' State String
+_formError = lens _.formError (\r str -> r { formError = str })
+
+_password :: Lens' State String
+_password = lens _.password (\r str -> r { password = str })
 
 -- Query
 

@@ -1,5 +1,7 @@
 module Auth.UserNameField.Types where
 
+import Data.Lens (Lens', lens)
+
 -- input
 
 type Input = String
@@ -23,6 +25,12 @@ initialState =
   { userNameLookup: UserNameNothing
   , userName: ""
   }
+
+_userNameLookup :: Lens' State UserNameCheck
+_userNameLookup = lens _.userNameLookup (\r unc -> r { userNameLookup = unc })
+
+_userName :: Lens' State String
+_userName = lens _.userName (\r unc -> r { userName = unc })
 
 -- query
 
