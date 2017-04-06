@@ -57,9 +57,10 @@ eval apiSettings = case _ of
       eResult <- runExceptT $ flip runReaderT apiSettings $ postUserExists name
       case eResult of
         Left err    -> liftAff $ log $ errorToString err
-        Right true  -> modify (_ { userNameLookup = UserNameExists })
+        Right true  -> do modify (_ { userNameLookup = UserNameExists })
+                          raise $ UserName name
         Right false -> do modify (_ { userNameLookup = UserNameOk })
-                          raise $ ValidUserName name
+                          raise $ UserName name
 
 isValid :: String -> Boolean
 isValid = not <<< null

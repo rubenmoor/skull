@@ -33,4 +33,4 @@ data Query a
 
 -- message
 
-data Message = ValidUserName String
+data Message = UserName String

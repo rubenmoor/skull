@@ -2,22 +2,24 @@ module Auth.SignupForm
   ( signupForm
   ) where
 
-import Auth.UserNameField.Types as UserNameField
 import Prelude
 import HttpApp.User.Api.Types
+import Auth.UserNameField.Types as UserNameField
 import Halogen.HTML.Events as Events
-import Auth.UserNameField (userNameField)
 import Auth.SignupForm.Render (render)
-import Auth.SignupForm.Types (Query(..), Input, initialState, State(..), Slot)
+import Auth.SignupForm.Types (Input, Query(..), Slot, State(..), initialState)
+import Auth.UserNameField (userNameField)
 import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (CONSOLE, log)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Reader (runReaderT)
 import Control.Monad.State (gets, modify)
+import Data.Either (Either(..))
 import Data.String (null)
 import Halogen (Component, ParentDSL, parentComponent, liftAff)
 import Halogen.HTML (HTML)
 import Network.HTTP.Affjax (AJAX)
+import Servant.PureScript.Affjax (errorToString)
 import ServerAPI (postUserNew)
 import Types (ApiSettings)
 
@@ -40,7 +42,7 @@ eval apiSettings = case _ of
       modify (_
         { userName = userName
         }) $> next
-    HandleUserNameField (UserNameField.ValidUserName userName) next ->
+    HandleUserNameField (UserNameField.UserName userName) next ->
       modify (_
         { userName = userName
         , formError = ""
@@ -63,8 +65,10 @@ eval apiSettings = case _ of
             { unrUserName: name
             , unrPassword: pwd
             }
-      runExceptT $ flip runReaderT apiSettings $ postUserNew userNewRequest
-      modify (_ { formError = "success" } )
+      eResult <- runExceptT $ flip runReaderT apiSettings $ postUserNew userNewRequest
+      case eResult of
+        Left err    -> liftAff $ log $ errorToString err
+        Right _     -> modify (_ { formError = "success" } )
 
 isValid :: String -> Boolean
 isValid = not <<< null
