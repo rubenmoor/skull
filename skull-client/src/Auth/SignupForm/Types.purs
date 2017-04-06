@@ -1,5 +1,8 @@
 module Auth.SignupForm.Types where
 
+import Auth.UserNameField.Types as UserNameField
+import Data.Unit (Unit)
+
 -- Input
 
 type Input = String
@@ -22,6 +25,11 @@ initialState =
 -- Query
 
 data Query a
-  = SetUsername String a
+  = HandleInput String a
+  | HandleUserNameField UserNameField.Message a
   | SetPassword String a
   | Submit a
+
+-- Children
+
+type Slot = Unit

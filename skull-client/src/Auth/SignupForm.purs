@@ -2,36 +2,45 @@ module Auth.SignupForm
   ( signupForm
   ) where
 
+import Auth.UserNameField.Types as UserNameField
 import Prelude
-import Auth.SignupForm.Types
 import HttpApp.User.Api.Types
+import Halogen.HTML.Events as Events
+import Auth.UserNameField (userNameField)
 import Auth.SignupForm.Render (render)
+import Auth.SignupForm.Types (Query(..), Input, initialState, State(..), Slot)
 import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (CONSOLE, log)
+import Control.Monad.Except (runExceptT)
+import Control.Monad.Reader (runReaderT)
 import Control.Monad.State (gets, modify)
-import Data.Argonaut.Core (Json)
-import Data.Argonaut.Generic.Aeson (decodeJson, encodeJson)
-import Data.Argonaut.Parser (jsonParser)
-import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
 import Data.String (null)
-import Halogen (Component, ComponentDSL, component, liftAff)
+import Halogen (Component, ParentDSL, parentComponent, liftAff)
 import Halogen.HTML (HTML)
-import Network.HTTP.Affjax (AJAX, AffjaxResponse, post)
-import Network.HTTP.StatusCode (StatusCode(..))
+import Network.HTTP.Affjax (AJAX)
+import ServerAPI (postUserNew)
+import Types (ApiSettings)
 
-signupForm :: forall eff. Component HTML Query Input Void (Aff (console :: CONSOLE, ajax :: AJAX | eff))
-signupForm =
-  component
+signupForm :: forall eff.
+              ApiSettings
+           -> Component HTML Query Input Void (Aff (console :: CONSOLE, ajax :: AJAX | eff))
+signupForm apiSettings =
+  parentComponent
     { initialState: \userName -> initialState { userName = userName }
-    , render
-    , eval
-    , receiver: const Nothing
+    , render: render apiSettings
+    , eval: eval apiSettings
+    , receiver: Events.input HandleInput
     }
 
-eval :: forall eff. Query ~> ComponentDSL State Query Void (Aff (console :: CONSOLE , ajax :: AJAX | eff))
-eval = case _ of
-    SetUsername userName next ->
+eval :: forall eff.
+        ApiSettings
+     -> Query ~> ParentDSL State Query UserNameField.Query Slot Void (Aff (console :: CONSOLE , ajax :: AJAX | eff))
+eval apiSettings = case _ of
+    HandleInput userName next ->
+      modify (_
+        { userName = userName
+        }) $> next
+    HandleUserNameField (UserNameField.ValidUserName userName) next ->
       modify (_
         { userName = userName
         , formError = ""
@@ -54,11 +63,8 @@ eval = case _ of
             { unrUserName: name
             , unrPassword: pwd
             }
-      (res :: AffjaxResponse Json) <- liftAff $ post "/auth/user/new" (encodeJson userNewRequest)
-      let result = case res.status of
-            StatusCode 200 -> "Done."
-            statusCode     -> show statusCode
-      modify (_ { formError = result } )
+      runExceptT $ flip runReaderT apiSettings $ postUserNew userNewRequest
+      modify (_ { formError = "success" } )
 
 isValid :: String -> Boolean
 isValid = not <<< null

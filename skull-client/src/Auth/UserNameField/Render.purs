@@ -1,12 +1,12 @@
-module Auth.UserField.Render where
+module Auth.UserNameField.Render where
 
-import           Auth.UserField.Types    (Query (..), State, UserNameCheck (..))
-import           Halogen                 (ComponentHTML)
-import           Halogen.HTML            (button, div_, h1_, input, label_, p_,
-                                          text)
-import           Halogen.HTML.Events     as Events
-import           Halogen.HTML.Properties (value)
-import           Prelude                 (($))
+import Auth.UserNameField.Types (Query (..), State, UserNameCheck (..))
+import Halogen                  (ComponentHTML)
+import Halogen.HTML             (button, div_, h1_, input, label_, p_,
+                                 text)
+import Halogen.HTML.Events      as Events
+import Halogen.HTML.Properties  (value)
+import Prelude                  (($))
 
 render :: State -> ComponentHTML Query
 render st = div_ $

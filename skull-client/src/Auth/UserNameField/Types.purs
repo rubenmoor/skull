@@ -1,4 +1,4 @@
-module Auth.UserField.Types where
+module Auth.UserNameField.Types where
 
 -- input
 
@@ -30,3 +30,7 @@ data Query a
   = HandleInput String a
   | SetUsername String a
   | CheckUserName a
+
+-- message
+
+data Message = ValidUserName String
