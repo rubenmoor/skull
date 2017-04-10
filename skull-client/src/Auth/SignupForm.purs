@@ -7,8 +7,9 @@ import HttpApp.User.Api.Types
 import Auth.UserNameField.Types as UserNameField
 import Halogen.HTML.Events as Events
 import Auth.SignupForm.Render (render)
-import Auth.SignupForm.Types (Input, Query(..), Slot, State(..), _formError, _password, _userName, initialState)
+import Auth.SignupForm.Types (Input, Query(..), Slot, State(..), Message, _formError, _password, _userName, initialState)
 import Control.Monad.Aff (Aff)
+import Control.Monad.Aff.AVar (AVAR, putVar)
 import Control.Monad.Aff.Console (CONSOLE, log)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Reader (runReaderT)
@@ -21,24 +22,23 @@ import Halogen.HTML (HTML)
 import Network.HTTP.Affjax (AJAX)
 import Servant.PureScript.Affjax (errorToString)
 import ServerAPI (postUserNew)
-import Types (ApiSettings)
+import Types (Env)
 
 signupForm :: forall eff.
-              ApiSettings
-           -> Component HTML Query Input Void (Aff (console :: CONSOLE, ajax :: AJAX | eff))
-signupForm apiSettings =
+              Env
+           -> Component HTML Query Input Message (Aff (avar :: AVAR, console :: CONSOLE, ajax :: AJAX | eff))
+signupForm env =
   parentComponent
-    -- { initialState: \userName -> initialState { userName = userName }
     { initialState: \userName -> initialState # _userName .~ userName
-    , render: render apiSettings
-    , eval: eval apiSettings
+    , render: render env
+    , eval: eval env
     , receiver: Events.input HandleInput
     }
 
 eval :: forall eff.
-        ApiSettings
-     -> Query ~> ParentDSL State Query UserNameField.Query Slot Void (Aff (console :: CONSOLE , ajax :: AJAX | eff))
-eval apiSettings = case _ of
+        Env
+     -> Query ~> ParentDSL State Query UserNameField.Query Slot Message (Aff (avar :: AVAR, console :: CONSOLE , ajax :: AJAX | eff))
+eval env = case _ of
     HandleInput userName next -> do
       _userName .= userName
       pure next
@@ -63,9 +63,10 @@ eval apiSettings = case _ of
             { unrUserName: name
             , unrPassword: pwd
             }
-      eResult <- runExceptT $ flip runReaderT apiSettings $ postUserNew userNewRequest
+      eResult <- runExceptT $ flip runReaderT env.apiSettings $ postUserNew userNewRequest
       case eResult of
-        Left err    -> liftAff $ log $ errorToString err
+        Left err    -> liftAff do log $ "wusel dusel\n" <> errorToString err
+                                  putVar env.ajaxError { title: "AJAX error", details: errorToString err }
         Right _     -> _formError .= "success"
 
 isValid :: String -> Boolean

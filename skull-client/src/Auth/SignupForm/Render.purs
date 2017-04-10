@@ -4,7 +4,9 @@ import Auth.UserNameField.Types as UserNameField
 import Halogen.HTML.Events as Events
 import Auth.SignupForm.Types (Query(..), Slot, State)
 import Auth.UserNameField (userNameField)
+import Util.HTML (doNothingForm_)
 import Control.Monad.Aff (Aff)
+import Control.Monad.Aff.AVar (AVAR)
 import Control.Monad.Aff.Console (CONSOLE, log)
 import Data.Unit (unit)
 import Halogen (ParentHTML)
@@ -12,14 +14,13 @@ import Halogen.HTML (AttrName(..), br_, button, div_, form, h1_, input, label_, 
 import Halogen.HTML.Properties (ButtonType(..), InputType(..), attr, type_, value)
 import Network.HTTP.Affjax (AJAX)
 import Prelude (pure, ($))
-import Types (ApiSettings)
-import Common.DoNothingForm (doNothingForm_)
+import Types (Env)
 
 render :: forall eff.
-          ApiSettings
+          Env
        -> State
-       -> ParentHTML Query UserNameField.Query Slot (Aff (console :: CONSOLE, ajax :: AJAX | eff))
-render apiSettings st = doNothingForm_
+       -> ParentHTML Query UserNameField.Query Slot (Aff (avar :: AVAR, console :: CONSOLE, ajax :: AJAX | eff))
+render env st = doNothingForm_
   [ h1_
       [ text "Sign up"
       ]
@@ -28,7 +29,7 @@ render apiSettings st = doNothingForm_
           [ text "Username:"
           ]
       , br_
-      , slot unit (userNameField apiSettings) st.userName (Events.input HandleUserNameField)
+      , slot unit (userNameField env) st.userName (Events.input HandleUserNameField)
       ]
   , div_
       [ label_

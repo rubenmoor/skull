@@ -1,8 +1,9 @@
 module Auth.SignupForm.Types where
 
 import Auth.UserNameField.Types as UserNameField
-import Data.Unit (Unit)
 import Data.Lens (Lens', lens)
+import Data.Unit (Unit)
+import Prelude (Void)
 
 -- Input
 
@@ -43,3 +44,7 @@ data Query a
 -- Children
 
 type Slot = Unit
+
+-- Output
+
+type Message = Void
