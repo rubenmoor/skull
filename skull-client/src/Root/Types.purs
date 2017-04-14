@@ -2,6 +2,7 @@ module Root.Types where
 
 import Auth.SignupForm.Types as SignupForm
 import ErrorMessage.Types as ErrorMessage
+import Menubar.Types as Menubar
 import Data.Const (Const(..))
 import Halogen.Component.ChildPath (type (\/), type (<\/>))
 import Prelude (Unit, Void)
@@ -29,11 +30,13 @@ data Query a
 
 type ChildQuery =
        ErrorMessage.Query
+  <\/> Menubar.Query
   <\/> SignupForm.Query
   <\/> Const Void
 
 type ChildSlot =
      Unit
+  \/ Unit
   \/ Unit
   \/ Void
 

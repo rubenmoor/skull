@@ -1,4 +1,6 @@
-module  Auth.UserNameField where
+module  Auth.UserNameField
+  ( userNameField
+  ) where
 
 import Prelude
 import Auth.UserNameField.Types
