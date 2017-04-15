@@ -1,37 +1,47 @@
 module Root where
 
-import Halogen.Component.ChildPath
 import Root.Types
 import ErrorMessage.Types as ErrorMessage
+import Halogen.HTML.Events as Events
 import Control.Monad.Aff (Aff)
-import Control.Monad.Aff.AVar (AVAR)
-import Control.Monad.Aff.Console (CONSOLE)
 import Control.Monad.State (put)
 import Data.Maybe (Maybe(..))
-import Halogen (Component, ParentDSL, action, parentComponent, query')
-import Halogen.HTML (HTML(..))
-import Network.HTTP.Affjax (AJAX)
-import Prelude (type (~>), bind, const, pure, unit, ($))
+import Halogen (Component, ParentDSL, action, lifecycleParentComponent, parentComponent, query')
+import Halogen.Component.ChildPath (cp1)
+import Halogen.HTML (HTML)
+import Prelude (type (~>), bind, const, pure, unit, ($), (<<<))
 import Root.Render (render)
 import Types (Env)
 
 root :: forall eff.
         Env
-     -> Component HTML Query Input Message (Aff (avar :: AVAR, console :: CONSOLE, ajax :: AJAX | eff))
+     -> Component HTML Query Input Message (Aff (Effects eff))
 root env =
-  parentComponent
+  lifecycleParentComponent
     { initialState: const initial
     , render: render env
     , eval: eval env
     , receiver: const Nothing
+    , initializer: Just $ action Initialize
+    , finalizer: Nothing
     }
 
 eval :: forall eff.
         Env
-     -> Query ~> ParentDSL State Query ChildQuery ChildSlot Message (Aff eff)
+     -> Query ~> ParentDSL State Query ChildQuery ChildSlot Message (Aff (Effects eff))
 eval env = case _ of
+  Initialize next -> do
+    -- for_ mSessionKey $ \sessionKey -> do
+    pure next
+  HandleLogin userName next -> do
+    -- todo preserve old route
+    put $ LoggedIn
+      { liUserName: userName
+      , liRealm: LIRealmPublic ViewHome
+      }
+    pure next
   HandleGoto next -> do
-    put ViewHome
+    put $ LoggedOut (LORealmPublic ViewHome)
     pure next
   ShowError msg next -> do
     query' cp1 unit (action $ ErrorMessage.Show msg)

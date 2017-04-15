@@ -1,22 +1,36 @@
 module Menubar.Types where
 
-import Prelude (Unit, Void, const, unit)
+import Control.Monad.Aff.AVar (AVAR)
+import Control.Monad.Aff.Console (CONSOLE)
+import Data.Maybe (Maybe)
+import Network.HTTP.Affjax (AJAX)
+import Prelude (Unit, Void, const, id, unit)
+
+-- effects
+
+type Effects e =
+  ( avar :: AVAR
+  , console :: CONSOLE
+  , ajax :: AJAX
+  | e
+  )
 
 -- input
 
-type Input = Unit
+type Input = Maybe String -- maybe user name
 
 -- state
 
-type State = Unit
+type State = Maybe String -- maybe user name
 
 initial :: Input -> State
-initial = const unit
+initial = id
 
 -- query
 
 data Query a
-  = Logout a
+  = HandleInput (Maybe String) a
+  | Logout a
 
 -- output
 

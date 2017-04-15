@@ -4,27 +4,27 @@ module Auth.LoginForm
 
 import Halogen.HTML.Events as Events
 import Auth.LoginForm.Render (render)
-import Auth.LoginForm.Types (Input, Message, Query(..), State, _formError, _password, _userName, initial)
+import Auth.LoginForm.Types (Input, Message, Query(..), State, Effects, _formError, _password, _userName, initial)
+import Basil (setSessionKey)
 import Control.Monad.Aff (Aff)
-import Control.Monad.Aff.AVar (AVAR, putVar)
-import Control.Monad.Aff.Console (CONSOLE, log)
+import Control.Monad.Aff.AVar (putVar)
+import Control.Monad.Aff.Console (log)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Reader (runReaderT)
 import Data.Either (Either(..))
 import Data.Lens (use, (.=))
 import Data.String (null)
-import Halogen (Component, ComponentDSL, component, liftAff)
+import Halogen (Component, ComponentDSL, component, liftAff, raise)
 import Halogen.HTML (HTML)
-import HttpApp.User.Api.Types (LoginRequest(..))
-import Network.HTTP.Affjax (AJAX)
+import HttpApp.User.Api.Types (LoginRequest(..), LoginResponse(..))
 import Prelude (type (~>), bind, flip, not, pure, ($), (&&), (<<<))
 import Servant.PureScript.Affjax (errorToString)
 import ServerAPI (postUserLogin)
 import Types (Env)
 
 loginForm :: forall eff.
-              Env
-           -> Component HTML Query Input Message (Aff (avar :: AVAR, console :: CONSOLE, ajax :: AJAX | eff))
+             Env
+          -> Component HTML Query Input Message (Aff (Effects eff))
 loginForm env =
   component
     { initialState: initial
@@ -35,7 +35,7 @@ loginForm env =
 
 eval :: forall eff.
         Env
-     -> Query ~> ComponentDSL State Query Message (Aff (avar :: AVAR, console :: CONSOLE , ajax :: AJAX | eff))
+     -> Query ~> ComponentDSL State Query Message (Aff (Effects eff))
 eval env = case _ of
     HandleInput userName next -> do
       _userName .= userName
@@ -65,7 +65,10 @@ eval env = case _ of
       case eResult of
         Left err    -> liftAff do log $ errorToString err
                                   putVar env.ajaxError { title: "AJAX error", details: errorToString err }
-        Right _     -> _formError .= "logged in"
+        Right (LoginFailed msg) -> _formError .= msg
+        Right (LoginSuccess userName sessionKey) -> do
+          raise userName
+          setSessionKey sessionKey
 
 isValid :: String -> Boolean
 isValid = not <<< null

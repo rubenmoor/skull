@@ -3,30 +3,29 @@ module Auth.SignupForm
   ) where
 
 import Prelude
-import HttpApp.User.Api.Types
 import Auth.UserNameField.Types as UserNameField
 import Halogen.HTML.Events as Events
 import Auth.SignupForm.Render (render)
-import Auth.SignupForm.Types (Input, Query(..), Slot, State(..), Message, _formError, _password, _userName, initialState)
+import Auth.SignupForm.Types (Input, Message, Query(..), Slot, State(..), Effects, _formError, _password, _userName, initialState)
+import Basil (setSessionKey)
 import Control.Monad.Aff (Aff)
-import Control.Monad.Aff.AVar (AVAR, putVar)
-import Control.Monad.Aff.Console (CONSOLE, log)
+import Control.Monad.Aff.AVar (putVar)
+import Control.Monad.Aff.Console (log)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Reader (runReaderT)
-import Control.Monad.State (gets, modify)
 import Data.Either (Either(..))
-import Data.Lens (use, view, (.=), (.~))
+import Data.Lens (use, (.=), (.~))
 import Data.String (null)
-import Halogen (Component, ParentDSL, parentComponent, liftAff)
+import Halogen (Component, ParentDSL, liftAff, parentComponent, raise)
 import Halogen.HTML (HTML)
-import Network.HTTP.Affjax (AJAX)
+import HttpApp.User.Api.Types (UserNewRequest(..), UserNewResponse(..))
 import Servant.PureScript.Affjax (errorToString)
 import ServerAPI (postUserNew)
 import Types (Env)
 
 signupForm :: forall eff.
               Env
-           -> Component HTML Query Input Message (Aff (avar :: AVAR, console :: CONSOLE, ajax :: AJAX | eff))
+           -> Component HTML Query Input Message (Aff (Effects eff))
 signupForm env =
   parentComponent
     { initialState: \userName -> initialState # _userName .~ userName
@@ -37,7 +36,7 @@ signupForm env =
 
 eval :: forall eff.
         Env
-     -> Query ~> ParentDSL State Query UserNameField.Query Slot Message (Aff (avar :: AVAR, console :: CONSOLE , ajax :: AJAX | eff))
+     -> Query ~> ParentDSL State Query UserNameField.Query Slot Message (Aff (Effects eff))
 eval env = case _ of
     HandleInput userName next -> do
       _userName .= userName
@@ -67,7 +66,10 @@ eval env = case _ of
       case eResult of
         Left err    -> liftAff do log $ "wusel dusel\n" <> errorToString err
                                   putVar env.ajaxError { title: "AJAX error", details: errorToString err }
-        Right _     -> _formError .= "success"
+        Right (UserNewFailed msg) -> _formError .= msg
+        Right (UserNewSuccess userName sessionKey) -> do
+          raise userName -- todo: route to home
+          setSessionKey sessionKey
 
 isValid :: String -> Boolean
 isValid = not <<< null

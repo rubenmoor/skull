@@ -12,7 +12,8 @@
     "purescript-halogen": "^1.2.1",
     "purescript-argonaut-generic-codecs": "^5.2.0",
     "purescript-servant-support": "^7.0.0",
-    "purescript-profunctor-lenses": "^2.6.0"
+    "purescript-profunctor-lenses": "^2.6.0",
+    "basil.js": "^0.4.4"
   },
   "devDependencies": {
     "purescript-psci-support": "^2.0.0"

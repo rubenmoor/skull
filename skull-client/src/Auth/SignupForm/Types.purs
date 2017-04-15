@@ -1,9 +1,22 @@
 module Auth.SignupForm.Types where
 
 import Auth.UserNameField.Types as UserNameField
+import Basil (STORAGE)
+import Control.Monad.Aff.AVar (AVAR)
+import Control.Monad.Aff.Console (CONSOLE)
 import Data.Lens (Lens', lens)
 import Data.Unit (Unit)
-import Prelude (Void)
+import Network.HTTP.Affjax (AJAX)
+
+-- Effects
+
+type Effects e =
+  ( avar :: AVAR
+  , console :: CONSOLE
+  , ajax :: AJAX
+  , storage :: STORAGE
+  | e
+  )
 
 -- Input
 
@@ -47,4 +60,4 @@ type Slot = Unit
 
 -- Output
 
-type Message = Void
+type Message = String -- user name

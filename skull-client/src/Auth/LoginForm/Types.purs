@@ -1,8 +1,22 @@
 module Auth.LoginForm.Types where
 
+import Basil (STORAGE)
+import Control.Monad.Aff.AVar (AVAR)
+import Control.Monad.Aff.Console (CONSOLE)
 import Data.Lens (Lens', lens)
 import Data.Unit (Unit)
+import Network.HTTP.Affjax (AJAX)
 import Prelude (Void)
+
+-- Effects
+
+type Effects e =
+  ( avar :: AVAR
+  , console :: CONSOLE
+  , ajax :: AJAX
+  , storage :: STORAGE
+  | e
+  )
 
 -- Input
 
@@ -42,4 +56,4 @@ data Query a
 
 -- Output
 
-type Message = Void
+type Message = String -- user name

@@ -11,23 +11,18 @@ import Control.Monad.Aff.AVar (AVAR, putVar)
 import Control.Monad.Aff.Console (CONSOLE, log)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Reader (runReaderT)
-import Control.Monad.State (gets, modify)
-import Data.Argonaut.Generic.Aeson (decodeJson, encodeJson)
-import Data.Argonaut.Parser (jsonParser)
 import Data.Either (Either(..))
 import Data.Lens (use, (.=))
 import Data.String (null)
 import Halogen (Component, ComponentDSL, component, liftAff, raise)
 import Halogen.HTML (HTML)
-import Network.HTTP.Affjax (AJAX, AffjaxResponse, post)
-import Network.HTTP.StatusCode (StatusCode(..))
 import Servant.PureScript.Affjax (errorToString)
 import ServerAPI (postUserExists)
 import Types (Env)
 
 userNameField :: forall eff.
                  Env
-              -> Component HTML Query Input Message (Aff (avar :: AVAR, console :: CONSOLE, ajax :: AJAX | eff))
+              -> Component HTML Query Input Message (Aff (Effects eff))
 userNameField env =
   component
     { initialState: \name -> initialState { userName = name }
@@ -38,7 +33,7 @@ userNameField env =
 
 eval :: forall eff.
         Env
-     -> Query ~> ComponentDSL State Query Message (Aff (avar :: AVAR, console :: CONSOLE , ajax :: AJAX | eff))
+     -> Query ~> ComponentDSL State Query Message (Aff (Effects eff))
 eval env = case _ of
     HandleInput userName next -> do
       _userName .= userName

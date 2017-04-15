@@ -2,6 +2,7 @@ module Main where
 
 import Prelude
 import Root.Types as Root
+import Basil (STORAGE)
 import Control.Monad.Aff (forkAff)
 import Control.Monad.Aff.AVar (makeVar, takeVar)
 import Control.Monad.Aff.Console (CONSOLE)
@@ -35,7 +36,7 @@ apiSettings httpUrlRoot = SPSettings_
       }
   }
 
-main :: String -> Boolean -> Eff (HalogenEffects (console :: CONSOLE, ajax :: AJAX)) Unit
+main :: String -> Boolean -> Eff (HalogenEffects (console :: CONSOLE, ajax :: AJAX, storage :: STORAGE)) Unit
 main httpUrlRoot hotReload =
     runHalogenAff do
       body <- if hotReload

@@ -18,7 +18,6 @@ _title = lens _.title (\r str -> r { title = str })
 _details :: Lens' ErrorMessage String
 _details = lens _.details (\r str -> r { details = str })
 
-
 -- Input
 
 type Input = Maybe ErrorMessage

@@ -21,7 +21,7 @@ module.exports = {
         loader: 'purs-loader',
         query: {
           bundle: false,
-          psc: 'psc',
+          psc: 'psa',
           pscIde: true,
           pscArgs: {
             sourceMaps: true
@@ -43,7 +43,6 @@ module.exports = {
     }),
     new ExtendedDefinePlugin({
       httpUrlRoot: process.env.HTTP_URL_ROOT
-
     })
   ],
   resolveLoader: {
