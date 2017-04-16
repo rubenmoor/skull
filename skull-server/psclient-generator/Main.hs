@@ -1,16 +1,20 @@
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
+import           Control.Lens                        ((&), (.~))
 import           Data.Proxy
-import           Language.PureScript.Bridge          (BridgePart, FullBridge,
-                                                      SumType, buildBridge,
+import qualified Data.Set                            as Set
+import           Language.PureScript.Bridge          (BridgePart, SumType,
+                                                      buildBridge,
                                                       defaultBridge, mkSumType,
-                                                      typeName, writePSTypes,
-                                                      (<|>), (^==))
+                                                      writePSTypes)
 import           Language.PureScript.Bridge.TypeInfo (Language (Haskell))
 import           Servant.PureScript                  (HasBridge (..),
-                                                      writeAPIModule)
+                                                      defaultSettings,
+                                                      readerParams,
+                                                      writeAPIModuleWithSettings)
 
 import           Api.Types
 import           HttpApp.Api                         (Routes)
@@ -37,5 +41,10 @@ instance HasBridge Bridge where
 main :: IO ()
 main = do
   let outDir = "../skull-client/src"
-  writeAPIModule outDir (Proxy :: Proxy Bridge) (Proxy :: Proxy Routes)
+      settings =
+        defaultSettings & readerParams .~ Set.fromList
+          [ "AuthToken"
+          , "baseURL"
+          ]
+  writeAPIModuleWithSettings settings outDir (Proxy :: Proxy Bridge) (Proxy :: Proxy Routes)
   writePSTypes outDir  (buildBridge bridge) types

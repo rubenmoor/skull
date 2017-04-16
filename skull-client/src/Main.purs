@@ -26,7 +26,8 @@ import Servant.PureScript.Settings (SPSettings_(..))
 import ServerAPI (SPParams_(..))
 import Types (ApiSettings)
 
-apiSettings :: String -> ApiSettings
+apiSettings :: String
+            -> ApiSettings
 apiSettings httpUrlRoot = SPSettings_
   { encodeJson : encodeJson
   , decodeJson : decodeJson
@@ -36,7 +37,9 @@ apiSettings httpUrlRoot = SPSettings_
       }
   }
 
-main :: String -> Boolean -> Eff (HalogenEffects (console :: CONSOLE, ajax :: AJAX, storage :: STORAGE)) Unit
+main :: String
+     -> Boolean
+     -> Eff (HalogenEffects (console :: CONSOLE, ajax :: AJAX, storage :: STORAGE)) Unit
 main httpUrlRoot hotReload =
     runHalogenAff do
       body <- if hotReload

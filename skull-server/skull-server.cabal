@@ -100,6 +100,7 @@ executable psclient-generator
   build-depends:       skull-server
                      , base
                      , aeson
+                     , containers
                      , http-api-data
                      , http-types
                      , lens
