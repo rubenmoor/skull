@@ -2,39 +2,30 @@ module  Auth.UserNameField
   ( userNameField
   ) where
 
-import Prelude
-import Auth.UserNameField.Types
+import Prelude (type (~>), bind, not, pure, ($), (<<<))
+import Auth.UserNameField.Types (Effects, Input, Message(..), Query(..), State, UserNameCheck(..), _userName, _userNameLookup, initialState)
 import Halogen.HTML.Events as Events
 import Auth.UserNameField.Render (render)
-import Control.Monad.Aff (Aff)
-import Control.Monad.Aff.AVar (AVAR, putVar)
-import Control.Monad.Aff.Console (CONSOLE, log)
-import Control.Monad.Except (runExceptT)
-import Control.Monad.Reader (runReaderT)
-import Data.Either (Either(..))
 import Data.Lens (use, (.=))
 import Data.String (null)
-import Halogen (Component, ComponentDSL, component, liftAff, raise)
+import Halogen (Component, ComponentDSL, component, raise)
 import Halogen.HTML (HTML)
-import Servant.PureScript.Affjax (errorToString)
 import ServerAPI (postUserExists)
-import Types (Env)
+import Ulff (Ulff, mkRequest)
 
 userNameField :: forall eff.
-                 Env
-              -> Component HTML Query Input Message (Aff (Effects eff))
-userNameField env =
+                 Component HTML Query Input Message (Ulff (Effects eff))
+userNameField =
   component
     { initialState: \name -> initialState { userName = name }
     , render
-    , eval: eval env
+    , eval: eval
     , receiver: Events.input HandleInput
     }
 
 eval :: forall eff.
-        Env
-     -> Query ~> ComponentDSL State Query Message (Aff (Effects eff))
-eval env = case _ of
+        Query ~> ComponentDSL State Query Message (Ulff (Effects eff))
+eval = case _ of
     HandleInput userName next -> do
       _userName .= userName
       pure next
@@ -52,12 +43,8 @@ eval env = case _ of
   where
     lookup name = do
       _userNameLookup .= UserNameLoading
-      eResult <- runExceptT $ flip runReaderT env.apiSettings $ postUserExists name
-      case eResult of
-        Left err    -> do liftAff $ log $ errorToString err
-                          liftAff $ putVar env.ajaxError $ { title: "Ajax Error", details: errorToString err}
-        Right true  -> _userNameLookup .= UserNameExists
-        Right false -> _userNameLookup .= UserNameOk
+      mkRequest (postUserExists name) \exists ->
+        _userNameLookup .= if exists then UserNameExists else UserNameOk
 
 isValid :: String -> Boolean
 isValid = not <<< null

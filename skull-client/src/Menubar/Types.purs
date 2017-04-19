@@ -1,19 +1,12 @@
 module Menubar.Types where
 
-import Control.Monad.Aff.AVar (AVAR)
-import Control.Monad.Aff.Console (CONSOLE)
 import Data.Maybe (Maybe)
-import Network.HTTP.Affjax (AJAX)
-import Prelude (Unit, Void, const, id, unit)
+import Prelude (Void, id)
+import Types (MkRequestEffects)
 
 -- effects
 
-type Effects e =
-  ( avar :: AVAR
-  , console :: CONSOLE
-  , ajax :: AJAX
-  | e
-  )
+type Effects e = MkRequestEffects e
 
 -- input
 

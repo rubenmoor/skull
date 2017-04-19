@@ -1,17 +1,17 @@
 module Root.Types where
 
-import Auth.SignupForm.Types as SignupForm
 import Auth.LoginForm.Types as LoginForm
+import Auth.SignupForm.Types as SignupForm
 import ErrorMessage.Types as ErrorMessage
 import Menubar.Types as Menubar
-import Auth.UserNameField.Types (Message(..))
 import Basil (STORAGE)
 import Control.Monad.Aff.AVar (AVAR)
 import Control.Monad.Aff.Console (CONSOLE)
-import Data.Const (Const(..))
+import Data.Const (Const)
 import Halogen.Component.ChildPath (type (\/), type (<\/>))
 import Network.HTTP.Affjax (AJAX)
 import Prelude (Unit, Void)
+import Types (Error(..))
 
 type UserName = String
 
@@ -65,7 +65,7 @@ data Query a
   = Initialize a
   | HandleLogin UserName a
   | HandleGoto a -- todo: routes
-  | ShowError ErrorMessage.ErrorMessage a
+  | ShowError Error a
 
 
 type ChildQuery =

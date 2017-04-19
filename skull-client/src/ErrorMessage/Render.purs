@@ -1,10 +1,11 @@
 module ErrorMessage.Render where
 
 import ErrorMessage.Types
-import Data.Array ((:))
+import Data.Lens ((^.))
 import Halogen (ComponentHTML)
 import Halogen.HTML (div_, text)
-import Prelude (pure, unit, ($), (<<<), (<>))
+import Prelude (($), (<>))
+import Types (_details, _title)
 import Util.HTML (cldiv_, faButton_)
 
 render :: State
@@ -16,12 +17,12 @@ render = case _ of
       [ if msg.showDetails
            then faButton_ "chevron-down"  HideDetails
            else faButton_ "chevron-right" ShowDetails
-      , text msg.errorMessage.title
+      , text $ msg.errorMessage ^. _title
       , faButton_ "times" Dismiss
       ]
       <> if msg.showDetails
             then [ div_
-                     [ text msg.errorMessage.details
+                     [ text $ msg.errorMessage ^. _details
                      ]
                  ]
             else []

@@ -1,22 +1,13 @@
 module Auth.SignupForm.Types where
 
 import Auth.UserNameField.Types as UserNameField
-import Basil (STORAGE)
-import Control.Monad.Aff.AVar (AVAR)
-import Control.Monad.Aff.Console (CONSOLE)
 import Data.Lens (Lens', lens)
 import Data.Unit (Unit)
-import Network.HTTP.Affjax (AJAX)
+import Types (MkRequestEffects)
 
 -- Effects
 
-type Effects e =
-  ( avar :: AVAR
-  , console :: CONSOLE
-  , ajax :: AJAX
-  , storage :: STORAGE
-  | e
-  )
+type Effects e = MkRequestEffects e
 
 -- Input
 

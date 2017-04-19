@@ -8,13 +8,11 @@ import Halogen (ComponentHTML)
 import Halogen.HTML (button, div_, text)
 import Menubar.Types (Query(..), State)
 import Prelude (($), (<>))
-import Types (Env)
 import Util.HTML (cldiv_)
 
-render :: Env
-       -> State
+render :: State
        -> ComponentHTML Query
-render env st =
+render st =
   cldiv_ "menubar"
     [  div_ $ case st of
         Just userName ->

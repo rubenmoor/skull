@@ -10,10 +10,12 @@ import Auth.SignupForm.Types (Input, Message, Query(..), Slot, State(..), Effect
 import Basil (setSessionKey)
 import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.AVar (putVar)
+import Control.Monad.Aff.Class (liftAff)
 import Control.Monad.Aff.Console (log)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Reader (runReaderT)
 import Data.Either (Either(..))
+import Data.Generic (gShow)
 import Data.Lens (use, (.=), (.~))
 import Data.String (null)
 import Halogen (Component, ParentDSL, liftAff, parentComponent, raise)
@@ -22,22 +24,21 @@ import HttpApp.User.Api.Types (UserNewRequest(..), UserNewResponse(..))
 import Servant.PureScript.Affjax (errorToString)
 import ServerAPI (postUserNew)
 import Types (Env)
+import Ulff (Ulff, mkRequest)
 
 signupForm :: forall eff.
-              Env
-           -> Component HTML Query Input Message (Aff (Effects eff))
-signupForm env =
+              Component HTML Query Input Message (Ulff (Effects eff))
+signupForm =
   parentComponent
     { initialState: \userName -> initialState # _userName .~ userName
-    , render: render env
-    , eval: eval env
+    , render: render
+    , eval: eval
     , receiver: Events.input HandleInput
     }
 
 eval :: forall eff.
-        Env
-     -> Query ~> ParentDSL State Query UserNameField.Query Slot Message (Aff (Effects eff))
-eval env = case _ of
+        Query ~> ParentDSL State Query UserNameField.Query Slot Message (Ulff (Effects eff))
+eval = case _ of
     HandleInput userName next -> do
       _userName .= userName
       pure next
@@ -62,12 +63,9 @@ eval env = case _ of
             { unrUserName: name
             , unrPassword: pwd
             }
-      eResult <- runExceptT $ flip runReaderT env.apiSettings $ postUserNew userNewRequest
-      case eResult of
-        Left err    -> liftAff do log $ "wusel dusel\n" <> errorToString err
-                                  putVar env.ajaxError { title: "AJAX error", details: errorToString err }
-        Right (UserNewFailed msg) -> _formError .= msg
-        Right (UserNewSuccess userName sessionKey) -> do
+      mkRequest (postUserNew userNewRequest) $ case _ of
+        UserNewFailed msg -> _formError .= msg
+        UserNewSuccess userName sessionKey -> do
           raise userName -- todo: route to home
           setSessionKey sessionKey
 

@@ -5,13 +5,11 @@ import Auth.LoginForm.Types (Query(..), State)
 import Halogen (ComponentHTML)
 import Halogen.HTML (br_, button, div_, h1_, input, label_, text)
 import Halogen.HTML.Properties (ButtonType(..), InputType(..), type_, value)
-import Types (Env)
 import Util.HTML (doNothingForm_)
 
-render :: Env
-       -> State
+render :: State
        -> ComponentHTML Query
-render env st = doNothingForm_
+render st = doNothingForm_
   [ h1_
       [ text "Log in"
       ]

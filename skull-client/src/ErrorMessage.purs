@@ -2,16 +2,17 @@ module ErrorMessage where
 
 import ErrorMessage.Types
 import Halogen.HTML.Events as Events
-import Control.Monad.Aff (Aff)
 import Data.Lens ((.=))
 import Data.Maybe (Maybe(..), maybe)
 import ErrorMessage.Render (render)
 import Halogen (Component, ComponentDSL, component, put)
 import Halogen.HTML (HTML)
 import Prelude (type (~>), bind, pure, ($), (<<<))
+import Types (Error(..))
+import Ulff (Ulff)
 
 errorMessage :: forall eff.
-                Component HTML Query Input Message (Aff eff)
+                Component HTML Query Input Message (Ulff eff)
 errorMessage =
   component
     { initialState: initialize
@@ -26,7 +27,7 @@ initialize =
     ShowMessage { errorMessage : msg, showDetails : false }
 
 eval :: forall eff.
-        Query ~> ComponentDSL State Query Message (Aff eff)
+        Query ~> ComponentDSL State Query Message (Ulff eff)
 eval = case _ of
   HandleInput mMsg next ->
     case mMsg of
@@ -37,9 +38,9 @@ eval = case _ of
           , showDetails: false
           }
         pure next
-  Show msg next -> do
+  Show err next -> do
     put $ ShowMessage
-      { errorMessage: msg
+      { errorMessage: err
       , showDetails: false
       }
     pure next

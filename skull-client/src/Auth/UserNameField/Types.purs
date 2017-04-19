@@ -1,18 +1,11 @@
 module Auth.UserNameField.Types where
 
-import Control.Monad.Aff.AVar (AVAR)
-import Control.Monad.Aff.Console (CONSOLE)
 import Data.Lens (Lens', lens)
-import Network.HTTP.Affjax (AJAX)
+import Types (MkRequestEffects)
 
 -- effects
 
-type Effects e =
-  ( avar :: AVAR
-  , console :: CONSOLE
-  , ajax :: AJAX
-  | e
-  )
+type Effects e = MkRequestEffects e
 
 -- input
 

@@ -1,62 +1,92 @@
 module Ulff where
 
-import Basil (STORAGE)
+import Auth.Types (AuthToken(..))
+import Basil (STORAGE, getSessionKey)
 import Control.Monad.Aff (Aff)
-import Control.Monad.Aff.AVar (AVAR, AVar)
-import Control.Monad.Aff.Class (class MonadAff)
-import Control.Monad.Aff.Console (CONSOLE)
-import Control.Monad.Except (class MonadError)
-import Control.Monad.Free (Free)
-import Control.Monad.Reader (class MonadAsk)
-import ErrorMessage.Types (ErrorMessage)
-import Halogen.Aff (HalogenEffects)
+import Control.Monad.Aff.AVar (AVAR, putVar)
+import Control.Monad.Aff.Class (class MonadAff, liftAff)
+import Control.Monad.Eff.Class (class MonadEff, liftEff)
+import Control.Monad.Error.Class (class MonadError)
+import Control.Monad.Except (runExceptT)
+import Control.Monad.Reader (class MonadAsk, ReaderT, ask, runReaderT)
+import Control.Monad.Trans.Class (class MonadTrans, lift)
+import Data.Either (either)
+import Data.Maybe (fromMaybe)
 import Network.HTTP.Affjax (AJAX)
-import Prelude (class Applicative, class Apply, class Bind, class Functor, class Monad)
-import Servant.PureScript.Affjax (AjaxError(..))
-import Servant.PureScript.Settings (SPSettings_(..))
+import Prelude (class Applicative, class Apply, class Bind, class Functor, class Monad, type (~>), Unit, bind, flip, ($), (<<<), (=<<))
+import Servant.PureScript.Affjax (AjaxError, errorToString)
+import Servant.PureScript.Settings (SPSettings_, defaultSettings)
 import ServerAPI (SPParams_(..))
+import Types (Env(..), Error(..))
 
-type UlffEffects = HalogenEffects
-  ( ajax :: AJAX
-  , console :: CONSOLE
-  , storage :: STORAGE
-  )
+newtype UlffT m a = UlffT (ReaderT Env m a)
 
-type Settings =
-  { httpUrlRoot :: String
-  , ajaxErrorAVar :: AVar ErrorMessage
-  }
+type Ulff effects = UlffT (Aff effects)
 
-type Request =
-     forall eff m result.
-       ( MonadAsk (SPSettings_ SPParams_) m
-       , MonadError AjaxError m
-       , MonadAff ( ajax :: AJAX | eff) m
-       )
-  => m result
+unUlffT :: forall m. UlffT m ~> ReaderT Env m
+unUlffT (UlffT m) = m
 
-type Result a =
-     forall result.
-     result
-  -> Aff (ajax :: AJAX, avar :: AVAR, storage :: STORAGE) a
+derive newtype instance functorUlffT :: Functor m => Functor (UlffT m)
+derive newtype instance applyUlffT :: Monad m => Apply (UlffT m)
+derive newtype instance applicativeUlffT :: Monad m => Applicative (UlffT m)
+derive newtype instance bindUlffT :: Monad m => Bind (UlffT m)
+derive newtype instance monadUlffT :: Monad m => Monad (UlffT m)
+derive newtype instance monadAskUlffT :: Monad m => MonadAsk Env (UlffT m)
 
-data UlffF a
-  = MkRequest
-      Request
-      Result a
-  | Log String (Aff (console :: CONSOLE) a)
+instance monadTransUlffT
+      :: MonadTrans UlffT where
+  lift = UlffT <<< lift
 
-newtype UlffM a =
-  UlffM { unUlffM :: Free UlffF a }
+instance monadEffUlffT
+      :: MonadEff eff m
+      => MonadEff eff (UlffT m) where
+  liftEff = lift <<< liftEff
 
-derive newtype instance functorUlffM :: Functor UlffM
-derive newtype instance applyUlffM :: Apply UlffM
-derive newtype instance applicativeUlffM :: Applicative UlffM
-derive newtype instance bindUlffM :: Bind UlffM
-derive newtype instance monadUlffM :: Monad UlffM
+instance monadAffUlffT
+      :: MonadAff eff m
+      => MonadAff eff (UlffT m) where
+  liftAff = lift <<< liftAff
+
+--
+
+runUlffT :: forall eff.
+            Env
+         -> UlffT (Aff eff) ~> Aff eff
+runUlffT env =
+    flip runReaderT env <<< unUlffT
 
 -- interface
 
--- mkRequest :: forall m b.
---              MonadTrans m
---           => m UlffM b
+mkRequest :: forall eff stack m result.
+             ( Monad (stack m)
+             , MonadTrans stack
+             , MonadAff (ajax :: AJAX, avar :: AVAR, storage :: STORAGE | eff) m
+             , MonadAsk Env m
+             )
+          => (forall api eff'.
+                ( MonadAsk (SPSettings_ SPParams_) api
+                , MonadError AjaxError api
+                , MonadAff ( ajax :: AJAX | eff') api
+                )
+                => api result
+             )
+          -> (result -> stack m Unit)
+          -> stack m Unit
+mkRequest apiCall callback =
+    either showError callback =<< lift do
+      mSessionKey <- getSessionKey
+      Env { httpUrlRoot } <- ask
+      let apiSettings = defaultSettings $ SPParams_
+            { baseURL : httpUrlRoot
+            -- in case of a auth-protected request by a public component,
+            -- let the ajax request fail and report the error
+            , authToken: AuthToken $ fromMaybe "" mSessionKey
+            }
+      runExceptT (flip runReaderT apiSettings apiCall)
+  where
+    showError err = lift do
+      Env { ajaxError } <- ask
+      liftAff $ putVar ajaxError $ Error
+        { title: "Ajax Error"
+        , details: errorToString err
+        }
