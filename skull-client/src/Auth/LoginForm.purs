@@ -8,7 +8,7 @@ import Auth.LoginForm.Types (Input, Message, Query(..), State, Effects, _formErr
 import Basil (setSessionKey)
 import Data.Lens (use, (.=))
 import Data.String (null)
-import Halogen (Component, ComponentDSL, component, raise)
+import Halogen (Component, ComponentDSL, component)
 import Halogen.HTML (HTML)
 import HttpApp.User.Api.Types (LoginRequest(..), LoginResponse(..))
 import Prelude (type (~>), bind, not, pure, unit, ($), (&&), (<<<))
@@ -55,8 +55,8 @@ eval = case _ of
       mkRequest (postUserLogin loginRequest) $ case _ of
         LoginFailed msg -> _formError .= msg
         LoginSuccess userName sessionKey -> do
-          raise userName
           setSessionKey sessionKey
+          -- todo: goto location
       pure unit
 
 isValid :: String -> Boolean

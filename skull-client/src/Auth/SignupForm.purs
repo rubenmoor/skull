@@ -6,24 +6,14 @@ import Prelude
 import Auth.UserNameField.Types as UserNameField
 import Halogen.HTML.Events as Events
 import Auth.SignupForm.Render (render)
-import Auth.SignupForm.Types (Input, Message, Query(..), Slot, State(..), Effects, _formError, _password, _userName, initialState)
+import Auth.SignupForm.Types (Input, Message, Query(..), Slot, State, Effects, _formError, _password, _userName, initialState)
 import Basil (setSessionKey)
-import Control.Monad.Aff (Aff)
-import Control.Monad.Aff.AVar (putVar)
-import Control.Monad.Aff.Class (liftAff)
-import Control.Monad.Aff.Console (log)
-import Control.Monad.Except (runExceptT)
-import Control.Monad.Reader (runReaderT)
-import Data.Either (Either(..))
-import Data.Generic (gShow)
 import Data.Lens (use, (.=), (.~))
 import Data.String (null)
-import Halogen (Component, ParentDSL, liftAff, parentComponent, raise)
+import Halogen (Component, ParentDSL, parentComponent)
 import Halogen.HTML (HTML)
 import HttpApp.User.Api.Types (UserNewRequest(..), UserNewResponse(..))
-import Servant.PureScript.Affjax (errorToString)
 import ServerAPI (postUserNew)
-import Types (Env)
 import Ulff (Ulff, mkRequest)
 
 signupForm :: forall eff.
@@ -66,8 +56,8 @@ eval = case _ of
       mkRequest (postUserNew userNewRequest) $ case _ of
         UserNewFailed msg -> _formError .= msg
         UserNewSuccess userName sessionKey -> do
-          raise userName -- todo: route to home
           setSessionKey sessionKey
+          -- todo: gotoLocation
 
 isValid :: String -> Boolean
 isValid = not <<< null

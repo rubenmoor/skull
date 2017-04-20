@@ -16,7 +16,7 @@ import           Data.Text              (Text)
 import           Servant                ((:<|>) (..), ServerT)
 import           TextShow               (showt)
 
-import           Auth.Types             (UserInfo, uiUserId)
+import           Auth.Types             (UserInfo, uiUserId, uiUserName)
 import           Database.Adaptor       (mkUser)
 import qualified Database.Class         as Db
 import           Database.Common        (createSession, deleteSession)
@@ -39,6 +39,7 @@ public =
 protected :: ServerT Api.Protected (HandlerProtectedT IO)
 protected =
        logout
+  :<|> name
 
 userNew :: (MonadIO m, Db.Read m, Db.Insert m)
         => UserNewRequest
@@ -99,3 +100,7 @@ logout = do
   Db.getOneByQuery (Query.sessionByUserId uId) >>= \case
     Left msg -> throwError $ ErrBug msg
     Right session -> deleteSession $ (session :: Session) ^. sessionId
+
+name :: MonadReader UserInfo m
+     => m UserName
+name = asks $ view uiUserName

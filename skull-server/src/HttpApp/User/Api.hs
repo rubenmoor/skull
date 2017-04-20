@@ -20,3 +20,4 @@ type Public =
 
 type Protected =
        "logout" :> Get '[JSON] ()
+  :<|> "name" :> Get '[JSON] UserName

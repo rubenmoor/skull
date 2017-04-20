@@ -3,6 +3,7 @@ module Auth.SignupForm.Types where
 import Auth.UserNameField.Types as UserNameField
 import Data.Lens (Lens', lens)
 import Data.Unit (Unit)
+import Prelude (Void)
 import Types (MkRequestEffects)
 
 -- Effects
@@ -51,4 +52,4 @@ type Slot = Unit
 
 -- Output
 
-type Message = String -- user name
+type Message = Void

@@ -1,17 +1,18 @@
 module Root.Types where
 
-import Auth.LoginForm.Types as LoginForm
-import Auth.SignupForm.Types as SignupForm
+import LoggedIn.Types as LoggedIn
+import LoggedOut.Types as LoggedOut
 import ErrorMessage.Types as ErrorMessage
-import Menubar.Types as Menubar
 import Basil (STORAGE)
 import Control.Monad.Aff.AVar (AVAR)
 import Control.Monad.Aff.Console (CONSOLE)
 import Data.Const (Const)
+import Data.Lens (Lens', lens)
 import Halogen.Component.ChildPath (type (\/), type (<\/>))
 import Network.HTTP.Affjax (AJAX)
 import Prelude (Unit, Void)
-import Types (Error(..))
+import Router (Location(..), LoggedInLocation(..), PublicLocation(..))
+import Types (Error)
 
 type UserName = String
 
@@ -31,53 +32,33 @@ type Input = Unit
 
 -- State
 
-data ViewPublic
-  = ViewHome
+type State =
+  { location :: Location
+  }
 
-data ViewPrivate
-  = ViewBotKeys
+initial :: Input -> State
+initial _ =
+  { location: LocLoggedIn (LocLoggedInPublic LocHome)
+  }
 
-data LoggedInRealm
-  = LIRealmPublic ViewPublic
-  | LIRealmPrivate ViewPrivate
-
-data LoggedOutRealm
-  = LORealmPublic ViewPublic
-  | LORealmAuthForms ViewAuthForm
-
-data ViewAuthForm
-  = ViewSignupForm
-  | ViewLoginForm
-
-data State
-  = LoggedIn
-      { liUserName :: UserName
-      , liRealm :: LoggedInRealm
-      }
-  | LoggedOut LoggedOutRealm
-
-initial :: State
-initial = LoggedOut (LORealmAuthForms ViewSignupForm)
+_location :: Lens' State Location
+_location = lens _.location (\r l -> r { location = l})
 
 -- Query
 
 data Query a
-  = Initialize a
-  | HandleLogin UserName a
-  | HandleGoto a -- todo: routes
-  | ShowError Error a
+  -- | HandleGoto a -- todo: routes
+  = ShowError Error a
 
 
 type ChildQuery =
        ErrorMessage.Query
-  <\/> Menubar.Query
-  <\/> SignupForm.Query
-  <\/> LoginForm.Query
+  <\/> LoggedIn.Query
+  <\/> LoggedOut.Query
   <\/> Const Void
 
 type ChildSlot =
      Unit
-  \/ Unit
   \/ Unit
   \/ Unit
   \/ Void

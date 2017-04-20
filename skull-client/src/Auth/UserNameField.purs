@@ -2,16 +2,16 @@ module  Auth.UserNameField
   ( userNameField
   ) where
 
-import Prelude (type (~>), bind, not, pure, ($), (<<<))
-import Auth.UserNameField.Types (Effects, Input, Message(..), Query(..), State, UserNameCheck(..), _userName, _userNameLookup, initialState)
 import Halogen.HTML.Events as Events
 import Auth.UserNameField.Render (render)
+import Auth.UserNameField.Types (Effects, Input, Message(..), Query(..), State, UserNameCheck(..), _userName, _userNameLookup, initialState)
 import Data.Lens (use, (.=))
 import Data.String (null)
 import Halogen (Component, ComponentDSL, component, raise)
 import Halogen.HTML (HTML)
+import Prelude (type (~>), bind, not, pure, ($), (<<<))
 import ServerAPI (postUserExists)
-import Ulff (Ulff, mkRequest)
+import Ulff (Ulff, mkRequest', showError)
 
 userNameField :: forall eff.
                  Component HTML Query Input Message (Ulff (Effects eff))
@@ -19,7 +19,7 @@ userNameField =
   component
     { initialState: \name -> initialState { userName = name }
     , render
-    , eval: eval
+    , eval
     , receiver: Events.input HandleInput
     }
 
@@ -43,7 +43,7 @@ eval = case _ of
   where
     lookup name = do
       _userNameLookup .= UserNameLoading
-      mkRequest (postUserExists name) \exists ->
+      mkRequest' showError (postUserExists name) \exists ->
         _userNameLookup .= if exists then UserNameExists else UserNameOk
 
 isValid :: String -> Boolean

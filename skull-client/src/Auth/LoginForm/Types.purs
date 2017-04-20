@@ -1,6 +1,7 @@
 module Auth.LoginForm.Types where
 
 import Data.Lens (Lens', lens)
+import Prelude (Void)
 import Types (MkRequestEffects)
 
 -- Effects
@@ -45,4 +46,4 @@ data Query a
 
 -- Output
 
-type Message = String -- user name
+type Message = Void

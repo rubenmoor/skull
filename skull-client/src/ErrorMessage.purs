@@ -8,7 +8,6 @@ import ErrorMessage.Render (render)
 import Halogen (Component, ComponentDSL, component, put)
 import Halogen.HTML (HTML)
 import Prelude (type (~>), bind, pure, ($), (<<<))
-import Types (Error(..))
 import Ulff (Ulff)
 
 errorMessage :: forall eff.

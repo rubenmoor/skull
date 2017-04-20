@@ -3,36 +3,26 @@ module Root.Render
   ) where
 
 import Halogen.Component.ChildPath
-import Halogen.HTML.Events as Events
-import Auth.LoginForm (loginForm)
-import Auth.SignupForm (signupForm)
 import Data.Maybe (Maybe(..))
 import ErrorMessage (errorMessage)
 import Halogen (ParentHTML)
 import Halogen.HTML (HTML, div_, slot', text)
-import Menubar (menubar)
+import LoggedIn (loggedIn)
+import LoggedOut (loggedOut)
 import Prelude (absurd, unit)
-import Root.Types (ChildQuery, ChildSlot, Effects, LoggedInRealm(..), LoggedOutRealm(..), Query(..), State(..), ViewAuthForm(..), ViewPrivate(..), ViewPublic(..))
+import Root.Types (ChildQuery, ChildSlot, Effects, Query, State)
+import Router (Location(..))
 import Ulff (Ulff)
 
 render :: forall eff.
           State
        -> ParentHTML Query ChildQuery ChildSlot (Ulff (Effects eff))
-render st = do
-  let mUserName = case st of
-        LoggedIn { liUserName: userName } -> Just userName
-        LoggedOut _ -> Nothing
+render st =
   div_
     [ slot' cp1 unit errorMessage Nothing absurd
-    , slot' cp2 unit menubar mUserName absurd
-    , case st of
-        LoggedIn { liRealm: LIRealmPublic ViewHome } -> viewHome
-        LoggedIn { liRealm: LIRealmPrivate ViewBotKeys } -> div_ [ text "botkeys" ]
-        LoggedOut (LORealmPublic ViewHome) -> viewHome
-        LoggedOut (LORealmAuthForms ViewSignupForm) ->
-          slot' cp3 unit signupForm "" (Events.input HandleLogin)
-        LoggedOut (LORealmAuthForms ViewLoginForm) ->
-          slot' cp4 unit loginForm "" (Events.input HandleLogin)
+    , case st.location of
+        LocLoggedIn loc -> slot' cp2 unit loggedIn loc absurd
+        LocLoggedOut loc -> slot' cp3 unit loggedOut loc absurd
     ]
 
 viewHome :: forall t1 t2. HTML t2 t1

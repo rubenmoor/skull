@@ -10,10 +10,10 @@ import Control.Monad.Error.Class (class MonadError)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Reader (class MonadAsk, ReaderT, ask, runReaderT)
 import Control.Monad.Trans.Class (class MonadTrans, lift)
-import Data.Either (either)
+import Data.Either (Either, either)
 import Data.Maybe (fromMaybe)
 import Network.HTTP.Affjax (AJAX)
-import Prelude (class Applicative, class Apply, class Bind, class Functor, class Monad, type (~>), Unit, bind, flip, ($), (<<<), (=<<))
+import Prelude (class Applicative, class Apply, class Bind, class Functor, class Monad, type (~>), Unit, bind, flip, ($), (<<<), (>>=))
 import Servant.PureScript.Affjax (AjaxError, errorToString)
 import Servant.PureScript.Settings (SPSettings_, defaultSettings)
 import ServerAPI (SPParams_(..))
@@ -57,6 +57,26 @@ runUlffT env =
 
 -- interface
 
+mkRequest' :: forall eff stack m result.
+             ( Monad (stack m)
+             , MonadTrans stack
+             , MonadAff (ajax :: AJAX, avar :: AVAR, storage :: STORAGE | eff) m
+             , MonadAsk Env m
+             )
+          => (AjaxError -> stack m Unit)
+          -> (forall api eff'.
+                ( MonadAsk (SPSettings_ SPParams_) api
+                , MonadError AjaxError api
+                , MonadAff ( ajax :: AJAX | eff') api
+                )
+                => api result
+             )
+          -> (result -> stack m Unit)
+          -> stack m Unit
+mkRequest' failCallback call callback =
+  lift (apiCall call)
+    >>= either failCallback callback
+
 mkRequest :: forall eff stack m result.
              ( Monad (stack m)
              , MonadTrans stack
@@ -72,8 +92,34 @@ mkRequest :: forall eff stack m result.
              )
           -> (result -> stack m Unit)
           -> stack m Unit
-mkRequest apiCall callback =
-    either showError callback =<< lift do
+mkRequest call callback = mkRequest' showError call callback
+
+showError :: forall stack m eff.
+             ( MonadTrans stack
+             , MonadAsk Env m
+             , MonadAff (avar :: AVAR | eff) m
+             )
+          => AjaxError -> stack m Unit
+showError err = lift do
+  Env { ajaxError } <- ask
+  liftAff $ putVar ajaxError $ Error
+    { title: "Ajax Error"
+    , details: errorToString err
+    }
+
+apiCall :: forall eff m result.
+           ( MonadAff (ajax :: AJAX, avar :: AVAR, storage :: STORAGE | eff) m
+           , MonadAsk Env m
+           )
+        => (forall api eff'.
+              ( MonadAsk (SPSettings_ SPParams_) api
+              , MonadError AjaxError api
+              , MonadAff ( ajax :: AJAX | eff') api
+              )
+              => api result
+           )
+        -> m (Either AjaxError result)
+apiCall call = do
       mSessionKey <- getSessionKey
       Env { httpUrlRoot } <- ask
       let apiSettings = defaultSettings $ SPParams_
@@ -82,11 +128,4 @@ mkRequest apiCall callback =
             -- let the ajax request fail and report the error
             , authToken: AuthToken $ fromMaybe "" mSessionKey
             }
-      runExceptT (flip runReaderT apiSettings apiCall)
-  where
-    showError err = lift do
-      Env { ajaxError } <- ask
-      liftAff $ putVar ajaxError $ Error
-        { title: "Ajax Error"
-        , details: errorToString err
-        }
+      runExceptT (flip runReaderT apiSettings call)

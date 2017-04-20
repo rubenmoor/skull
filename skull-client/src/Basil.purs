@@ -1,6 +1,7 @@
 module Basil
   ( getSessionKey
   , setSessionKey
+  , clearSessionKey
   , STORAGE
   ) where
 
@@ -24,6 +25,11 @@ setSessionKey :: forall eff m.
               -> m Unit
 setSessionKey = liftEff <<< basilSet sessionKeyStr
 
+clearSessionKey :: forall eff m.
+                   MonadEff (storage :: STORAGE | eff) m
+                => m Unit
+clearSessionKey = liftEff $ basilRemove sessionKeyStr
+
 foreign import data STORAGE :: !
 
 foreign import basilSet
@@ -36,3 +42,8 @@ foreign import basilGet
   :: forall eff.
      String
   -> Eff (storage :: STORAGE | eff) (Nullable String)
+
+foreign import basilRemove
+  :: forall eff.
+     String
+  -> Eff (storage :: STORAGE | eff) Unit
