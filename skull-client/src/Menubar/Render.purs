@@ -24,5 +24,17 @@ render st =
               ]
           , text ")"
           ]
-        Nothing -> [ text "Sign up" ] -- todo: links
+        Nothing ->
+          [ button
+              [ Events.onClick (Events.input_ GotoSignupForm)
+              ]
+              [ text "Sign up"
+              ]
+          , text " or "
+          , button
+              [ Events.onClick (Events.input_ GotoLoginForm)
+              ]
+              [ text "log in"
+              ]
+          ] -- todo: links
     ]

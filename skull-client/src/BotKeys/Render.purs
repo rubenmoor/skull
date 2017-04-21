@@ -9,5 +9,5 @@ import BotKeys.Types (Query, State)
 render :: State
        -> ComponentHTML Query
 render st = span_
-  [ text "Home"
+  [ text "BotKeys"
   ]

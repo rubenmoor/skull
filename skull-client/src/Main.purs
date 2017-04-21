@@ -15,11 +15,14 @@ import DOM.HTML.Document (body)
 import DOM.HTML.Window (document)
 import Data.Maybe (maybe)
 import Data.Nullable (toMaybe)
+import Data.Tuple (Tuple(..))
 import Halogen (action, hoist, liftEff)
 import Halogen.Aff (HalogenEffects, awaitBody, runHalogenAff)
 import Halogen.VDom.Driver (runUI)
 import Network.HTTP.Affjax (AJAX)
 import Root (root)
+import Router (routing)
+import Routing (matchesAff)
 import Types (Env(..))
 import Ulff (runUlffT)
 
@@ -43,6 +46,11 @@ main httpUrlRoot hotReload =
             , ajaxError
             }
       io <- runUI (hoist (runUlffT env) root) unit body
+      -- routing
+      forkAff do
+        Tuple old new <- matchesAff routing
+        io.query $ action $ Root.GotoLocation new
+      -- ajax errors
       forkAff $ forever do
         err <- takeVar ajaxError
         io.query $ action $ Root.ShowError err

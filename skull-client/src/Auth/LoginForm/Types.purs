@@ -1,12 +1,17 @@
 module Auth.LoginForm.Types where
 
+import DOM (DOM)
 import Data.Lens (Lens', lens)
 import Prelude (Void)
 import Types (MkRequestEffects)
 
 -- Effects
 
-type Effects e = MkRequestEffects e
+type Effects e =
+  MkRequestEffects
+    ( dom :: DOM
+    | e
+    )
 
 -- Input
 

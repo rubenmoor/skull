@@ -12,6 +12,7 @@ import Halogen (Component, ComponentDSL, component)
 import Halogen.HTML (HTML)
 import HttpApp.User.Api.Types (LoginRequest(..), LoginResponse(..))
 import Prelude (type (~>), bind, not, pure, unit, ($), (&&), (<<<))
+import Router (Location(..), LoggedInLocation(..), PublicLocation(..), gotoLocation)
 import ServerAPI (postUserLogin)
 import Ulff (Ulff, mkRequest)
 
@@ -56,7 +57,7 @@ eval = case _ of
         LoginFailed msg -> _formError .= msg
         LoginSuccess userName sessionKey -> do
           setSessionKey sessionKey
-          -- todo: goto location
+          gotoLocation $ LocLoggedIn $ LocLoggedInPublic LocHome
       pure unit
 
 isValid :: String -> Boolean

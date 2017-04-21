@@ -1,6 +1,7 @@
 module Auth.SignupForm.Types where
 
 import Auth.UserNameField.Types as UserNameField
+import DOM (DOM)
 import Data.Lens (Lens', lens)
 import Data.Unit (Unit)
 import Prelude (Void)
@@ -8,7 +9,11 @@ import Types (MkRequestEffects)
 
 -- Effects
 
-type Effects e = MkRequestEffects e
+type Effects e =
+  MkRequestEffects
+    ( dom :: DOM
+    | e
+    )
 
 -- Input
 

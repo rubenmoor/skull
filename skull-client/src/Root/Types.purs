@@ -1,11 +1,12 @@
 module Root.Types where
 
+import ErrorMessage.Types as ErrorMessage
 import LoggedIn.Types as LoggedIn
 import LoggedOut.Types as LoggedOut
-import ErrorMessage.Types as ErrorMessage
 import Basil (STORAGE)
 import Control.Monad.Aff.AVar (AVAR)
 import Control.Monad.Aff.Console (CONSOLE)
+import DOM (DOM)
 import Data.Const (Const)
 import Data.Lens (Lens', lens)
 import Halogen.Component.ChildPath (type (\/), type (<\/>))
@@ -23,6 +24,7 @@ type Effects e =
   , console :: CONSOLE
   , ajax :: AJAX
   , storage :: STORAGE
+  , dom :: DOM
   | e
   )
 
@@ -47,8 +49,8 @@ _location = lens _.location (\r l -> r { location = l})
 -- Query
 
 data Query a
-  -- | HandleGoto a -- todo: routes
   = ShowError Error a
+  | GotoLocation Location a -- todo: routes
 
 
 type ChildQuery =

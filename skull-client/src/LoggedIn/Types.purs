@@ -3,18 +3,23 @@ module LoggedIn.Types where
 import BotKeys.Types as BotKeys
 import Home.Types as Home
 import Menubar.Types as Menubar
+import DOM (DOM)
 import Data.Const (Const)
 import Data.Lens (Lens', lens)
 import Halogen.Component.ChildPath (type (\/), type (<\/>))
 import Prelude (Unit, Void)
-import Router (LoggedInLocation, LoggedInLocation(..), PublicLocation(..))
+import Router (LoggedInLocation)
 import Types (MkRequestEffects)
 
 type UserName = String
 
 -- effects
 
-type Effects e = MkRequestEffects e
+type Effects e =
+  MkRequestEffects
+    ( dom :: DOM
+    | e
+    )
 
 -- input
 

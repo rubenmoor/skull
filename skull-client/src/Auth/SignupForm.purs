@@ -13,6 +13,7 @@ import Data.String (null)
 import Halogen (Component, ParentDSL, parentComponent)
 import Halogen.HTML (HTML)
 import HttpApp.User.Api.Types (UserNewRequest(..), UserNewResponse(..))
+import Router (Location(..), LoggedInLocation(..), PublicLocation(..), gotoLocation)
 import ServerAPI (postUserNew)
 import Ulff (Ulff, mkRequest)
 
@@ -57,7 +58,7 @@ eval = case _ of
         UserNewFailed msg -> _formError .= msg
         UserNewSuccess userName sessionKey -> do
           setSessionKey sessionKey
-          -- todo: gotoLocation
+          gotoLocation $ LocLoggedIn $ LocLoggedInPublic LocHome
 
 isValid :: String -> Boolean
 isValid = not <<< null

@@ -8,7 +8,8 @@ import Halogen (Component, ComponentDSL, component)
 import Halogen.HTML (HTML)
 import Menubar.Render (render)
 import Menubar.Types (Input, Message, Query(..), State, Effects, initial)
-import Prelude (type (~>), bind, pure)
+import Prelude (type (~>), bind, pure, ($))
+import Router (AuthFormLocation(..), Location(..), LoggedOutLocation(..), gotoLocation)
 import ServerAPI (getUserLogout)
 import Ulff (Ulff, mkRequest)
 
@@ -30,4 +31,10 @@ eval = case _ of
     pure next
   Logout next -> do
     mkRequest getUserLogout pure
+    pure next
+  GotoSignupForm next -> do
+    gotoLocation $ LocLoggedOut $ LocAuthForms LocSignupForm
+    pure next
+  GotoLoginForm next -> do
+    gotoLocation $ LocLoggedOut $ LocAuthForms LocLoginForm
     pure next
