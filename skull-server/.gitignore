@@ -1,4 +1,5 @@
 *.swp
-.stack-work
+/dist
 assets/js/
 logfile.log
+default.nix
