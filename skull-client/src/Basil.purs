@@ -5,7 +5,7 @@ module Basil
   , STORAGE
   ) where
 
-import Control.Monad.Eff (Eff)
+import Control.Monad.Eff (Eff, kind Effect)
 import Control.Monad.Eff.Class (class MonadEff, liftEff)
 import Data.Maybe (Maybe)
 import Data.Nullable (Nullable, toMaybe)
@@ -30,7 +30,7 @@ clearSessionKey :: forall eff m.
                 => m Unit
 clearSessionKey = liftEff $ basilRemove sessionKeyStr
 
-foreign import data STORAGE :: !
+foreign import data STORAGE :: Effect
 
 foreign import basilSet
   :: forall eff.

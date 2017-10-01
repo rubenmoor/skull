@@ -8,7 +8,7 @@ import Halogen (Component, ParentDSL, parentComponent)
 import Halogen.HTML (HTML)
 import LoggedOut.Render (render)
 import LoggedOut.Types (ChildQuery, ChildSlot, Effects, Input, Message, Query(..), State, _location, initialState)
-import Prelude (type (~>), const, pure, bind)
+import Prelude (type (~>), const, pure, bind, discard)
 import Ulff (Ulff)
 
 loggedOut :: forall eff.

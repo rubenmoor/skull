@@ -58,36 +58,32 @@ runUlffT env =
 -- interface
 
 mkRequest' :: forall eff stack m result.
-             ( Monad (stack m)
-             , MonadTrans stack
-             , MonadAff (ajax :: AJAX, avar :: AVAR, storage :: STORAGE | eff) m
-             , MonadAsk Env m
-             )
-          => (AjaxError -> stack m Unit)
-          -> (forall api eff'.
-                ( MonadAsk (SPSettings_ SPParams_) api
-                , MonadError AjaxError api
-                , MonadAff ( ajax :: AJAX | eff') api
-                )
-                => api result
-             )
-          -> (result -> stack m Unit)
-          -> stack m Unit
+              Monad (stack m)
+           => MonadTrans stack
+           => MonadAff (ajax :: AJAX, avar :: AVAR, storage :: STORAGE | eff) m
+           => MonadAsk Env m
+           => (AjaxError -> stack m Unit)
+           -> (forall api eff'.
+                    MonadAsk (SPSettings_ SPParams_) api
+                 => MonadError AjaxError api
+                 => MonadAff ( ajax :: AJAX | eff') api
+                 => api result
+              )
+           -> (result -> stack m Unit)
+           -> stack m Unit
 mkRequest' failCallback call callback =
   lift (apiCall call)
     >>= either failCallback callback
 
 mkRequest :: forall eff stack m result.
-             ( Monad (stack m)
-             , MonadTrans stack
-             , MonadAff (ajax :: AJAX, avar :: AVAR, storage :: STORAGE | eff) m
-             , MonadAsk Env m
-             )
+             Monad (stack m)
+          => MonadTrans stack
+          => MonadAff (ajax :: AJAX, avar :: AVAR, storage :: STORAGE | eff) m
+          => MonadAsk Env m
           => (forall api eff'.
-                ( MonadAsk (SPSettings_ SPParams_) api
-                , MonadError AjaxError api
-                , MonadAff ( ajax :: AJAX | eff') api
-                )
+                   MonadAsk (SPSettings_ SPParams_) api
+                => MonadError AjaxError api
+                => MonadAff ( ajax :: AJAX | eff') api
                 => api result
              )
           -> (result -> stack m Unit)
@@ -95,10 +91,9 @@ mkRequest :: forall eff stack m result.
 mkRequest call callback = mkRequest' showError call callback
 
 showError :: forall stack m eff.
-             ( MonadTrans stack
-             , MonadAsk Env m
-             , MonadAff (avar :: AVAR | eff) m
-             )
+             MonadTrans stack
+          => MonadAsk Env m
+          => MonadAff (avar :: AVAR | eff) m
           => AjaxError -> stack m Unit
 showError err = lift do
   Env { ajaxError } <- ask
@@ -108,14 +103,12 @@ showError err = lift do
     }
 
 apiCall :: forall eff m result.
-           ( MonadAff (ajax :: AJAX, avar :: AVAR, storage :: STORAGE | eff) m
-           , MonadAsk Env m
-           )
+           MonadAff (ajax :: AJAX, avar :: AVAR, storage :: STORAGE | eff) m
+        => MonadAsk Env m
         => (forall api eff'.
-              ( MonadAsk (SPSettings_ SPParams_) api
-              , MonadError AjaxError api
-              , MonadAff ( ajax :: AJAX | eff') api
-              )
+                 MonadAsk (SPSettings_ SPParams_) api
+              => MonadError AjaxError api
+              => MonadAff ( ajax :: AJAX | eff') api
               => api result
            )
         -> m (Either AjaxError result)

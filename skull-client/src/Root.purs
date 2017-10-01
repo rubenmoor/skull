@@ -6,7 +6,7 @@ import Data.Maybe (Maybe(..))
 import Halogen (Component, ParentDSL, action, parentComponent, query')
 import Halogen.Component.ChildPath (cp1)
 import Halogen.HTML (HTML)
-import Prelude (type (~>), bind, const, pure, unit, ($))
+import Prelude (type (~>), bind, const, pure, unit, ($), discard)
 import Root.Render (render)
 import Root.Types (ChildQuery, ChildSlot, Effects, Input, Message, Query(..), State, _location, initial)
 import Ulff (Ulff)
@@ -28,5 +28,5 @@ eval = case _ of
     _location .= loc
     pure next
   ShowError msg next -> do
-    query' cp1 unit (action $ ErrorMessage.Show msg)
+    _ <- query' cp1 unit (action $ ErrorMessage.Show msg)
     pure next

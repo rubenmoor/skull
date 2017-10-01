@@ -1,6 +1,6 @@
 module Auth.Types where
 
-import Data.Lens (Lens', Prism', lens, prism')
+import Data.Lens (Prism', prism')
 import Data.Maybe (Maybe(..))
 
 import Prelude

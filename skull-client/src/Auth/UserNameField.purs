@@ -9,7 +9,7 @@ import Data.Lens (use, (.=))
 import Data.String (null)
 import Halogen (Component, ComponentDSL, component, raise)
 import Halogen.HTML (HTML)
-import Prelude (type (~>), bind, not, pure, ($), (<<<))
+import Prelude (type (~>), bind, not, pure, ($), (<<<), discard)
 import ServerAPI (postUserExists)
 import Ulff (Ulff, mkRequest', showError)
 

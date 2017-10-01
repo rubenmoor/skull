@@ -14,7 +14,6 @@ import DOM.HTML (window)
 import DOM.HTML.Document (body)
 import DOM.HTML.Window (document)
 import Data.Maybe (maybe)
-import Data.Nullable (toMaybe)
 import Data.Tuple (Tuple(..))
 import Halogen (action, hoist, liftEff)
 import Halogen.Aff (HalogenEffects, awaitBody, runHalogenAff)
@@ -47,8 +46,8 @@ main httpUrlRoot hotReload =
             }
       io <- runUI (hoist (runUlffT env) root) unit body
       -- routing
-      forkAff do
-        Tuple old new <- matchesAff routing
+      _ <- forkAff do
+        Tuple _ new <- matchesAff routing
         io.query $ action $ Root.GotoLocation new
       -- ajax errors
       forkAff $ forever do
@@ -59,4 +58,4 @@ main httpUrlRoot hotReload =
       nBody <- liftEff $ window >>= document >>= body
       maybe (throwError $ error "Body not found")
             pure
-            (toMaybe nBody)
+            nBody

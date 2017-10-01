@@ -21,7 +21,7 @@ module.exports = {
         loader: 'purs-loader',
         query: {
           bundle: false,
-          psc: 'psa',
+          psc: 'node_modules/.bin/psa',
           pscIde: true,
           pscArgs: {
             sourceMaps: true
