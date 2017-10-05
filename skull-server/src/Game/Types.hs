@@ -1,5 +1,6 @@
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric  #-}
+{-# LANGUAGE DeriveAnyClass    #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Game.Types where
 
@@ -10,6 +11,15 @@ import           GHC.Generics (Generic)
 type GameId = Text
 type BotId = Text
 type PlayerId = Text
+
+sampleGameId :: GameId
+sampleGameId = "32rfdaf3"
+
+sampleBotId :: BotId
+sampleBotId = "f1111j32"
+
+samplePlayerId :: PlayerId
+samplePlayerId = "f40jf920s0"
 
 type Round = Int
 

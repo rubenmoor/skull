@@ -19,17 +19,13 @@ import qualified Network.Wai.Handler.Warp   as Warp
 import           Servant
 import           TextShow
 
+import qualified Api
 import           Handler                    (transform)
-import qualified HttpApp.Api                as HttpApp
 import qualified HttpApp.Handler            as HttpApp
 import           Options                    (Options (..), getOptions)
 import           Types                      (AppEnv (..), Env)
 
-type Routes =
-       HttpApp.Routes
-  :<|> Raw
-
-app :: Env -> FilePath -> Server Routes
+app :: Env -> FilePath -> Server Api.Routes
 app env path =
        transform env HttpApp.handlers
   :<|> serveDirectory path
@@ -45,7 +41,7 @@ main = do
       }
   runInHandlerEnv connection $ \env -> do
     putStrLn $ "Listening on port " <> showt optPort <> " ..."
-    Warp.run optPort $ serve (Proxy :: Proxy Routes)
+    Warp.run optPort $ serve (Proxy :: Proxy Api.Routes)
                              (app env optAssetDir)
 
 runInHandlerEnv :: Postgres.Connection -> (Env -> IO a) -> IO a

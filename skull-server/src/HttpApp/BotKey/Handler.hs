@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RecordWildCards       #-}
 
 module HttpApp.BotKey.Handler where
 
@@ -18,11 +19,12 @@ protected =
        botKeyNew
   :<|> botKeyAll
 
-botKeyNew :: (Db.Insert m)
+botKeyNew :: (Db.Insert m, Monad m)
           => BotKeyNewRequest
-          -> m ()
-botKeyNew = undefined
+          -> m BotKeyNewResponse
+botKeyNew _ =
+  pure BotKeyNewResponse
 
 botKeyAll :: (Db.Read m, MonadReader UserInfo m)
-          => m [BotKey]
+          => m BotKeyAllResponse
 botKeyAll = undefined

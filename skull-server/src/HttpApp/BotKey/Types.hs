@@ -11,5 +11,6 @@ type Label = Text
 type Secret = Text
 
 data BotKey = BotKey
-  { bkLabel :: Label
+  { bkLabel  :: Label
+  , bkSecret :: Secret
   } deriving (Generic, ToJSON)

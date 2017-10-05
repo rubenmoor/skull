@@ -24,9 +24,14 @@ types :: [SumType 'Haskell]
 types =
   [ mkSumType (Proxy :: Proxy UserNewRequest)
   , mkSumType (Proxy :: Proxy UserNewResponse)
+  , mkSumType (Proxy :: Proxy UserNameResponse)
+  , mkSumType (Proxy :: Proxy UserExistsRequest)
   , mkSumType (Proxy :: Proxy LoginRequest)
   , mkSumType (Proxy :: Proxy LoginResponse)
+  , mkSumType (Proxy :: Proxy LogoutResponse)
   , mkSumType (Proxy :: Proxy BotKeyNewRequest)
+  , mkSumType (Proxy :: Proxy BotKeyNewResponse)
+  , mkSumType (Proxy :: Proxy BotKeyAllResponse)
   , mkSumType (Proxy :: Proxy BotKey)
   ]
 

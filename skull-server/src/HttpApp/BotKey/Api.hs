@@ -13,5 +13,5 @@ import           HttpApp.BotKey.Api.Types
 import           HttpApp.BotKey.Types     (BotKey)
 
 type Protected =
-       "new" :> ReqBody '[JSON] BotKeyNewRequest :> Post '[JSON] ()
-  :<|> "all" :> Get '[JSON] [BotKey]
+       "new" :> ReqBody '[JSON] BotKeyNewRequest :> Post '[JSON] BotKeyNewResponse
+  :<|> "all" :> Get '[JSON] BotKeyAllResponse

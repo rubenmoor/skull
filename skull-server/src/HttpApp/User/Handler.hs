@@ -2,6 +2,7 @@
 {-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE RecordWildCards       #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 
 module HttpApp.User.Handler where
@@ -27,7 +28,7 @@ import           Handler                (HandlerProtectedT, HandlerT)
 import qualified HttpApp.User.Api       as Api
 import           HttpApp.User.Api.Types
 import           HttpApp.User.Model     (Session, User)
-import           HttpApp.User.Types     (UserName, mkPwHash, verifyPassword)
+import           HttpApp.User.Types     (mkPwHash, verifyPassword)
 import           Types                  (AppError (..))
 
 public :: ServerT Api.Public (HandlerT IO)
@@ -39,37 +40,33 @@ public =
 protected :: ServerT Api.Protected (HandlerProtectedT IO)
 protected =
        logout
-  :<|> name
+  :<|> getName
 
 userNew :: (MonadIO m, Db.Read m, Db.Insert m)
         => UserNewRequest
         -> m UserNewResponse
-userNew UserNewRequest { unrUserName = name
-                       , unrPassword = password
-                       } =
-  Db.getOneByQuery (Query.userByUserName name) >>= \case
+userNew UserNewRequest{..} =
+  Db.getOneByQuery (Query.userByUserName unrUserName) >>= \case
     Right (_ :: User) -> pure $ UserNewFailed "username already exists"
     Left  _           -> do
-      pwHash <- mkPwHash password
-      uId <- Db.insert users (mkUser name pwHash Nothing) (view userId)
+      pwHash <- mkPwHash unrPassword
+      uId <- Db.insert users (mkUser unrUserName pwHash Nothing) (view userId)
       SessionKey key <- createSession uId
-      pure $ UserNewSuccess name $ showt key
+      pure $ UserNewSuccess unrUserName $ showt key
 
-
-userExists :: Db.Read m
-           => UserName
+userExists :: (Db.Read m, Monad m)
+           => UserExistsRequest
            -> m Bool
-userExists name =
-  not . null <$> (Db.getByQuery (Query.userByUserName name) :: Db.Read m => m [User])
+userExists UserExistsRequest{..} = do
+  us <- Db.getByQuery $ Query.userByUserName uerName
+  pure $ not $ null (us :: [User])
 
 login :: (Db.Read m, Db.Delete m, Db.Insert m, MonadIO m)
           => LoginRequest
           -> m LoginResponse
-login LoginRequest { lrUserName = name
-                   , lrPassword = password
-                   } =
+login LoginRequest{..} =
     checkLogin >>= \case
-      Left  err    -> pure $ LoginFailed err
+      Left  err  -> pure $ LoginFailed err
       Right user -> do
         SessionKey key <- getSession $ user ^. userId
         pure $ LoginSuccess (user ^. userName) $ showt key
@@ -79,9 +76,9 @@ login LoginRequest { lrUserName = name
       checkPassword_ (user :: User)
       pure user
     getUser = ExceptT $ over _Left (\_ -> "user name unknown") <$>
-      Db.getOneByQuery (Query.userByUserName name)
+      Db.getOneByQuery (Query.userByUserName lrUserName)
     checkPassword_ user =
-      if verifyPassword password (user ^. userPwHash)
+      if verifyPassword lrPassword (user ^. userPwHash)
         then pure ()
         else throwError "wrong password"
 
@@ -94,13 +91,16 @@ login LoginRequest { lrUserName = name
       createSession uId
 
 logout :: (MonadError AppError m, Db.Read m, Db.Delete m, MonadReader UserInfo m)
-       => m ()
+       => m LogoutResponse
 logout = do
   uId <- asks $ view uiUserId
   Db.getOneByQuery (Query.sessionByUserId uId) >>= \case
     Left msg -> throwError $ ErrBug msg
     Right session -> deleteSession $ (session :: Session) ^. sessionId
+  pure LogoutResponse
 
-name :: MonadReader UserInfo m
-     => m UserName
-name = asks $ view uiUserName
+getName :: MonadReader UserInfo m
+     => m UserNameResponse
+getName = do
+  name <- asks $ view uiUserName
+  pure UserNameResponse { unrName = name }

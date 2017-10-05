@@ -52,13 +52,14 @@ transform env =
   where
     appErrToServantErr :: AppError -> ServantErr
     appErrToServantErr = \case
-        ErrUser msg         -> err400 { errBody = toBS msg }
-        ErrBug msg          -> err500 { errBody = toBS msg }
-        ErrDatabase msg     -> err500 { errBody = toBS msg }
-        ErrUnauthorized msg -> err401 { errBody = toBS msg }
-        ErrForbidden msg    -> err403 { errBody = toBS msg }
+        ErrUser msg         -> toBS err400 msg
+        ErrBug msg          -> toBS err500 msg
+        ErrDatabase msg     -> toBS err500 msg
+        ErrUnauthorized msg -> toBS err401 msg
+        ErrForbidden msg    -> toBS err403 msg
       where
-        toBS = ByteString.Lazy.fromStrict . Text.encodeUtf8
+        toBS err str =
+          err { errBody = ByteString.Lazy.fromStrict $ Text.encodeUtf8 str }
 
 getDbConnection :: Monad m => HandlerT m Connection
 getDbConnection = HandlerT $ asks $ envDbConnection . logEnv

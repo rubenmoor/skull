@@ -2,3 +2,6 @@
 /dist
 assets/js/
 logfile.log
+
+api-doc-generator/
+api-docs.markdown
