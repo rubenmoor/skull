@@ -9,3 +9,4 @@
 /src/HttpApp/
 /src/ServerAPI.purs
 /public/
+npm-debug.log
