@@ -3,6 +3,7 @@ module Router where
 import Control.Alternative ((<|>))
 import Control.Monad.Eff.Class (class MonadEff, liftEff)
 import DOM (DOM)
+import Data.Function (($))
 import Prelude (Unit, (<$), (<$>), (<<<))
 import Routing.Hash (setHash)
 import Routing.Match (Match)

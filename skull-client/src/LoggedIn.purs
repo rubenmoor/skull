@@ -1,13 +1,14 @@
 module LoggedIn where
 
 import Basil (clearSessionKey)
-import Data.Lens (assign)
+import Data.Lens ((.=))
 import Data.Maybe (Maybe(..))
 import Halogen (Component, ParentDSL, action, lifecycleParentComponent)
 import Halogen.HTML (HTML)
+import HttpApp.User.Api.Types (UserNameResponse(..))
 import LoggedIn.Render (render)
 import LoggedIn.Types (ChildQuery, ChildSlot, Effects, Input, Message, Query(..), State, _userName, initial)
-import Prelude (type (~>), Unit, bind, const, ($), ($>), discard)
+import Prelude (type (~>), Unit, const, discard, ($), ($>))
 import Router (Location(..), LoggedOutLocation(..), PublicLocation(..), gotoLocation)
 import ServerAPI (getUserName)
 import Ulff (Ulff, mkRequest')
@@ -31,7 +32,8 @@ eval = case _ of
 
 initialize :: forall eff. ParentDSL State Query ChildQuery ChildSlot Message (Ulff (Effects eff)) Unit
 initialize =
-    mkRequest' resetAuth getUserName $ assign _userName
+    mkRequest' resetAuth getUserName $ \(UserNameResponse r) ->
+      _userName .= r.unrName
   where
     resetAuth _ = do
       clearSessionKey

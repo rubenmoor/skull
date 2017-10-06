@@ -11,6 +11,7 @@ import Halogen (Component, ComponentDSL, component, raise)
 import Halogen.HTML (HTML)
 import Prelude (type (~>), bind, not, pure, ($), (<<<), discard)
 import ServerAPI (postUserExists)
+import HttpApp.User.Api.Types (UserExistsRequest (..))
 import Ulff (Ulff, mkRequest', showError)
 
 userNameField :: forall eff.
@@ -43,7 +44,8 @@ eval = case _ of
   where
     lookup name = do
       _userNameLookup .= UserNameLoading
-      mkRequest' showError (postUserExists name) \exists ->
+      let reqBody = UserExistsRequest { uerName: name }
+      mkRequest' showError (postUserExists reqBody) \exists ->
         _userNameLookup .= if exists then UserNameExists else UserNameOk
 
 isValid :: String -> Boolean

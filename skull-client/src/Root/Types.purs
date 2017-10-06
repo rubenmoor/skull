@@ -8,11 +8,12 @@ import Control.Monad.Aff.AVar (AVAR)
 import Control.Monad.Aff.Console (CONSOLE)
 import DOM (DOM)
 import Data.Const (Const)
+import Data.Function (($))
 import Data.Lens (Lens', lens)
 import Halogen.Component.ChildPath (type (\/), type (<\/>))
 import Network.HTTP.Affjax (AJAX)
 import Prelude (Unit, Void)
-import Router (Location(..), LoggedInLocation(..), PublicLocation(..))
+import Router (AuthFormLocation(..), Location(..), LoggedInLocation(..), LoggedOutLocation(..), PublicLocation(..))
 import Types (Error)
 
 type UserName = String
@@ -50,7 +51,7 @@ _location = lens _.location (\r l -> r { location = l})
 
 data Query a
   = ShowError Error a
-  | GotoLocation Location a -- todo: routes
+  | GotoLocation Location a
 
 
 type ChildQuery =

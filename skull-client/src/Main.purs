@@ -46,7 +46,7 @@ main httpUrlRoot hotReload =
             }
       io <- runUI (hoist (runUlffT env) root) unit body
       -- routing
-      _ <- forkAff do
+      void $ forkAff do
         Tuple _ new <- matchesAff routing
         io.query $ action $ Root.GotoLocation new
       -- ajax errors

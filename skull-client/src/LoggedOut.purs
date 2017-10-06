@@ -6,9 +6,10 @@ import Data.Lens ((.=))
 import Data.Maybe (Maybe(..))
 import Halogen (Component, ParentDSL, parentComponent)
 import Halogen.HTML (HTML)
+import Halogen.HTML.Events as Events
 import LoggedOut.Render (render)
 import LoggedOut.Types (ChildQuery, ChildSlot, Effects, Input, Message, Query(..), State, _location, initialState)
-import Prelude (type (~>), const, pure, bind, discard)
+import Prelude (type (~>), const, discard, pure)
 import Ulff (Ulff)
 
 loggedOut :: forall eff.
@@ -18,7 +19,7 @@ loggedOut =
     { initialState
     , render
     , eval
-    , receiver: const Nothing
+    , receiver: Events.input HandleInput
     }
 
 eval :: forall eff.

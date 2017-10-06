@@ -17,7 +17,7 @@ data Options = Options
   , optDbName     :: Text
   , optDbUser     :: Text
   , optDbPassword :: Text
-  , optAssetDir   :: FilePath
+  , optAssetDir   :: FilePath -- String
   }
 
 txtOption :: Mod OptionFields String -> Parser Text

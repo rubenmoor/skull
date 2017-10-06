@@ -6,8 +6,8 @@ import Data.Maybe (Maybe(..))
 import Halogen (Component, ComponentDSL, component)
 import Halogen.HTML (HTML)
 import Home.Render (render)
-import Home.Types (Effects, Input, Message, Query(..), State, initialState)
-import Prelude (type (~>), const, pure, bind)
+import Home.Types (Input, Message, Query(..), State, initialState)
+import Prelude (type (~>), const, pure)
 import Ulff (Ulff)
 
 home :: forall eff.

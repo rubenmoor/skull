@@ -2,13 +2,14 @@ module Menubar
   ( menubar
   ) where
 
+import Data.Unit (unit)
 import Halogen.HTML.Events as Events
 import Control.Monad.State (put)
 import Halogen (Component, ComponentDSL, component)
 import Halogen.HTML (HTML)
 import Menubar.Render (render)
 import Menubar.Types (Input, Message, Query(..), State, Effects, initial)
-import Prelude (type (~>), bind, pure, ($), discard)
+import Prelude (type (~>), discard, pure, ($))
 import Router (AuthFormLocation(..), Location(..), LoggedOutLocation(..), gotoLocation)
 import ServerAPI (getUserLogout)
 import Ulff (Ulff, mkRequest)
@@ -30,7 +31,7 @@ eval = case _ of
     put mUserName
     pure next
   Logout next -> do
-    mkRequest getUserLogout pure
+    mkRequest getUserLogout (\_ -> pure unit)
     pure next
   GotoSignupForm next -> do
     gotoLocation $ LocLoggedOut $ LocAuthForms LocSignupForm
