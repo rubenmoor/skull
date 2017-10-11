@@ -27,6 +27,29 @@ module.exports = {
             sourceMaps: true
           }
         }
+      },
+      {
+        test: /\.css/,
+        use: [
+          'style-loader',
+          'css-loader?importLoaders=1',
+          {
+            loader: 'postcss-loader',
+            options: {
+              plugins: function () {
+                return [
+                  require('autoprefixer'),
+                  require('postcss-calc'),
+                  require('postcss-color-function'),
+                  require('postcss-custom-properties'),
+                  require('postcss-import'),
+                  require('postcss-nested'),
+                  require('postcss-simple-vars')
+                ]
+              }
+            }
+          }
+        ]
       }
     ]
   },

@@ -2,15 +2,21 @@ module Util.HTML where
 
 import Halogen.HTML.Events as Events
 import DOM.HTML.Indexed (HTMLbutton)
+import Data.Function ((<<<))
 import Halogen (Action)
-import Halogen.HTML (AttrName(..), ClassName(..), HTML, attr, button, div, form, i)
-import Halogen.HTML.Properties (IProp(..), class_)
+import Halogen.HTML (AttrName(..), ClassName(..), HTML, attr, button, div, form, i, span)
+import Halogen.HTML.Properties (IProp, class_)
 import Prelude (Unit, ($), (<>))
+
+cl :: forall i p. String -> IProp ( "class" :: String | p) i
+cl = class_ <<< ClassName
 
 cldiv_ :: forall p i.
           String -> Array (HTML p i) -> HTML p i
-cldiv_ cls = div [ class_ $ ClassName cls ]
+cldiv_ cls = div [ cl cls ]
 
+clspan_ :: forall p i. String -> Array (HTML p i) -> HTML p i
+clspan_ cls = span [ cl cls ]
 
 doNothingForm_ :: forall p i. Array (HTML p i) -> HTML p i
 doNothingForm_ = form [ attr (AttrName "onsubmit") "return false" ]
@@ -19,7 +25,7 @@ faIcon_ :: forall p i.
            String
         -> HTML p i
 faIcon_ icon =
-  i [ class_ $ ClassName ("fa fa-" <> icon)
+  i [ cl $ "fa fa-" <> icon
     ]
     []
 

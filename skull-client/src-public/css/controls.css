@@ -1,0 +1,52 @@
+.link {
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+  cursor: pointer;
+}
+
+.button {
+  background: $red;
+  padding: 5px;
+  font-weight: bold;
+  font-size: 10pt;
+  color: $white;
+  outline: none;
+  border: none;
+  cursor: pointer;
+}
+
+.button--pure {
+  background: none;
+  font-size: 12pt;
+  border: none;
+  padding: 0px;
+  outline: none;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.link-light {
+  color: $red-light;
+}
+
+.link-dark {
+  color: $red-dark;
+}
+
+.link-white {
+  color: white;
+}
+
+input {
+  border: 1px solid $red;
+  border-radius: 4px;
+}
+
+input:focus {
+  outline: none;
+  box-shadow: 0 0 4px $red;
+}

@@ -2,12 +2,13 @@ module BotKeys.Render
   ( render
   ) where
 
-import Halogen (ComponentHTML)
-import Halogen.HTML (span_, text)
 import BotKeys.Types (Query, State)
+import Halogen (ComponentHTML)
+import Halogen.HTML (text)
+import Util.HTML (cldiv_)
 
 render :: State
        -> ComponentHTML Query
-render st = span_
+render st = cldiv_ "p1"
   [ text "BotKeys"
   ]

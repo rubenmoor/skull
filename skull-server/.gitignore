@@ -1,6 +1,6 @@
 *.swp
 /dist
-assets/js/
+assets
 logfile.log
 
 api-doc-generator/

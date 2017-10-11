@@ -1,0 +1,36 @@
+@import "basscss-basic";
+@import "basscss-type-scale";
+@import "basscss-typography";
+@import "basscss-layout";
+@import "basscss-align";
+@import "basscss-margin";
+@import "basscss-padding";
+@import "basscss-grid";
+@import "basscss-flexbox";
+@import "basscss-position";
+@import "basscss-border";
+@import "basscss-hide";
+
+@import "colors";
+
+@import "controls";
+
+body, html {
+  font-family: "Open Sans", "Arial", sans-serif;
+  font-size: 12pt;
+  height: 100%;
+  margin: 0px;
+  position: relative;
+  background-color: $anthrazit-light;
+  color: anthrazit-dark;
+}
+
+.bgdark {
+  background-color: $anthrazit;
+  color: $white;
+}
+
+.bgred {
+  background-color: $red;
+  color: $white;
+}

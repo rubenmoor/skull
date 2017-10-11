@@ -4,30 +4,33 @@ import Auth.UserNameField.Types as UserNameField
 import Halogen.HTML.Events as Events
 import Auth.SignupForm.Types (Query(..), Slot, State, Effects)
 import Auth.UserNameField (userNameField)
+import Data.Function (($))
+import Data.Semigroup ((<>))
+import Data.String (null)
 import Data.Unit (unit)
 import Halogen (ParentHTML)
 import Halogen.HTML (br_, button, div_, h1_, input, label_, slot, text)
 import Halogen.HTML.Properties (ButtonType(..), InputType(..), type_, value)
 import Ulff (Ulff)
-import Util.HTML (doNothingForm_)
+import Util.HTML (cl, cldiv_, doNothingForm_)
 
 render :: forall eff.
           State
        -> ParentHTML Query UserNameField.Query Slot (Ulff (Effects eff))
-render st = doNothingForm_
+render st = cldiv_ "p1" [ doNothingForm_
   [ h1_
       [ text "Sign up"
       ]
-  , div_
+  , cldiv_ "mb1"
       [ label_
-          [ text "Username:"
+          [ text "Username"
           ]
       , br_
       , slot unit userNameField st.userName (Events.input HandleUserNameField)
       ]
-  , div_
+  , cldiv_ "mb1"
       [ label_
-          [ text "Password:"
+          [ text "Password"
           ]
       , br_
       , input
@@ -36,15 +39,19 @@ render st = doNothingForm_
           , Events.onValueInput (Events.input SetPassword)
           ]
       ]
-  , div_
-      [ text st.formError
-      ]
+  , cldiv_ "mb1 h4" $
+      if null st.formError
+         then []
+         else
+           [ text $ "Form error: " <> st.formError
+           ]
   , div_
       [ button
-          [ Events.onClick (Events.input_ Submit)
+          [ cl "button"
+          , Events.onClick (Events.input_ Submit)
           , type_ ButtonSubmit
           ]
           [ text "Submit"
           ]
       ]
-  ]
+  ]]

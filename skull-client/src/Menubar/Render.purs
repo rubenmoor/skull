@@ -5,20 +5,24 @@ module Menubar.Render
 import Halogen.HTML.Events as Events
 import Data.Maybe (Maybe(..))
 import Halogen (ComponentHTML)
-import Halogen.HTML (button, div_, text)
+import Halogen.HTML (button, text)
 import Menubar.Types (Query(..), State)
 import Prelude (($), (<>))
-import Util.HTML (cldiv_)
+import Util.HTML (cl, cldiv_, clspan_)
 
 render :: State
        -> ComponentHTML Query
 render st =
-  cldiv_ "menubar"
-    [  div_ $ case st of
+  cldiv_ "bgdark p1 clearfix"
+    [ cldiv_ "left"
+        [ clspan_ "bold" [ text "SKULL" ]
+        ]
+    , cldiv_ "right" $ case st of
         Just userName ->
           [ text $ "Logged in as " <> userName <> ". ("
           , button
-              [ Events.onClick (Events.input_ Logout)
+              [ cl "button--pure"
+              , Events.onClick (Events.input_ Logout)
               ]
               [ text "log out"
               ]
@@ -26,13 +30,15 @@ render st =
           ]
         Nothing ->
           [ button
-              [ Events.onClick (Events.input_ GotoSignupForm)
+              [ cl "button"
+              , Events.onClick (Events.input_ GotoSignupForm)
               ]
               [ text "Sign up"
               ]
           , text " or "
           , button
-              [ Events.onClick (Events.input_ GotoLoginForm)
+              [ cl "button--pure link-light"
+              , Events.onClick (Events.input_ GotoLoginForm)
               ]
               [ text "log in"
               ]

@@ -40,6 +40,7 @@ main = do
       , Postgres.connectPassword = Text.unpack optDbPassword
       }
   runInHandlerEnv connection $ \env -> do
+    putStrLn $ "Serving public directory " <> showt optAssetDir
     putStrLn $ "Listening on port " <> showt optPort <> " ..."
     Warp.run optPort $ serve (Proxy :: Proxy Api.Routes)
                              (app env optAssetDir)

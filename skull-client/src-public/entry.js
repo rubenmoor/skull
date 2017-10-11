@@ -1,3 +1,5 @@
+require('./css/main.css')
+
 var app = require('./../src/Main.purs')
 
 // Basil for local storage

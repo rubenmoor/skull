@@ -46,7 +46,7 @@ eval = case _ of
       password <- use _password
       if isValid userName && isValid password
          then submit userName password
-         else _formError .= "invalid"
+         else _formError .= "Username and password cannot be empty"
       pure next
   where
     submit name pwd = do

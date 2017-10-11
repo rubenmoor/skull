@@ -3,11 +3,12 @@ module Public.Render
   ) where
 
 import Halogen (ComponentHTML)
-import Halogen.HTML (span_, text)
+import Halogen.HTML (text)
 import Public.Types (Query, State)
+import Util.HTML (cldiv_)
 
 render :: State
        -> ComponentHTML Query
-render st = span_
+render st = cldiv_ "p1"
   [ text "Public"
   ]
