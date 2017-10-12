@@ -29,6 +29,20 @@
   }
 }
 
+.button--navigation {
+  background: none;
+  font-size: 12pt;
+  font-weight: bold;
+  border: none;
+  padding: 10px;
+  color: $anthrazit-dark;
+  outline: none;
+  cursor: pointer;
+  &:hover {
+    background: $anthrazit-light;
+  }
+}
+
 .link-light {
   color: $red-light;
 }
@@ -44,6 +58,7 @@
 input {
   border: 1px solid $red;
   border-radius: 4px;
+  padding: 5px;
 }
 
 input:focus {

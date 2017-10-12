@@ -29,9 +29,10 @@ types =
   , mkSumType (Proxy :: Proxy LoginRequest)
   , mkSumType (Proxy :: Proxy LoginResponse)
   , mkSumType (Proxy :: Proxy LogoutResponse)
-  , mkSumType (Proxy :: Proxy BotKeyNewRequest)
   , mkSumType (Proxy :: Proxy BotKeyNewResponse)
   , mkSumType (Proxy :: Proxy BotKeyAllResponse)
+  , mkSumType (Proxy :: Proxy BotKeySetLabelRequest)
+  , mkSumType (Proxy :: Proxy BotKeySetLabelResponse)
   , mkSumType (Proxy :: Proxy BotKey)
   ]
 

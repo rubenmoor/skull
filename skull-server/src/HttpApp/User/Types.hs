@@ -34,6 +34,7 @@ verifyPassword str pwHash =
                                       (Base64.toByteString pwHash)
 
 newtype Email = Email { unEmail :: Text }
+  deriving (Eq, Ord)
 
 instance TextShow Email where
   showb = fromText . unEmail

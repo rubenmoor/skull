@@ -17,7 +17,7 @@ import Util.HTML (cl, cldiv_, doNothingForm_)
 render :: forall eff.
           State
        -> ParentHTML Query UserNameField.Query Slot (Ulff (Effects eff))
-render st = cldiv_ "p1" [ doNothingForm_
+render st = cldiv_ "p1 mx-auto col-4" [ doNothingForm_
   [ h1_
       [ text "Sign up"
       ]

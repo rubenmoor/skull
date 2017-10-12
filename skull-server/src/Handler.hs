@@ -114,10 +114,15 @@ instance IOConstraint m => Db.Read (HandlerT m) where
   getWhere field value = runQuery $ Gerippe.getWhere field value
   joinMTo1Where' fkField idField field value =
     runQuery $ Gerippe.joinMTo1Where' fkField idField field value
+  join1ToMWhere idField fkField field value =
+    runQuery $ Gerippe.join1ToMWhere idField fkField field value
+  join1ToMWhere' idField fkField field value =
+    runQuery $ Gerippe.join1ToMWhere' idField fkField field value
+  join1ToMWhere2' idField fkField field1 value1 field2 value2 =
+    runQuery $ Gerippe.join1ToMWhere2' idField fkField field1 value1 field2 value2
 
 instance IOConstraint m => Db.Insert (HandlerT m) where
   insert = runQuery . Gerippe.insert
-  -- TODO: insertBy, insertMany, insertKey, insertRecord, insertSelect ...
 
 instance IOConstraint m => Db.Delete (HandlerT m) where
   delete = runQuery . Gerippe.delete

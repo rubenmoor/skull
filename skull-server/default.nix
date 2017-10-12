@@ -15,8 +15,8 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson base base64-bytestring bytestring case-insensitive diener
-    email-validate entropy gerippe http-api-data http-types lens
+    aeson base base64-bytestring bytestring case-insensitive containers
+    diener email-validate entropy gerippe http-api-data http-types lens
     lifted-base monad-control monad-logger mtl parsec persistent
     persistent-template product-profunctors pwstore-fast servant
     servant-docs servant-purescript_0_8_0_0 servant-server text text-show time

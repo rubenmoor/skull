@@ -43,6 +43,7 @@ library
                      , base64-bytestring
                      , bytestring
                      , case-insensitive
+                     , containers
                      , diener
                      , email-validate
                      , entropy

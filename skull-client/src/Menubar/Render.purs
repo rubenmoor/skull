@@ -13,7 +13,7 @@ import Util.HTML (cl, cldiv_, clspan_)
 render :: State
        -> ComponentHTML Query
 render st =
-  cldiv_ "bgdark p1 clearfix"
+  cldiv_ "bgdark p1 clearfix border-bottom"
     [ cldiv_ "left"
         [ clspan_ "bold" [ text "SKULL" ]
         ]

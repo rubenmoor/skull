@@ -10,8 +10,8 @@ import           Servant                  ((:<|>), (:>), Get, JSON, Post,
                                            ReqBody)
 
 import           HttpApp.BotKey.Api.Types
-import           HttpApp.BotKey.Types     (BotKey)
 
 type Protected =
-       "new" :> ReqBody '[JSON] BotKeyNewRequest :> Post '[JSON] BotKeyNewResponse
+       "new" :> Post '[JSON] BotKeyNewResponse
   :<|> "all" :> Get '[JSON] BotKeyAllResponse
+  :<|> "set" :> "label" :> ReqBody '[JSON] BotKeySetLabelRequest :> Post '[JSON] BotKeySetLabelResponse

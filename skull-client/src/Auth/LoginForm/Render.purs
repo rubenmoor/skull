@@ -12,7 +12,7 @@ import Util.HTML (cl, cldiv_, doNothingForm_)
 
 render :: State
        -> ComponentHTML Query
-render st = cldiv_ "p1" [ doNothingForm_
+render st = cldiv_ "p1 mx-auto col-4" [ doNothingForm_
   [ h1_
       [ text "Log in"
       ]

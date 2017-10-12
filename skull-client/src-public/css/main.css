@@ -15,6 +15,17 @@
 
 @import "controls";
 
+:root {
+  --border-color: $red;
+  --border-width: 2px;
+}
+
+.border-bottom {
+  border-bottom-color: var(--border-color);
+  border-bottom-style: solid;
+  border-bottom-width: var(--border-width);
+}
+
 body, html {
   font-family: "Open Sans", "Arial", sans-serif;
   font-size: 12pt;
@@ -22,12 +33,17 @@ body, html {
   margin: 0px;
   position: relative;
   background-color: $anthrazit-light;
-  color: anthrazit-dark;
+  color: $anthrazit-dark;
 }
 
 .bgdark {
   background-color: $anthrazit;
   color: $white;
+}
+
+.bgmedium {
+  background-color: $anthrazit-medium-light;
+  color: $anthrazit-dark;
 }
 
 .bgred {

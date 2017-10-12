@@ -18,4 +18,4 @@ type Routes =
 
 type Protected =
        "user" :> User.Api.Protected
-  :<|> "botkey" :> BotKey.Api.Protected
+  :<|> "botKey" :> BotKey.Api.Protected

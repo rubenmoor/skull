@@ -1,8 +1,9 @@
 module LoggedIn.Types where
 
-import BotKeys.Types as BotKeys
+import BotKeyList.Types as BotKeyList
 import Home.Types as Home
 import Menubar.Types as Menubar
+import Navigation.Types as Navigation
 import DOM (DOM)
 import Data.Const (Const)
 import Data.Lens (Lens', lens)
@@ -48,15 +49,18 @@ _location = lens _.location (\r l -> r { location = l})
 
 data Query a
   = Initialize a
+  | HandleInput Input a
 
 type ChildQuery =
        Menubar.Query
+  <\/> Navigation.Query
   <\/> Home.Query
-  <\/> BotKeys.Query
+  <\/> BotKeyList.Query
   <\/> Const Void
 
 type ChildSlot =
      Unit
+  \/ Unit
   \/ Unit
   \/ Unit
   \/ Void

@@ -25,6 +25,7 @@ import           Database.Persist.Sql   (PersistField (..),
                                          PersistFieldSql (..))
 
 newtype Base64 = Base64 { unBase64 :: ByteString }
+  deriving(Eq, Ord)
 
 instance ToJSON Base64 where
   toJSON = toJSON . Text.decodeUtf8 . unBase64

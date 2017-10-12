@@ -8,6 +8,7 @@
 module Database.Class where
 
 import           Control.Monad    (void)
+import           Data.Map         (Map)
 import           Data.Text        (Text)
 
 import           Database.Gerippe (EntEqs, ToBack)
@@ -50,6 +51,32 @@ class Functor m => Read m where
     -> EntityField b (Key b)
     -> EntityField a c
     -> c
+    -> m [(Entity a, Entity b)]
+
+  join1ToMWhere
+    :: (EntEqs a b, PersistField c, Ord a)
+    => EntityField a (Key a)
+    -> EntityField b (Key a)
+    -> EntityField a c
+    -> c
+    -> m (Map (Entity a) [Entity b])
+
+  join1ToMWhere'
+    :: (EntEqs a b, PersistField c, Ord a)
+    => EntityField a (Key a)
+    -> EntityField b (Key a)
+    -> EntityField a c
+    -> c
+    -> m [(Entity a, Entity b)]
+
+  join1ToMWhere2'
+    :: (EntEqs a b, PersistField c, PersistField d, Ord a)
+    => EntityField a (Key a)
+    -> EntityField b (Key a)
+    -> EntityField a c
+    -> c
+    -> EntityField b d
+    -> d
     -> m [(Entity a, Entity b)]
 
 class Functor m => Insert m where
