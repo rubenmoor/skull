@@ -4,14 +4,14 @@
 
 module Types where
 
-import           Data.Text                  (Text)
-import           Database.PostgreSQL.Simple (Connection)
-import           Diener                     (LogEnv)
+import           Data.Text        (Text)
+import           Database.Gerippe (ConnectionPool)
+import           Diener           (LogEnv)
 
 type Env = LogEnv AppEnv
 
 data AppEnv = AppEnv
-  { envDbConnection :: Connection
+  { envDbConnection :: ConnectionPool
   }
 
 data AppError

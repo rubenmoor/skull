@@ -19,12 +19,7 @@ library
                      , Api.Types
                      , Auth
                      , Auth.Types
-                     , Database.Adaptor
                      , Database.Class
-                     , Database.Schema
-                     , Database.Schema.Types
-                     , Database.Query
-                     , Database.Common
                      , Game.Api
                      , Game.Api.Types
                      , Game.Handler
@@ -36,12 +31,11 @@ library
                      , HttpApp.BotKey.Api.Types
                      , HttpApp.BotKey.Handler
                      , HttpApp.BotKey.Types
-                     , HttpApp.BotKey.Model
+                     , HttpApp.Model
                      , HttpApp.User.Api
                      , HttpApp.User.Api.Types
                      , HttpApp.User.Handler
                      , HttpApp.User.Types
-                     , HttpApp.User.Model
                      , Util.Base64
                      , Types
   build-depends:       aeson
@@ -52,15 +46,17 @@ library
                      , diener
                      , email-validate
                      , entropy
+                     , gerippe
                      , http-api-data
                      , http-types
                      , lens
                      , lifted-base
                      , monad-control
+                     , monad-logger
                      , mtl
-                     , opaleye
                      , parsec
-                     , postgresql-simple
+                     , persistent
+                     , persistent-template
                      , product-profunctors
                      , pwstore-fast
                      , servant
@@ -85,9 +81,10 @@ executable skull-server-exe
                      , bytestring
                      , data-default
                      , diener
+                     , directory
                      , mtl
                      , optparse-applicative
-                     , postgresql-simple
+                     , persistent-sqlite
                      , servant-server
                      , skull-server
                      , text

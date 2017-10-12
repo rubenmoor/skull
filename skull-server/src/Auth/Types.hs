@@ -15,8 +15,8 @@ import           Servant.PureScript (jsonParseHeader, jsonParseUrlPiece)
 import           Web.HttpApiData    (FromHttpApiData (..))
 
 import qualified Data.Time.Clock    as Clock
-import           HttpApp.User.Model (SessionKey, UserId)
-import           HttpApp.User.Types (Email, UserName)
+import           HttpApp.Model      (UserId)
+import           HttpApp.User.Types (Email, SessionKey, UserName)
 
 type AuthProtect = Header "AuthToken" AuthToken
 

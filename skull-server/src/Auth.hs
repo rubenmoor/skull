@@ -2,6 +2,7 @@
 {-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE RecordWildCards       #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeOperators         #-}
 
@@ -10,11 +11,12 @@ module Auth
   ) where
 
 import           Control.Lens           ((.~), (^.))
-import           Control.Monad.Except   (ExceptT (..))
+import           Control.Monad.Except   (ExceptT (..), lift, runExceptT)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (ReaderT (..))
 import           Data.Text              (Text)
 import qualified Data.Time.Clock        as Clock
+import           Database.Gerippe       (Entity (..))
 import           Diener                 (DienerT (..), throwError)
 import           Servant                ((:~>) (..), enter)
 import           Servant.Utils.Enter    (Enter)
@@ -22,13 +24,11 @@ import           Servant.Utils.Enter    (Enter)
 import           Auth.Types             (AuthToken (..), UserInfo (..),
                                          sessionLength)
 import qualified Database.Class         as Db
-import           Database.Common        (deleteSession, updateSession)
-import qualified Database.Query         as Query
-import           Database.Schema.Types
 import           Handler                (HandlerProtectedT, HandlerT (..),
                                          runHandlerT)
-import           HttpApp.User.Model     (Session, SessionKey, User)
-import           Opaleye                (pgUTCTime)
+import           HttpApp.Model          (EntityField (..), Session (..),
+                                         User (..))
+import           HttpApp.User.Types     (SessionKey)
 import           Types                  (AppError (ErrForbidden, ErrUnauthorized))
 
 -- middleware
@@ -46,23 +46,28 @@ authHandler h mAuth =
 lookupSession :: (Db.Read m, Db.Delete m, Db.Update m, MonadIO m)
               => SessionKey
               -> m (Either Text UserInfo)
-lookupSession key = do
-    Db.getOneByQuery (Query.userAndSessionBySessionKey key)
-      >>= either (\_ -> pure $ Left "session not found") getUserInfo
-  where
-    getUserInfo :: (Db.Read m, Db.Delete m, Db.Update m, MonadIO m)
-                => (User, Session)
-                -> m (Either Text UserInfo)
-    getUserInfo (user, session) = do
-      now <- liftIO Clock.getCurrentTime
-      if now > session ^. sessionExpiry
-        then Left "session expired" <$ deleteSession (session ^. sessionId)
+lookupSession key = runExceptT $ do
+    (Entity sKey Session{..}, Entity uId User{..}) <- sessionQuery
+    now <- liftIO Clock.getCurrentTime
+    if now > sessionExpiry
+        then do lift $ Db.delete sKey
+                throwError "session expired"
         else do
-          let newExpiry = pgUTCTime $ Clock.addUTCTime sessionLength now
-          updateSession (session ^. sessionId) $ sessionExpiry .~ newExpiry
-          pure $ Right UserInfo
-            { _uiUserId     = user ^. userId
-            , _uiUserName   = user ^. userName
-            , _uiEmail      = user ^. userEmail
-            , _uiSessionKey = session ^. sessionKey
+          let newExpiry = Clock.addUTCTime sessionLength now
+          lift $ Db.update sKey $ Session
+            { sessionFkUser = sessionFkUser
+            , sessionExpiry = newExpiry
+            , sessionKey = sessionKey
             }
+          pure UserInfo
+            { _uiUserId     = uId
+            , _uiUserName   = userName
+            , _uiEmail      = userEmail
+            , _uiSessionKey = sessionKey
+            }
+  where
+    sessionQuery =
+      lift (Db.joinMTo1Where' SessionFkUser UserId SessionKey key) >>= \case
+        []    -> throwError "session not found"
+        _:_:_ -> throwError "multiple sessions found"
+        [res] -> pure res

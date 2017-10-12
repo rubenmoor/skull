@@ -1,59 +1,81 @@
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 
 module Database.Class where
 
-import           Data.Profunctor.Product.Default (Default)
-import           Data.Text                       (Text)
-import qualified Opaleye
+import           Control.Monad    (void)
+import           Data.Text        (Text)
+
+import           Database.Gerippe (EntEqs, ToBack)
+import           Database.Persist (Entity, EntityField, Key, PersistEntity,
+                                   PersistField)
 
 type Write m = (Delete m, Insert m, Update m)
 type ReadWrite m = (Database.Class.Read m, Write m)
 
 class Functor m => Read m where
-  getByQuery :: Default Opaleye.QueryRunner columns x
-             => Opaleye.Query columns -> m [x]
+  get
+    :: ToBack a
+    => Key a
+    -> m (Maybe a)
 
-  getOneByQuery :: Default Opaleye.QueryRunner columns x
-                => Opaleye.Query columns -> m (Either Text x)
-  getOneByQuery query =
-    getByQuery query <&> \case
+  getAll
+    :: ToBack a
+    => m [Entity a]
+
+  getWhere
+    :: (ToBack a, PersistField b)
+    => EntityField a b
+    -> b
+    -> m [Entity a]
+
+  getOneWhere
+    :: (ToBack a, PersistField b)
+    => EntityField a b
+    -> b
+    -> m (Either Text (Entity a))
+  getOneWhere field value =
+    getWhere field value <&> \case
       []    -> Left "getOneByQuery: empty list"
       _:_:_ -> Left "getOneByQuery: not singleton"
       x:[]  -> Right x
 
-class Delete m where
-  deleteWhere :: Opaleye.Table columnsW columnsR
-                -> (columnsR -> Opaleye.Column Opaleye.PGBool)
-                -> m ()
+  joinMTo1Where'
+    :: (EntEqs a b, PersistField c)
+    => EntityField a (Key b)
+    -> EntityField b (Key b)
+    -> EntityField a c
+    -> c
+    -> m [(Entity a, Entity b)]
 
 class Functor m => Insert m where
-  insertMany_ :: Opaleye.Table columnsW columnsR -> [columnsW] -> m ()
+  insert
+    :: (ToBack a, PersistEntity a)
+    => a
+    -> m (Key a)
 
-  insert_ :: Opaleye.Table columnsW columnsR -> columnsW -> m ()
-  insert_ table columns = insertMany_ table [columns]
+  insert_
+    :: (ToBack a, PersistEntity a)
+    => a
+    -> m ()
+  insert_ = void . insert
 
-  insertMany :: Default Opaleye.QueryRunner columnsReturned xs
-             => Opaleye.Table columnsW columnsR
-             -> [columnsW]
-             -> (columnsR -> columnsReturned)
-             -> m [xs]
-
-  insert :: Default Opaleye.QueryRunner columnsReturned xs
-         => Opaleye.Table columnsW columnsR
-         -> columnsW
-         -> (columnsR -> columnsReturned)
-         -> m xs
-  insert table columns f = head <$> insertMany table [columns] f
+class Delete m where
+  delete
+    :: (ToBack a, PersistEntity a)
+    => Key a
+    -> m ()
 
 class Update m where
-  updateWhere :: Opaleye.Table columnsW columnsR
-              -> (columnsR -> columnsW)
-              -> (columnsR -> Opaleye.Column Opaleye.PGBool)
-              -> m ()
+  update
+    :: (ToBack a, PersistEntity a)
+    => Key a
+    -> a
+    -> m ()
 
 (<&>) :: Functor m => m a -> (a -> b) -> m b
 (<&>) = flip fmap

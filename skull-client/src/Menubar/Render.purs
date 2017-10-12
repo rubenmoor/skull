@@ -19,9 +19,13 @@ render st =
         ]
     , cldiv_ "right" $ case st of
         Just userName ->
-          [ text $ "Logged in as " <> userName <> ". ("
+          [ text $ "Logged in as "
+          , clspan_ "bold" $
+              [ text userName
+              ]
+          , text $  ". ("
           , button
-              [ cl "button--pure"
+              [ cl "button--pure link-light"
               , Events.onClick (Events.input_ Logout)
               ]
               [ text "log out"

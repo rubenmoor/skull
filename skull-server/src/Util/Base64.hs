@@ -12,17 +12,17 @@ module Util.Base64
   , toByteString
   )where
 
-import           Data.Aeson                           (FromJSON (..),
-                                                       ToJSON (..))
-import           Data.ByteString                      (ByteString)
-import qualified Data.ByteString.Base64               as Base64
-import           Data.Text                            (Text)
-import qualified Data.Text                            as Text
-import qualified Data.Text.Encoding                   as Text
-import           Database.PostgreSQL.Simple.FromField (FromField (..))
-import           Opaleye                              (PGText, QueryRunnerColumnDefault (..),
-                                                       fieldQueryRunnerColumn)
-import qualified TextShow                             as Text
+import           Data.Aeson             (FromJSON (..), ToJSON (..))
+import           Data.ByteString        (ByteString)
+import qualified Data.ByteString.Base64 as Base64
+import           Data.Proxy             (Proxy (..))
+import           Data.Text              (Text)
+import qualified Data.Text              as Text
+import qualified Data.Text.Encoding     as Text
+import qualified TextShow               as Text
+
+import           Database.Persist.Sql   (PersistField (..),
+                                         PersistFieldSql (..))
 
 newtype Base64 = Base64 { unBase64 :: ByteString }
 
@@ -32,13 +32,12 @@ instance ToJSON Base64 where
 instance FromJSON Base64 where
   parseJSON = fmap (Base64 . Text.encodeUtf8) . parseJSON
 
--- postgres: a base64 object can be constructed by a text object
---           (which has a sql representation as PGText)
-instance FromField Base64 where
-  fromField f mdata = fromText <$> fromField f mdata
+instance PersistField Base64 where
+  toPersistValue = toPersistValue . unBase64
+  fromPersistValue = fmap Base64 . fromPersistValue
 
-instance QueryRunnerColumnDefault PGText Base64 where
-  queryRunnerColumnDefault = fieldQueryRunnerColumn
+instance PersistFieldSql Base64 where
+  sqlType _ = sqlType (Proxy :: Proxy ByteString)
 
 encode :: ByteString -> Base64
 encode = Base64 . Base64.encode

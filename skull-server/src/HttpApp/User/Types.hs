@@ -6,23 +6,22 @@
 
 module HttpApp.User.Types where
 
-import           Control.Monad.IO.Class               (MonadIO, liftIO)
-import           Crypto.PasswordStore                 (makePassword,
-                                                       verifyPassword)
-import           Data.Text                            (Text)
-import qualified Data.Text.Encoding                   as Text
-import           Database.PostgreSQL.Simple.FromField (FromField (..))
-import           Opaleye                              (PGText, QueryRunnerColumnDefault (..),
-                                                       fieldQueryRunnerColumn)
-import qualified Text.Email.Validate                  as Email
-import           TextShow                             (TextShow (..), fromText)
+import           Control.Monad.IO.Class (MonadIO, liftIO)
+import           Crypto.PasswordStore   (makePassword, verifyPassword)
+import           Data.Proxy             (Proxy (..))
+import           Data.Text              (Text)
+import qualified Data.Text.Encoding     as Text
+import           Database.Persist.Sql   (PersistField (..),
+                                         PersistFieldSql (..))
+import qualified Text.Email.Validate    as Email
+import           TextShow               (TextShow (..), fromText)
 
-import           Util.Base64                          (Base64)
-import qualified Util.Base64                          as Base64
+import           Util.Base64            (Base64)
+import qualified Util.Base64            as Base64
 
 type UserName = Text
-
 type PwHash = Base64
+type SessionKey = Base64
 
 mkPwHash :: MonadIO m => Text -> m PwHash
 mkPwHash str =
@@ -39,11 +38,12 @@ newtype Email = Email { unEmail :: Text }
 instance TextShow Email where
   showb = fromText . unEmail
 
-instance FromField Email where
-  fromField f mdata = Email <$> fromField f mdata
+instance PersistField Email where
+  toPersistValue = toPersistValue . unEmail
+  fromPersistValue = fmap Email . fromPersistValue
 
-instance QueryRunnerColumnDefault PGText Email where
-  queryRunnerColumnDefault = fieldQueryRunnerColumn
+instance PersistFieldSql Email where
+  sqlType _ = sqlType (Proxy :: Proxy Text)
 
 mkEmail :: Text -> Either Text Email
 mkEmail str =
