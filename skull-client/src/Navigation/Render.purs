@@ -5,9 +5,8 @@ module Navigation.Render
 import Halogen.HTML.Events as Events
 import Data.Function (($))
 import Halogen.Component (ComponentHTML)
-import Halogen.HTML (button, nav, text)
 import Navigation.Types (Query(..), State)
-import Util.HTML (cl, cldiv_)
+import Halogen.HTML.Extended (cl, cldiv_, button, nav, text)
 
 render
   :: State

@@ -11,14 +11,16 @@
 
 module HttpApp.Model where
 
-import           Data.Text           (Text)
-import           Data.Time           (UTCTime)
+import           Data.Text                           (Text)
+import           Data.Time                           (UTCTime)
 
-import           Database.Persist.TH (mkMigrate, mkPersist, persistLowerCase,
-                                      share, sqlSettings)
+import           Database.Persist.TH                 (mkMigrate, mkPersist,
+                                                      persistLowerCase, share,
+                                                      sqlSettings)
 
-import           HttpApp.User.Types  (Email, PwHash, SessionKey, UserName)
-import           Util.Base64         (Base64)
+import           Data.ByteString.Base64.URL.Extended (Base64)
+import           HttpApp.User.Types                  (Email, PwHash, SessionKey,
+                                                      UserName)
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 User

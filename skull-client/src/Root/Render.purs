@@ -6,7 +6,7 @@ import Halogen.Component.ChildPath
 import Data.Maybe (Maybe(..))
 import ErrorMessage (errorMessage)
 import Halogen (ParentHTML)
-import Halogen.HTML (div_, slot')
+import Halogen.HTML.Extended (div_, slot')
 import LoggedIn (loggedIn)
 import LoggedOut (loggedOut)
 import Prelude (absurd, unit)

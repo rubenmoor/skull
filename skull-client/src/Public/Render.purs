@@ -3,9 +3,8 @@ module Public.Render
   ) where
 
 import Halogen (ComponentHTML)
-import Halogen.HTML (text)
 import Public.Types (Query, State)
-import Util.HTML (cldiv_)
+import Halogen.HTML.Extended (cldiv_, text)
 
 render :: State
        -> ComponentHTML Query

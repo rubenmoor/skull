@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveAnyClass        #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Util.Base64
+module Data.ByteString.Base64.URL.Extended
   ( Base64
   , encode
   , unBase64
@@ -12,17 +12,17 @@ module Util.Base64
   , toByteString
   )where
 
-import           Data.Aeson             (FromJSON (..), ToJSON (..))
-import           Data.ByteString        (ByteString)
-import qualified Data.ByteString.Base64 as Base64
-import           Data.Proxy             (Proxy (..))
-import           Data.Text              (Text)
-import qualified Data.Text              as Text
-import qualified Data.Text.Encoding     as Text
-import qualified TextShow               as Text
+import           Data.Aeson                 (FromJSON (..), ToJSON (..))
+import           Data.ByteString            (ByteString)
+import qualified Data.ByteString.Base64.URL as Base64
+import           Data.Proxy                 (Proxy (..))
+import           Data.Text                  (Text)
+import qualified Data.Text                  as Text
+import qualified Data.Text.Encoding         as Text
+import qualified TextShow                   as Text
 
-import           Database.Persist.Sql   (PersistField (..),
-                                         PersistFieldSql (..))
+import           Database.Persist.Sql       (PersistField (..),
+                                             PersistFieldSql (..))
 
 newtype Base64 = Base64 { unBase64 :: ByteString }
   deriving(Eq, Ord)

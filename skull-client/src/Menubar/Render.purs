@@ -5,10 +5,9 @@ module Menubar.Render
 import Halogen.HTML.Events as Events
 import Data.Maybe (Maybe(..))
 import Halogen (ComponentHTML)
-import Halogen.HTML (button, text)
+import Halogen.HTML.Extended (cl, cldiv_, clspan_, button, text)
 import Menubar.Types (Query(..), State)
-import Prelude (($), (<>))
-import Util.HTML (cl, cldiv_, clspan_)
+import Prelude (($))
 
 render :: State
        -> ComponentHTML Query

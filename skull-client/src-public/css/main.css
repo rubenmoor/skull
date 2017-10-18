@@ -14,6 +14,7 @@
 @import "colors";
 
 @import "controls";
+@import "table";
 
 :root {
   --border-color: $red;
@@ -46,7 +47,20 @@ body, html {
   color: $anthrazit-dark;
 }
 
+.bgwhite {
+  background-color: $white;
+  color: $anthrazit-dark;
+}
+
 .bgred {
   background-color: $red;
   color: $white;
+}
+
+.monospace {
+  font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }

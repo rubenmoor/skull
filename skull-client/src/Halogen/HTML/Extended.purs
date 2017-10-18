@@ -1,10 +1,13 @@
-module Util.HTML where
+module Halogen.HTML.Extended
+  ( module Halogen.HTML
+  , module Halogen.HTML.Extended
+  ) where
 
 import Halogen.HTML.Events as Events
 import DOM.HTML.Indexed (HTMLbutton)
 import Data.Function ((<<<))
 import Halogen (Action)
-import Halogen.HTML (AttrName(..), ClassName(..), HTML, attr, button, div, form, i, span)
+import Halogen.HTML
 import Halogen.HTML.Properties (IProp, class_)
 import Prelude (Unit, ($), (<>))
 
@@ -47,7 +50,7 @@ faButton :: forall p i.
          -> HTML p i
 faButton icon props =
   button (
-    [ class_ $ ClassName "button--pure"
+    [ cl "button--pure"
     ] <> props )
     [ faIcon_ (icon <> " fa-fw fa-lg")
     ]

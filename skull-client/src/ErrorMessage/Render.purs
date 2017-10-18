@@ -3,10 +3,9 @@ module ErrorMessage.Render where
 import ErrorMessage.Types
 import Data.Lens ((^.))
 import Halogen (ComponentHTML)
-import Halogen.HTML (text)
 import Prelude (($), (<>))
 import Types (_details, _title)
-import Util.HTML (cldiv_, faButton_)
+import Halogen.HTML.Extended (cldiv_, faButton_, text)
 
 render :: State
        -> ComponentHTML Query

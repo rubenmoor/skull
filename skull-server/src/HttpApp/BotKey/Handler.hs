@@ -6,35 +6,40 @@
 
 module HttpApp.BotKey.Handler where
 
-import           Control.Monad.Except     (MonadError, throwError)
-import           Control.Monad.IO.Class   (MonadIO, liftIO)
-import           Control.Monad.Reader     (MonadReader, asks)
-import           Servant                  ((:<|>) (..), ServerT)
-import           System.Entropy           (getEntropy)
-import           TextShow                 (showt)
+import           Prelude                             (IO, flip, fmap, pure, ($),
+                                                      (<$>))
 
-import           Auth.Types               (UserInfo (..))
-import qualified Database.Class           as Db
-import           Database.Gerippe         (Entity (..))
-import           Handler                  (HandlerProtectedT)
-import qualified HttpApp.BotKey.Api       as Api
+import           Control.Monad.Except                (MonadError, throwError)
+import           Control.Monad.IO.Class              (MonadIO, liftIO)
+import           Control.Monad.Reader                (MonadReader, asks)
+import           Servant                             ((:<|>) (..), ServerT)
+import           System.Entropy                      (getEntropy)
+import           TextShow                            (showt)
+
+import           Auth.Types                          (UserInfo (..))
+import qualified Data.ByteString.Base64.URL.Extended as Base64
+import qualified Database.Class                      as Db
+import           Database.Gerippe                    (Entity (..))
+import           Handler                             (HandlerProtectedT)
+import qualified HttpApp.BotKey.Api                  as Api
 import           HttpApp.BotKey.Api.Types
-import           HttpApp.BotKey.Types     (BotKey (..))
-import           HttpApp.Model            (EntityField (..))
-import qualified HttpApp.Model            as Model
-import           Types                    (AppError (..))
-import qualified Util.Base64              as Base64
+import           HttpApp.BotKey.Types                (BotKey (..), Secret)
+import           HttpApp.Model                       (BotKeyId,
+                                                      EntityField (..))
+import qualified HttpApp.Model                       as Model
+import           Types                               (AppError (..))
 
 protected :: ServerT Api.Protected (HandlerProtectedT IO)
 protected =
-       botKeyNew
-  :<|> botKeyAll
-  :<|> botKeySetLabel
+       new
+  :<|> all
+  :<|> setLabel
+  :<|> delete
 
-botKeyNew
+new
   :: (Db.Insert m, MonadIO m, MonadReader UserInfo m)
   => m BotKeyNewResponse
-botKeyNew = do
+new = do
   let bkLabel = ""
   botKeySecret <- Base64.encode <$> liftIO (getEntropy 32)
   uId <- asks _uiUserId
@@ -50,10 +55,10 @@ botKeyNew = do
       }
     }
 
-botKeyAll
+all
   :: (Db.Read m, MonadReader UserInfo m)
   => m BotKeyAllResponse
-botKeyAll = do
+all = do
   uId <- asks _uiUserId
   ls <- Db.join1ToMWhere' UserId BotKeyFkUser UserId uId
   let barBotKeys = flip fmap ls $ \(_, Entity _ Model.BotKey{..}) -> BotKey
@@ -62,18 +67,35 @@ botKeyAll = do
         }
   pure BotKeyAllResponse{..}
 
-botKeySetLabel
+setLabel
   :: (Db.Update m, Db.Read m, MonadReader UserInfo m, MonadError AppError m)
   => BotKeySetLabelRequest
   -> m BotKeySetLabelResponse
-botKeySetLabel BotKeySetLabelRequest{..} = do
+setLabel BotKeySetLabelRequest{..} = do
+  (bKey, botKey) <- getBotKey bsrSecret
+  Db.update bKey botKey { Model.botKeyLabel = bsrLabel }
+  pure BotKeySetLabelResponse{ bsresLabel = bsrLabel }
+
+delete
+  :: (Db.Read m, Db.Delete m, MonadReader UserInfo m, MonadError AppError m)
+  => BotKeyDeleteRequest
+  -> m ()
+delete BotKeyDeleteRequest{..} = do
+  (bKey, _) <- getBotKey bdrSecret
+  Db.delete bKey
+
+--
+
+getBotKey
+  :: (Db.Read m, MonadReader UserInfo m, MonadError AppError m)
+  => Secret
+  -> m (BotKeyId, Model.BotKey)
+getBotKey secret = do
   uId <- asks _uiUserId
   ls <- Db.join1ToMWhere2' UserId BotKeyFkUser
                            UserId uId
-                           BotKeySecret (Base64.fromText bsrSecret)
-  (bKey, botKey) <- case ls of
+                           BotKeySecret (Base64.fromText secret)
+  case ls of
     []    -> throwError $ ErrDatabase "botkey not found"
     _:_:_ -> throwError $ ErrDatabase "multiple botkeys in database"
     [(_, Entity bKey botKey)] -> pure (bKey, botKey)
-  Db.update bKey botKey { Model.botKeyLabel = bsrLabel }
-  pure BotKeySetLabelResponse{ bsresLabel = bsrLabel }

@@ -33,6 +33,7 @@ types =
   , mkSumType (Proxy :: Proxy BotKeyAllResponse)
   , mkSumType (Proxy :: Proxy BotKeySetLabelRequest)
   , mkSumType (Proxy :: Proxy BotKeySetLabelResponse)
+  , mkSumType (Proxy :: Proxy BotKeyDeleteRequest)
   , mkSumType (Proxy :: Proxy BotKey)
   ]
 

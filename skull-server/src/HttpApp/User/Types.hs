@@ -6,18 +6,19 @@
 
 module HttpApp.User.Types where
 
-import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Crypto.PasswordStore   (makePassword, verifyPassword)
-import           Data.Proxy             (Proxy (..))
-import           Data.Text              (Text)
-import qualified Data.Text.Encoding     as Text
-import           Database.Persist.Sql   (PersistField (..),
-                                         PersistFieldSql (..))
-import qualified Text.Email.Validate    as Email
-import           TextShow               (TextShow (..), fromText)
+import           Control.Monad.IO.Class              (MonadIO, liftIO)
+import           Crypto.PasswordStore                (makePassword,
+                                                      verifyPassword)
+import           Data.Proxy                          (Proxy (..))
+import           Data.Text                           (Text)
+import qualified Data.Text.Encoding                  as Text
+import           Database.Persist.Sql                (PersistField (..),
+                                                      PersistFieldSql (..))
+import qualified Text.Email.Validate                 as Email
+import           TextShow                            (TextShow (..), fromText)
 
-import           Util.Base64            (Base64)
-import qualified Util.Base64            as Base64
+import           Data.ByteString.Base64.URL.Extended (Base64)
+import qualified Data.ByteString.Base64.URL.Extended as Base64
 
 type UserName = Text
 type PwHash = Base64

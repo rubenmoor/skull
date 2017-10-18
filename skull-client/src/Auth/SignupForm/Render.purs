@@ -9,10 +9,9 @@ import Data.Semigroup ((<>))
 import Data.String (null)
 import Data.Unit (unit)
 import Halogen (ParentHTML)
-import Halogen.HTML (br_, button, div_, h1_, input, label_, slot, text)
 import Halogen.HTML.Properties (ButtonType(..), InputType(..), type_, value)
 import Ulff (Ulff)
-import Util.HTML (cl, cldiv_, doNothingForm_)
+import Halogen.HTML.Extended (cl, cldiv_, doNothingForm_, br_, button, div_, h1_, input, label_, slot, text)
 
 render :: forall eff.
           State

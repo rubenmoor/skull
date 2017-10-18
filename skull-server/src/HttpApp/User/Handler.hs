@@ -8,28 +8,32 @@
 module HttpApp.User.Handler where
 
 import           Control.Lens
-import           Control.Monad.Except   (ExceptT (ExceptT), MonadError,
-                                         runExceptT, throwError)
-import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Control.Monad.Reader   (MonadReader, asks)
-import           Data.Foldable          (for_)
-import qualified Data.Time.Clock        as Clock
-import           Database.Gerippe       (Entity (..))
-import           Servant                ((:<|>) (..), ServerT)
-import           System.Entropy         (getEntropy)
-import           TextShow               (showt)
+import           Control.Monad.Except                (ExceptT (ExceptT),
+                                                      MonadError, runExceptT,
+                                                      throwError)
+import           Control.Monad.IO.Class              (MonadIO, liftIO)
+import           Control.Monad.Reader                (MonadReader, asks)
+import           Data.Foldable                       (for_)
+import qualified Data.Time.Clock                     as Clock
+import           Database.Gerippe                    (Entity (..))
+import           Servant                             ((:<|>) (..), ServerT)
+import           System.Entropy                      (getEntropy)
+import           TextShow                            (showt)
 
-import           Auth.Types             (UserInfo, sessionLength, uiUserId,
-                                         uiUserName)
-import qualified Database.Class         as Db
-import           Handler                (HandlerProtectedT, HandlerT)
-import           HttpApp.Model          (EntityField (..), Session (..),
-                                         User (..), UserId)
-import qualified HttpApp.User.Api       as Api
+import           Auth.Types                          (UserInfo, sessionLength,
+                                                      uiUserId, uiUserName)
+import qualified Data.ByteString.Base64.URL.Extended as Base64
+import qualified Database.Class                      as Db
+import           Handler                             (HandlerProtectedT,
+                                                      HandlerT)
+import           HttpApp.Model                       (EntityField (..),
+                                                      Session (..), User (..),
+                                                      UserId)
+import qualified HttpApp.User.Api                    as Api
 import           HttpApp.User.Api.Types
-import           HttpApp.User.Types     (SessionKey, mkPwHash, verifyPassword)
-import           Types                  (AppError (..))
-import qualified Util.Base64            as Base64
+import           HttpApp.User.Types                  (SessionKey, mkPwHash,
+                                                      verifyPassword)
+import           Types                               (AppError (..))
 
 public :: ServerT Api.Public (HandlerT IO)
 public =

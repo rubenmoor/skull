@@ -24,3 +24,7 @@ data BotKeySetLabelRequest = BotKeySetLabelRequest
 data BotKeySetLabelResponse = BotKeySetLabelResponse
   { bsresLabel :: Label
   } deriving (Generic, ToJSON)
+
+data BotKeyDeleteRequest = BotKeyDeleteRequest
+  { bdrSecret :: Secret
+  } deriving (Generic, FromJSON)

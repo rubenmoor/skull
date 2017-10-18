@@ -2,20 +2,19 @@ module BotKeyList
   ( botKeyList
   ) where
 
+import BotKey.Types as BotKey
 import BotKeyList.Render (render)
-import BotKeyList.Types (ChildQuery, ChildSlot, Effects, Input, Message, Query(..), State, _botKeys, initial)
+import BotKeyList.Types (Effects, Input, Message, Query(..), Slot, State, _botKeys, _isLoading, initial)
 import Data.Function (($))
-import Data.Functor (($>))
-import Data.Lens ((.=))
-import Data.List (fromFoldable)
+import Data.Lens (use, (%=), (.=))
+import Data.List (delete, fromFoldable, (:))
 import Data.Maybe (Maybe(..))
-import Data.Unit (Unit)
-import Halogen (Component, ComponentDSL, action, component, lifecycleParentComponent)
+import Halogen (Component, action, lifecycleParentComponent)
 import Halogen.Component (ParentDSL)
 import Halogen.HTML (HTML)
-import HttpApp.BotKey.Api.Types (BotKeyAllResponse(..))
-import Prelude (type (~>), const, pure, bind)
-import ServerAPI (getBotKeyAll)
+import HttpApp.BotKey.Api.Types (BotKeyAllResponse(..), BotKeyNewResponse(..))
+import Prelude (type (~>), const, pure, bind, discard)
+import ServerAPI (getBotKeyAll, postBotKeyNew)
 import Ulff (Ulff, mkRequest)
 
 botKeyList :: forall eff.
@@ -31,15 +30,18 @@ botKeyList =
     }
 
 eval :: forall eff.
-        Query ~> ParentDSL State Query ChildQuery ChildSlot Message (Ulff  (Effects eff))
+        Query ~> ParentDSL State Query BotKey.Query Slot Message (Ulff  (Effects eff))
 eval = case _ of
-  HandleInput _ next -> do
+  Initialize next -> do
+    mkRequest getBotKeyAll $ \(BotKeyAllResponse r) -> do
+      _isLoading .= false
+      _botKeys .= fromFoldable r.barBotKeys
     pure next
-  Initialize next -> initialize $> next
-
-initialize
-  :: forall eff.
-     ParentDSL State Query ChildQuery ChildSlot Message (Ulff (Effects eff)) Unit
-initialize =
-  mkRequest getBotKeyAll $ \(BotKeyAllResponse r) ->
-    _botKeys .= fromFoldable r.barBotKeys
+  CreateNew next -> do
+    mkRequest postBotKeyNew $ \(BotKeyNewResponse r) -> do
+      bks <- use _botKeys
+      _botKeys .= r.bnrBotKey : bks
+    pure next
+  Delete (BotKey.MsgDelete bk) next -> do
+    _botKeys %= delete bk
+    pure next

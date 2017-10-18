@@ -6,12 +6,18 @@ module HttpApp.BotKey.Api
   , module HttpApp.BotKey.Api.Types
   ) where
 
-import           Servant                  ((:<|>), (:>), Get, JSON, Post,
-                                           ReqBody)
+import           Servant                  ((:<|>), (:>), Delete, Get, JSON,
+                                           Post, ReqBody)
 
 import           HttpApp.BotKey.Api.Types
 
 type Protected =
-       "new" :> Post '[JSON] BotKeyNewResponse
-  :<|> "all" :> Get '[JSON] BotKeyAllResponse
-  :<|> "set" :> "label" :> ReqBody '[JSON] BotKeySetLabelRequest :> Post '[JSON] BotKeySetLabelResponse
+       New
+  :<|> All
+  :<|> Set
+  :<|> Del
+
+type New = "new" :> Post '[JSON] BotKeyNewResponse
+type All = "all" :> Get '[JSON] BotKeyAllResponse
+type Set = "set" :> "label" :> ReqBody '[JSON] BotKeySetLabelRequest :> Post '[JSON] BotKeySetLabelResponse
+type Del = ReqBody '[JSON] BotKeyDeleteRequest :> Delete '[JSON] ()

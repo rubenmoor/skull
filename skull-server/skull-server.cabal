@@ -36,7 +36,7 @@ library
                      , HttpApp.User.Api.Types
                      , HttpApp.User.Handler
                      , HttpApp.User.Types
-                     , Util.Base64
+                     , Data.ByteString.Base64.URL.Extended
                      , Types
   build-depends:       aeson
                      , base >= 4.7 && < 5

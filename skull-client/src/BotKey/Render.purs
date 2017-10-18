@@ -2,26 +2,29 @@ module BotKey.Render
   ( render
   ) where
 
-import BotKey.Types (Query, State)
-import Data.Function (($))
-import Data.String (null)
-import Halogen.Component (ComponentHTML)
-import Halogen.HTML (li, td, text, tr)
-import Util.HTML (clspan_)
-import HttpApp.BotKey.Types (BotKey (..), _BotKey)
+import EditField.Types as EditField
+import Halogen.HTML.Events as Events
+import BotKey.Types (Effects, Query(..), Slot, State)
+import Data.Unit (unit)
+import EditField (editField)
+import Halogen.Component (ParentHTML)
+import Halogen.HTML.Extended (clspan_, faButton_, slot, td, text, tr)
+import HttpApp.BotKey.Types (BotKey(BotKey))
+import Ulff (Ulff)
 
 render
-  :: State
-  -> ComponentHTML Query
-render st = do
-  let BotKey bk = st.botKey
+  :: forall eff.
+     State
+  -> ParentHTML Query EditField.Query Slot (Ulff (Effects eff))
+render bk@(BotKey r) = do
   tr []
     [ td []
-        [ if null $ bk.bkLabel
-             then clspan_ "italic" [ text "unnamed" ]
-             else clspan_ "bold"   [ text bk.bkLabel ]
+        [ slot unit editField r.bkLabel (Events.input SetLabel)
         ]
     , td []
-        [ clspan_ "" [ text bk.bkSecret ]
+        [ clspan_ "monospace cursor-pointer" [ text r.bkSecret ]
+        ]
+    , td []
+        [ faButton_ "trash" Delete
         ]
     ]

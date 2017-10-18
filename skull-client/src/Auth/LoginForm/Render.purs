@@ -6,9 +6,8 @@ import Data.Function (($))
 import Data.Semigroup ((<>))
 import Data.String (null)
 import Halogen (ComponentHTML)
-import Halogen.HTML (br_, button, div_, h1_, input, label_, text)
-import Halogen.HTML.Properties (ButtonType(..), InputType(..), type_, value)
-import Util.HTML (cl, cldiv_, doNothingForm_)
+import Halogen.HTML.Extended (cl, cldiv_, doNothingForm_, br_, button, div_, h1_, input, label_, text)
+import Halogen.HTML.Properties (ButtonType(..), InputType(..), autofocus, type_, value)
 
 render :: State
        -> ComponentHTML Query
@@ -23,6 +22,7 @@ render st = cldiv_ "p1 mx-auto col-4" [ doNothingForm_
       , br_
       , input
           [ value st.userName
+          , autofocus true
           , Events.onValueInput (Events.input SetUserName)
           ]
       ]

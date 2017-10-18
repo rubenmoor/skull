@@ -2,35 +2,53 @@ module BotKeyList.Render
   ( render
   ) where
 
+import BotKey.Types as BotKey
 import Data.Array as Array
+import Halogen.HTML.Events as Events
 import BotKey (botKey)
-import BotKeyList.Types (ChildQuery, ChildSlot, Query, State, Effects)
+import BotKeyList.Types (Effects, Query(..), Slot, State)
 import Data.Function (($))
 import Data.Functor (mapFlipped)
-import Data.List (List(..), (:))
+import Data.List (List(..), null, (:))
 import Data.Semiring ((+))
 import Data.Tuple (Tuple(..))
-import Data.Void (absurd)
 import Halogen.Component (ParentHTML)
-import Halogen.Component.ChildPath (cp1)
-import Halogen.HTML (h1_, slot', table_, tbody_, text)
+import Halogen.HTML.Extended (button, cl, cldiv_, clspan_, slot, table, tbody_, td_, text, thead)
 import Ulff (Ulff)
-import Util.HTML (cldiv_)
 
 render
   :: forall eff.
      State
-  -> ParentHTML Query ChildQuery ChildSlot (Ulff (Effects eff))
-render st = cldiv_ "p1"
-  [ h1_
-      [ text "BotKeys"
+  -> ParentHTML Query BotKey.Query Slot (Ulff (Effects eff))
+render st = cldiv_ "bgwhite p1 mx-auto col-8"
+  [ button
+      [ cl "button"
+      , Events.onClick (Events.input_ CreateNew)
       ]
-  , table_
-      [ tbody_
-          let bks = enumerate st.botKeys
-          in  Array.fromFoldable $ mapFlipped bks $ \(Tuple i bk) ->
-                slot' cp1 i botKey bk absurd
+      [ text "Create New"
       ]
+  , if st.isLoading
+    then clspan_ "italic" [ text "Loading ..." ]
+    else if null st.botKeys
+         then cldiv_ "italic" [ text "You don't have any botkeys"]
+         else table
+                [ cl "table"
+                ]
+                [ thead
+                    [ cl "bold"
+                    ]
+                    [ td_
+                        [ text "Label"
+                        ]
+                    , td_
+                        [ text "Key"
+                        ]
+                    ]
+                , tbody_
+                    let bks = enumerate st.botKeys
+                    in  Array.fromFoldable $ mapFlipped bks $ \(Tuple i bk) ->
+                          slot i botKey bk (Events.input Delete)
+                ]
   ]
 
 enumerate :: forall a. List a -> List (Tuple Int a)

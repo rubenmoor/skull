@@ -1,0 +1,9 @@
+.table {
+  border-collapse: collapse;
+  tr td {
+    border-top: 1px solid $red;
+  }
+  td {
+    padding: 10px;
+  }
+}
