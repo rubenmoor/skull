@@ -8,12 +8,11 @@ import Control.Monad.Aff.AVar (AVAR)
 import Control.Monad.Aff.Console (CONSOLE)
 import DOM (DOM)
 import Data.Const (Const)
-import Data.Function (($))
 import Data.Lens (Lens', lens)
 import Halogen.Component.ChildPath (type (\/), type (<\/>))
 import Network.HTTP.Affjax (AJAX)
 import Prelude (Unit, Void)
-import Router (AuthFormLocation(..), Location(..), LoggedInLocation(..), LoggedOutLocation(..), PublicLocation(..))
+import Router (Location(LocLoggedIn), LoggedInLocation(LocLoggedInPublic), PublicLocation(LocHome))
 import Types (Error)
 
 type UserName = String
@@ -36,16 +35,16 @@ type Input = Unit
 -- State
 
 type State =
-  { location :: Location
+  { _location :: Location
   }
 
 initial :: Input -> State
 initial _ =
-  { location: LocLoggedIn (LocLoggedInPublic LocHome)
+  { _location: LocLoggedIn (LocLoggedInPublic LocHome)
   }
 
-_location :: Lens' State Location
-_location = lens _.location (\r l -> r { location = l})
+location :: Lens' State Location
+location = lens _._location (\r l -> r { _location = l})
 
 -- Query
 

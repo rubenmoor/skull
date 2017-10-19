@@ -1,8 +1,9 @@
 module Auth.LoginForm.Render where
 
 import Halogen.HTML.Events as Events
-import Auth.LoginForm.Types (Query(..), State)
+import Auth.LoginForm.Types (Query(..), State, formError, password, userName)
 import Data.Function (($))
+import Data.Lens ((^.))
 import Data.Semigroup ((<>))
 import Data.String (null)
 import Halogen (ComponentHTML)
@@ -21,7 +22,7 @@ render st = cldiv_ "p1 mx-auto col-4" [ doNothingForm_
           ]
       , br_
       , input
-          [ value st.userName
+          [ value $ st ^. userName
           , autofocus true
           , Events.onValueInput (Events.input SetUserName)
           ]
@@ -33,15 +34,15 @@ render st = cldiv_ "p1 mx-auto col-4" [ doNothingForm_
       , br_
       , input
           [ type_ InputPassword
-          , value st.password
+          , value $ st ^. password
           , Events.onValueInput (Events.input SetPassword)
           ]
       ]
   , cldiv_ "mb1 h4" $
-      if null st.formError
+      if null $ st ^. formError
          then []
          else
-           [ text $ "Form error: " <> st.formError
+           [ text $ "Form error: " <> st ^. formError
            ]
   , div_
       [ button

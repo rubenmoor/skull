@@ -40,18 +40,18 @@ new
   :: (Db.Insert m, MonadIO m, MonadReader UserInfo m)
   => m BotKeyNewResponse
 new = do
-  let bkLabel = ""
+  let _bkLabel = ""
   botKeySecret <- Base64.encode <$> liftIO (getEntropy 32)
   uId <- asks _uiUserId
   Db.insert_ Model.BotKey
     { botKeyFkUser = uId
     , botKeySecret
-    , botKeyLabel  = bkLabel
+    , botKeyLabel  = _bkLabel
     }
   pure BotKeyNewResponse
-    { bnrBotKey = BotKey
-      { bkLabel
-      , bkSecret = showt botKeySecret
+    { _bnrBotKey = BotKey
+      { _bkLabel
+      , _bkSecret = showt botKeySecret
       }
     }
 
@@ -61,9 +61,9 @@ all
 all = do
   uId <- asks _uiUserId
   ls <- Db.join1ToMWhere' UserId BotKeyFkUser UserId uId
-  let barBotKeys = flip fmap ls $ \(_, Entity _ Model.BotKey{..}) -> BotKey
-        { bkLabel = botKeyLabel
-        , bkSecret = showt botKeySecret
+  let _barBotKeys = flip fmap ls $ \(_, Entity _ Model.BotKey{..}) -> BotKey
+        { _bkLabel = botKeyLabel
+        , _bkSecret = showt botKeySecret
         }
   pure BotKeyAllResponse{..}
 
@@ -72,16 +72,16 @@ setLabel
   => BotKeySetLabelRequest
   -> m BotKeySetLabelResponse
 setLabel BotKeySetLabelRequest{..} = do
-  (bKey, botKey) <- getBotKey bsrSecret
-  Db.update bKey botKey { Model.botKeyLabel = bsrLabel }
-  pure BotKeySetLabelResponse{ bsresLabel = bsrLabel }
+  (bKey, botKey) <- getBotKey _bsrSecret
+  Db.update bKey botKey { Model.botKeyLabel = _bsrLabel }
+  pure BotKeySetLabelResponse{ _bsresLabel = _bsrLabel }
 
 delete
   :: (Db.Read m, Db.Delete m, MonadReader UserInfo m, MonadError AppError m)
   => BotKeyDeleteRequest
   -> m ()
 delete BotKeyDeleteRequest{..} = do
-  (bKey, _) <- getBotKey bdrSecret
+  (bKey, _) <- getBotKey _bdrSecret
   Db.delete bKey
 
 --

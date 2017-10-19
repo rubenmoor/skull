@@ -21,16 +21,16 @@ type Effects e =
 type Input = LoggedOutLocation
 
 type State =
-  { location :: LoggedOutLocation
+  { _location :: LoggedOutLocation
   }
 
 initialState :: Input -> State
 initialState loc =
-  { location: loc
+  { _location: loc
   }
 
-_location :: Lens' State LoggedOutLocation
-_location = lens _.location (\r l -> r { location = l})
+location :: Lens' State LoggedOutLocation
+location = lens _._location (\r l -> r { _location = l})
 
 data Query a
   = HandleInput Input a

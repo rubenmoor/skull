@@ -20,26 +20,26 @@ type Input = String
 -- State
 
 type State =
-  { userName :: String
-  , password :: String
-  , formError :: String
+  { _userName :: String
+  , _password :: String
+  , _formError :: String
   }
 
 initial :: Input -> State
 initial str =
-  { userName: str
-  , password: ""
-  , formError: ""
+  { _userName: str
+  , _password: ""
+  , _formError: ""
   }
 
-_userName :: Lens' State String
-_userName = lens _.userName (\r str -> r { userName = str })
+userName :: Lens' State String
+userName = lens _._userName (\r str -> r { _userName = str })
 
-_formError :: Lens' State String
-_formError = lens _.formError (\r str -> r { formError = str })
+formError :: Lens' State String
+formError = lens _._formError (\r str -> r { _formError = str })
 
-_password :: Lens' State String
-_password = lens _.password (\r str -> r { password = str })
+password :: Lens' State String
+password = lens _._password (\r str -> r { _password = str })
 
 -- Query
 

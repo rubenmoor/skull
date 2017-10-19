@@ -6,9 +6,10 @@ import BotKey.Types as BotKey
 import Data.Array as Array
 import Halogen.HTML.Events as Events
 import BotKey (botKey)
-import BotKeyList.Types (Effects, Query(..), Slot, State)
+import BotKeyList.Types (Effects, Query(..), Slot, State, botKeys, isLoading)
 import Data.Function (($))
 import Data.Functor (mapFlipped)
+import Data.Lens ((^.))
 import Data.List (List(..), null, (:))
 import Data.Semiring ((+))
 import Data.Tuple (Tuple(..))
@@ -27,9 +28,9 @@ render st = cldiv_ "bgwhite p1 mx-auto col-8"
       ]
       [ text "Create New"
       ]
-  , if st.isLoading
+  , if st ^. isLoading
     then clspan_ "italic" [ text "Loading ..." ]
-    else if null st.botKeys
+    else if null $ st ^. botKeys
          then cldiv_ "italic" [ text "You don't have any botkeys"]
          else table
                 [ cl "table"
@@ -45,7 +46,7 @@ render st = cldiv_ "bgwhite p1 mx-auto col-8"
                         ]
                     ]
                 , tbody_
-                    let bks = enumerate st.botKeys
+                    let bks = enumerate $ st ^. botKeys
                     in  Array.fromFoldable $ mapFlipped bks $ \(Tuple i bk) ->
                           slot i botKey bk (Events.input Delete)
                 ]

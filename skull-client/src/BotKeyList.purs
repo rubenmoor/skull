@@ -4,16 +4,16 @@ module BotKeyList
 
 import BotKey.Types as BotKey
 import BotKeyList.Render (render)
-import BotKeyList.Types (Effects, Input, Message, Query(..), Slot, State, _botKeys, _isLoading, initial)
+import BotKeyList.Types (Effects, Input, Message, Query(..), Slot, State, botKeys, initial, isLoading)
 import Data.Function (($))
-import Data.Lens (use, (%=), (.=))
-import Data.List (delete, fromFoldable, (:))
+import Data.Lens ((%=), (.=), (^.))
+import Data.List (List(Cons), delete, fromFoldable)
 import Data.Maybe (Maybe(..))
 import Halogen (Component, action, lifecycleParentComponent)
 import Halogen.Component (ParentDSL)
 import Halogen.HTML (HTML)
-import HttpApp.BotKey.Api.Types (BotKeyAllResponse(..), BotKeyNewResponse(..))
-import Prelude (type (~>), const, pure, bind, discard)
+import HttpApp.BotKey.Api.Types (barBotKeys, bnrBotKey)
+import Prelude (type (~>), const, discard, pure)
 import ServerAPI (getBotKeyAll, postBotKeyNew)
 import Ulff (Ulff, mkRequest)
 
@@ -33,15 +33,14 @@ eval :: forall eff.
         Query ~> ParentDSL State Query BotKey.Query Slot Message (Ulff  (Effects eff))
 eval = case _ of
   Initialize next -> do
-    mkRequest getBotKeyAll $ \(BotKeyAllResponse r) -> do
-      _isLoading .= false
-      _botKeys .= fromFoldable r.barBotKeys
+    mkRequest getBotKeyAll $ \resp -> do
+      isLoading .= false
+      botKeys .= fromFoldable (resp ^. barBotKeys)
     pure next
   CreateNew next -> do
-    mkRequest postBotKeyNew $ \(BotKeyNewResponse r) -> do
-      bks <- use _botKeys
-      _botKeys .= r.bnrBotKey : bks
+    mkRequest postBotKeyNew $ \resp ->
+      botKeys %= Cons (resp ^. bnrBotKey)
     pure next
   Delete (BotKey.MsgDelete bk) next -> do
-    _botKeys %= delete bk
+    botKeys %= delete bk
     pure next

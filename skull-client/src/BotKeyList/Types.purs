@@ -19,21 +19,21 @@ type Effects e =
 type Input = Unit
 
 type State =
-  { botKeys :: List BotKey
-  , isLoading :: Boolean
+  { _botKeys :: List BotKey
+  , _isLoading :: Boolean
   }
 
 initial :: Input -> State
 initial _ =
-  { botKeys: Nil
-  , isLoading: true
+  { _botKeys: Nil
+  , _isLoading: true
   }
 
-_botKeys :: Lens' State (List BotKey)
-_botKeys = lens _.botKeys (\r bs -> r { botKeys = bs })
+botKeys :: Lens' State (List BotKey)
+botKeys = lens _._botKeys (\r bs -> r { _botKeys = bs })
 
-_isLoading :: Lens' State Boolean
-_isLoading = lens _.isLoading (\r b -> r { isLoading = b})
+isLoading :: Lens' State Boolean
+isLoading = lens _._isLoading (\r b -> r { _isLoading = b})
 
 data Query a
   = Initialize a

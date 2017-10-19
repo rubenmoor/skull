@@ -50,23 +50,23 @@ userNew :: (MonadIO m, Db.Read m, Db.Insert m)
         => UserNewRequest
         -> m UserNewResponse
 userNew UserNewRequest{..} =
-  Db.getOneWhere UserName unrUserName >>= \case
+  Db.getOneWhere UserName _unrUserName >>= \case
     Right _ -> pure $ UserNewFailed "username already exists"
     Left  _ -> do
-      pwHash <- mkPwHash unrPassword
+      pwHash <- mkPwHash _unrPassword
       uId <- Db.insert User
-        { userName = unrUserName
+        { userName = _unrUserName
         , userPwHash = pwHash
         , userEmail = Nothing
         }
       sKey <- createSession uId
-      pure $ UserNewSuccess unrUserName $ showt sKey
+      pure $ UserNewSuccess _unrUserName $ showt sKey
 
 userExists :: (Db.Read m, Monad m)
            => UserExistsRequest
            -> m Bool
 userExists UserExistsRequest{..} =
-  not . null <$> Db.getWhere UserName uerName
+  not . null <$> Db.getWhere UserName _uerName
 
 login :: (Db.Read m, Db.Delete m, Db.Insert m, MonadIO m)
           => LoginRequest
@@ -84,9 +84,9 @@ login LoginRequest{..} =
       pure user
     getUser =
       ExceptT $ over _Left (\_ -> "user name unknown") <$>
-        Db.getOneWhere UserName lrUserName
+        Db.getOneWhere UserName _lrUserName
     checkPassword_ (Entity _ User{..}) =
-      if verifyPassword lrPassword userPwHash
+      if verifyPassword _lrPassword userPwHash
         then pure ()
         else throwError "wrong password"
 
@@ -110,7 +110,7 @@ getName :: MonadReader UserInfo m
      => m UserNameResponse
 getName = do
   name <- asks $ view uiUserName
-  pure UserNameResponse { unrName = name }
+  pure UserNameResponse { _unrName = name }
 
 --
 

@@ -9,12 +9,13 @@ import BotKey.Types (Effects, Input, Message(..), Query(..), Slot, State, initia
 import Control.Applicative (pure)
 import Control.Monad.State (get, put)
 import Data.Function (($))
+import Data.Lens (use, (.=), (^.))
 import Data.NaturalTransformation (type (~>))
 import Halogen (Component, parentComponent, raise)
 import Halogen.Component (ParentDSL)
 import Halogen.HTML (HTML)
-import HttpApp.BotKey.Api.Types (BotKeyDeleteRequest(..), BotKeySetLabelRequest(..), BotKeySetLabelResponse(..))
-import HttpApp.BotKey.Types (BotKey(BotKey))
+import HttpApp.BotKey.Api.Types (BotKeyDeleteRequest(BotKeyDeleteRequest), BotKeySetLabelRequest(BotKeySetLabelRequest), bsresLabel)
+import HttpApp.BotKey.Types (bkLabel, bkSecret)
 import Prelude (discard, bind)
 import ServerAPI (deleteBotKey, postBotKeySetLabel)
 import Ulff (Ulff, mkRequest)
@@ -38,18 +39,18 @@ eval = case _ of
     put bk
     pure next
   SetLabel (EditField.NewLabel str) next -> do
-    BotKey r <- get
+    secret <- use bkSecret
     let body = BotKeySetLabelRequest
-          { bsrSecret: r.bkSecret
-          , bsrLabel: str
+          { _bsrSecret: secret
+          , _bsrLabel: str
           }
-    mkRequest (postBotKeySetLabel body) $ \(BotKeySetLabelResponse res) ->
-      put $ BotKey r { bkLabel = res.bsresLabel }
+    mkRequest (postBotKeySetLabel body) $ \resp ->
+      bkLabel .= resp ^. bsresLabel
     pure next
   Delete next -> do
-    bk@(BotKey r) <- get
+    bk <- get
     let body = BotKeyDeleteRequest
-          { bdrSecret: r.bkSecret
+          { _bdrSecret: bk ^. bkSecret
           }
     mkRequest (deleteBotKey body) $ \_ ->
       raise $ MsgDelete bk

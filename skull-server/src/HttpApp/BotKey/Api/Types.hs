@@ -9,22 +9,22 @@ import           GHC.Generics         (Generic)
 import           HttpApp.BotKey.Types (BotKey, Label, Secret)
 
 data BotKeyNewResponse = BotKeyNewResponse
-  { bnrBotKey :: BotKey
+  { _bnrBotKey :: BotKey
   } deriving (Generic, ToJSON)
 
 data BotKeyAllResponse = BotKeyAllResponse
-  { barBotKeys :: [BotKey]
+  { _barBotKeys :: [BotKey]
   } deriving (Generic, ToJSON)
 
 data BotKeySetLabelRequest = BotKeySetLabelRequest
-  { bsrSecret :: Secret
-  , bsrLabel  :: Label
+  { _bsrSecret :: Secret
+  , _bsrLabel  :: Label
   } deriving (Generic, FromJSON)
 
 data BotKeySetLabelResponse = BotKeySetLabelResponse
-  { bsresLabel :: Label
+  { _bsresLabel :: Label
   } deriving (Generic, ToJSON)
 
 data BotKeyDeleteRequest = BotKeyDeleteRequest
-  { bdrSecret :: Secret
+  { _bdrSecret :: Secret
   } deriving (Generic, FromJSON)

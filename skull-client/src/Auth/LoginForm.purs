@@ -4,7 +4,7 @@ module Auth.LoginForm
 
 import Halogen.HTML.Events as Events
 import Auth.LoginForm.Render (render)
-import Auth.LoginForm.Types (Input, Message, Query(..), State, Effects, _formError, _password, _userName, initial)
+import Auth.LoginForm.Types (Input, Message, Query(..), State, Effects, formError, password, userName, initial)
 import Basil (setSessionKey)
 import Data.Lens (use, (.=))
 import Data.String (null)
@@ -29,32 +29,32 @@ loginForm =
 eval :: forall eff.
         Query ~> ComponentDSL State Query Message (Ulff (Effects eff))
 eval = case _ of
-    HandleInput userName next -> do
-      _userName .= userName
+    HandleInput str next -> do
+      userName .= str
       pure next
-    SetUserName userName next -> do
-      _userName .= userName
-      _formError .= ""
+    SetUserName str next -> do
+      userName .= str
+      formError .= ""
       pure next
-    SetPassword password next -> do
-      _password .= password
-      _formError .= ""
+    SetPassword pwd next -> do
+      password .= pwd
+      formError .= ""
       pure next
     Submit next -> do
-      userName <- use _userName
-      password <- use _password
-      if isValid userName && isValid password
-         then submit userName password
-         else _formError .= "Username and passowrd cannot be empty"
+      name <- use userName
+      pwd <- use password
+      if isValid name && isValid pwd
+         then submit name pwd
+         else formError .= "Username and passowrd cannot be empty"
       pure next
   where
     submit name pwd = do
       let loginRequest = LoginRequest
-            { lrUserName: name
-            , lrPassword: pwd
+            { _lrUserName: name
+            , _lrPassword: pwd
             }
       mkRequest (postUserLogin loginRequest) $ case _ of
-        LoginFailed msg -> _formError .= msg
+        LoginFailed msg -> formError .= msg
         LoginSuccess userName sessionKey -> do
           setSessionKey sessionKey
           gotoLocation $ LocLoggedIn $ LocLoggedInPublic LocHome

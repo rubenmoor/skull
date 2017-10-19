@@ -3,13 +3,12 @@ module LoggedOut
   ) where
 
 import Data.Lens ((.=))
-import Data.Maybe (Maybe(..))
 import Halogen (Component, ParentDSL, parentComponent)
 import Halogen.HTML (HTML)
 import Halogen.HTML.Events as Events
 import LoggedOut.Render (render)
-import LoggedOut.Types (ChildQuery, ChildSlot, Effects, Input, Message, Query(..), State, _location, initialState)
-import Prelude (type (~>), const, discard, pure)
+import LoggedOut.Types (ChildQuery, ChildSlot, Effects, Input, Message, Query(..), State, location, initialState)
+import Prelude (type (~>), discard, pure)
 import Ulff (Ulff)
 
 loggedOut :: forall eff.
@@ -26,5 +25,5 @@ eval :: forall eff.
         Query ~> ParentDSL State Query ChildQuery ChildSlot Message (Ulff (Effects eff))
 eval = case _ of
   HandleInput loc next -> do
-    _location .= loc
+    location .= loc
     pure next

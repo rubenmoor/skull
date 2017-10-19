@@ -21,21 +21,21 @@ data UserNameCheck
   | UserNameInvalid
 
 type State =
-  { userNameLookup :: UserNameCheck
-  , userName :: String
+  { _userNameLookup :: UserNameCheck
+  , _userName :: String
   }
 
-initialState :: State
-initialState =
-  { userNameLookup: UserNameNothing
-  , userName: ""
+initial :: Input -> State
+initial str =
+  { _userNameLookup: UserNameNothing
+  , _userName: str
   }
 
-_userNameLookup :: Lens' State UserNameCheck
-_userNameLookup = lens _.userNameLookup (\r unc -> r { userNameLookup = unc })
+userNameLookup :: Lens' State UserNameCheck
+userNameLookup = lens _._userNameLookup (\r unc -> r { _userNameLookup = unc })
 
-_userName :: Lens' State String
-_userName = lens _.userName (\r unc -> r { userName = unc })
+userName :: Lens' State String
+userName = lens _._userName (\r unc -> r { _userName = unc })
 
 -- query
 

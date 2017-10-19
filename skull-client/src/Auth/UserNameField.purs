@@ -4,7 +4,7 @@ module  Auth.UserNameField
 
 import Halogen.HTML.Events as Events
 import Auth.UserNameField.Render (render)
-import Auth.UserNameField.Types (Effects, Input, Message(..), Query(..), State, UserNameCheck(..), _userName, _userNameLookup, initialState)
+import Auth.UserNameField.Types (Effects, Input, Message(..), Query(..), State, UserNameCheck(..), userName, userNameLookup, initial)
 import Data.Lens (use, (.=))
 import Data.String (null)
 import Halogen (Component, ComponentDSL, component, raise)
@@ -18,7 +18,7 @@ userNameField :: forall eff.
                  Component HTML Query Input Message (Ulff (Effects eff))
 userNameField =
   component
-    { initialState: \name -> initialState { userName = name }
+    { initialState: initial
     , render
     , eval
     , receiver: Events.input HandleInput
@@ -27,26 +27,26 @@ userNameField =
 eval :: forall eff.
         Query ~> ComponentDSL State Query Message (Ulff (Effects eff))
 eval = case _ of
-    HandleInput userName next -> do
-      _userName .= userName
+    HandleInput str next -> do
+      userName .= str
       pure next
-    SetUsername username next -> do
-      _userName .= username
-      _userNameLookup .= UserNameNothing
+    SetUsername str next -> do
+      userName .= str
+      userNameLookup .= UserNameNothing
       pure next
     CheckUserName next -> do
-      userName <- use _userName
-      if isValid userName
-          then lookup userName
-          else _userNameLookup .= UserNameInvalid
-      raise $ UserName userName
+      name <- use userName
+      if isValid name
+          then lookup name
+          else userNameLookup .= UserNameInvalid
+      raise $ UserName name
       pure next
   where
     lookup name = do
-      _userNameLookup .= UserNameLoading
-      let reqBody = UserExistsRequest { uerName: name }
+      userNameLookup .= UserNameLoading
+      let reqBody = UserExistsRequest { _uerName: name }
       mkRequest' showError (postUserExists reqBody) \exists ->
-        _userNameLookup .= if exists then UserNameExists else UserNameOk
+        userNameLookup .= if exists then UserNameExists else UserNameOk
 
 isValid :: String -> Boolean
 isValid = not <<< null

@@ -11,8 +11,8 @@ import           GHC.Generics       (Generic)
 import           HttpApp.User.Types (UserName)
 
 data UserNewRequest = UserNewRequest
-  { unrUserName :: UserName
-  , unrPassword :: Text
+  { _unrUserName :: UserName
+  , _unrPassword :: Text
   } deriving (Generic, FromJSON, ToJSON)
 
 data UserNewResponse
@@ -21,12 +21,12 @@ data UserNewResponse
   deriving (Generic, ToJSON)
 
 data UserNameResponse = UserNameResponse
-  { unrName :: UserName
+  { _unrName :: UserName
   } deriving (Generic, ToJSON)
 
 data LoginRequest = LoginRequest
-  { lrUserName :: UserName
-  , lrPassword :: Text
+  { _lrUserName :: UserName
+  , _lrPassword :: Text
   } deriving (Generic, FromJSON, ToJSON)
 
 data LoginResponse
@@ -38,5 +38,5 @@ data LogoutResponse = LogoutResponse
   deriving (Generic, ToJSON)
 
 data UserExistsRequest = UserExistsRequest
-  { uerName :: UserName
+  { _uerName :: UserName
   } deriving (Generic, FromJSON, ToJSON)

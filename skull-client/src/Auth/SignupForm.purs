@@ -6,9 +6,9 @@ import Prelude
 import Auth.UserNameField.Types as UserNameField
 import Halogen.HTML.Events as Events
 import Auth.SignupForm.Render (render)
-import Auth.SignupForm.Types (Input, Message, Query(..), Slot, State, Effects, _formError, _password, _userName, initialState)
+import Auth.SignupForm.Types (Input, Message, Query(..), Slot, State, Effects, formError, password, userName, initial)
 import Basil (setSessionKey)
-import Data.Lens (use, (.=), (.~))
+import Data.Lens (use, (.=))
 import Data.String (null)
 import Halogen (Component, ParentDSL, parentComponent)
 import Halogen.HTML (HTML)
@@ -21,7 +21,7 @@ signupForm :: forall eff.
               Component HTML Query Input Message (Ulff (Effects eff))
 signupForm =
   parentComponent
-    { initialState: \userName -> initialState # _userName .~ userName
+    { initialState: initial
     , render: render
     , eval: eval
     , receiver: Events.input HandleInput
@@ -30,32 +30,32 @@ signupForm =
 eval :: forall eff.
         Query ~> ParentDSL State Query UserNameField.Query Slot Message (Ulff (Effects eff))
 eval = case _ of
-    HandleInput userName next -> do
-      _userName .= userName
+    HandleInput str next -> do
+      userName .= str
       pure next
-    HandleUserNameField (UserNameField.UserName userName) next -> do
-      _userName .= userName
-      _formError .= ""
+    HandleUserNameField (UserNameField.UserName str) next -> do
+      userName .= str
+      formError .= ""
       pure next
-    SetPassword password next -> do
-      _password .= password
-      _formError .= ""
+    SetPassword str next -> do
+      password .= str
+      formError .= ""
       pure next
     Submit next -> do
-      userName <- use _userName
-      password <- use _password
-      if isValid userName && isValid password
-         then submit userName password
-         else _formError .= "Username and password cannot be empty"
+      name <- use userName
+      pwd  <- use password
+      if isValid name && isValid pwd
+         then submit name pwd
+         else formError .= "Username and password cannot be empty"
       pure next
   where
     submit name pwd = do
       let userNewRequest = UserNewRequest
-            { unrUserName: name
-            , unrPassword: pwd
+            { _unrUserName: name
+            , _unrPassword: pwd
             }
       mkRequest (postUserNew userNewRequest) $ case _ of
-        UserNewFailed msg -> _formError .= msg
+        UserNewFailed msg -> formError .= msg
         UserNewSuccess userName sessionKey -> do
           setSessionKey sessionKey
           gotoLocation $ LocLoggedIn $ LocLoggedInPublic LocHome

@@ -29,21 +29,21 @@ type Input = LoggedInLocation
 -- state
 
 type State =
-  { location :: LoggedInLocation
-  , userName :: UserName
+  { _location :: LoggedInLocation
+  , _userName :: UserName
   }
 
 initial :: Input -> State
 initial loc =
-  { location: loc
-  , userName: ""
+  { _location: loc
+  , _userName: ""
   }
 
-_userName :: Lens' State UserName
-_userName = lens _.userName (\r u -> r { userName = u })
+userName :: Lens' State UserName
+userName = lens _._userName (\r u -> r { _userName = u })
 
-_location :: Lens' State LoggedInLocation
-_location = lens _.location (\r l -> r { location = l})
+location :: Lens' State LoggedInLocation
+location = lens _._location (\r l -> r { _location = l})
 
 -- query
 
