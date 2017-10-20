@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE RecordWildCards       #-}
@@ -10,13 +9,13 @@ module Auth
   ( authHandler
   ) where
 
-import           Control.Lens           ((.~), (^.))
 import           Control.Monad.Except   (ExceptT (..), lift, runExceptT)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (ReaderT (..))
 import           Data.Text              (Text)
 import qualified Data.Time.Clock        as Clock
-import           Database.Gerippe       (Entity (..))
+import           Database.Esqueleto     (Entity (..), InnerJoin (..), from, set,
+                                         val, where_, (&&.), (=.), (==.), (^.))
 import           Diener                 (DienerT (..), throwError)
 import           Servant                ((:~>) (..), enter)
 import           Servant.Utils.Enter    (Enter)
@@ -47,18 +46,16 @@ lookupSession :: (Db.Read m, Db.Delete m, Db.Update m, MonadIO m)
               => SessionKey
               -> m (Either Text UserInfo)
 lookupSession key = runExceptT $ do
-    (Entity sKey Session{..}, Entity uId User{..}) <- sessionQuery
+    (Entity sId Session{..}, Entity uId User{..}) <- sessionQuery
     now <- liftIO Clock.getCurrentTime
     if now > sessionExpiry
-        then do lift $ Db.delete sKey
+        then do lift $ Db.deleteByKey sId
                 throwError "session expired"
         else do
           let newExpiry = Clock.addUTCTime sessionLength now
-          lift $ Db.update sKey $ Session
-            { sessionFkUser = sessionFkUser
-            , sessionExpiry = newExpiry
-            , sessionKey = sessionKey
-            }
+          lift $ Db.update $ \s -> do
+            set s [ SessionExpiry =. val newExpiry ]
+            where_ $ s ^. SessionId ==. val sId
           pure UserInfo
             { _uiUserId     = uId
             , _uiUserName   = userName
@@ -66,8 +63,12 @@ lookupSession key = runExceptT $ do
             , _uiSessionKey = sessionKey
             }
   where
-    sessionQuery =
-      lift (Db.joinMTo1Where' SessionFkUser UserId SessionKey key) >>= \case
+    sessionQuery = do
+      ls <- lift $ Db.select $ from $ \(s `InnerJoin` u) -> do
+        where_ $ (s ^. SessionKey ==. val key)
+             &&. (u ^. UserId ==. s ^. SessionFkUser)
+        pure (s, u)
+      case ls of
         []    -> throwError "session not found"
         _:_:_ -> throwError "multiple sessions found"
         [res] -> pure res

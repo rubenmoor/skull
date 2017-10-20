@@ -1,7 +1,7 @@
 { mkDerivation, aeson, base, base64-bytestring, bytestring
 , case-insensitive, containers, data-default, diener, directory
-, email-validate, entropy, gerippe, http-api-data, http-types, lens
-, lifted-base, monad-control, monad-logger, mtl
+, email-validate, entropy, esqueleto, http-api-data, http-types
+, lens, lifted-base, monad-control, monad-logger, mtl
 , optparse-applicative, parsec, persistent, persistent-sqlite
 , persistent-template, product-profunctors, purescript-bridge
 , pwstore-fast, servant, servant-docs, servant-purescript
@@ -16,8 +16,8 @@ mkDerivation {
   isExecutable = true;
   libraryHaskellDepends = [
     aeson base base64-bytestring bytestring case-insensitive containers
-    diener email-validate entropy gerippe http-api-data http-types lens
-    lifted-base monad-control monad-logger mtl parsec persistent
+    diener email-validate entropy esqueleto http-api-data http-types
+    lens lifted-base monad-control monad-logger mtl parsec persistent
     persistent-template product-profunctors pwstore-fast servant
     servant-docs servant-purescript servant-server text text-show time
     transformers transformers-base wai

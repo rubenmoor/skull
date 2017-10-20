@@ -47,7 +47,7 @@ library
                      , diener
                      , email-validate
                      , entropy
-                     , gerippe
+                     , esqueleto
                      , http-api-data
                      , http-types
                      , lens

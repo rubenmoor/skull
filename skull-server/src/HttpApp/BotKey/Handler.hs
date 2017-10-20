@@ -6,12 +6,12 @@
 
 module HttpApp.BotKey.Handler where
 
-import           Prelude                             (IO, flip, fmap, pure, ($),
-                                                      (<$>))
-
+import           Control.Monad                       (when)
 import           Control.Monad.Except                (MonadError, throwError)
 import           Control.Monad.IO.Class              (MonadIO, liftIO)
 import           Control.Monad.Reader                (MonadReader, asks)
+import           Prelude                             (Functor, IO, flip, fmap,
+                                                      pure, ($), (<$>), (==))
 import           Servant                             ((:<|>) (..), ServerT)
 import           System.Entropy                      (getEntropy)
 import           TextShow                            (showt)
@@ -19,13 +19,15 @@ import           TextShow                            (showt)
 import           Auth.Types                          (UserInfo (..))
 import qualified Data.ByteString.Base64.URL.Extended as Base64
 import qualified Database.Class                      as Db
-import           Database.Gerippe                    (Entity (..))
+import           Database.Esqueleto                  (Entity (..),
+                                                      InnerJoin (..), from, set,
+                                                      val, where_, (&&.), (=.),
+                                                      (==.), (^.))
 import           Handler                             (HandlerProtectedT)
 import qualified HttpApp.BotKey.Api                  as Api
 import           HttpApp.BotKey.Api.Types
-import           HttpApp.BotKey.Types                (BotKey (..), Secret)
-import           HttpApp.Model                       (BotKeyId,
-                                                      EntityField (..))
+import           HttpApp.BotKey.Types                (BotKey (..))
+import           HttpApp.Model                       (EntityField (..))
 import qualified HttpApp.Model                       as Model
 import           Types                               (AppError (..))
 
@@ -60,8 +62,11 @@ all
   => m BotKeyAllResponse
 all = do
   uId <- asks _uiUserId
-  ls <- Db.join1ToMWhere' UserId BotKeyFkUser UserId uId
-  let _barBotKeys = flip fmap ls $ \(_, Entity _ Model.BotKey{..}) -> BotKey
+  bks <- Db.select $ from $ \(u `InnerJoin` bk) -> do
+    where_ $ (bk ^. BotKeyFkUser ==. u ^. UserId)
+         &&. (u ^. UserId ==. val uId)
+    pure bk
+  let _barBotKeys = forEach bks $ \(Entity _ Model.BotKey{..}) -> BotKey
         { _bkLabel = botKeyLabel
         , _bkSecret = showt botKeySecret
         }
@@ -72,30 +77,33 @@ setLabel
   => BotKeySetLabelRequest
   -> m BotKeySetLabelResponse
 setLabel BotKeySetLabelRequest{..} = do
-  (bKey, botKey) <- getBotKey _bsrSecret
-  Db.update bKey botKey { Model.botKeyLabel = _bsrLabel }
-  pure BotKeySetLabelResponse{ _bsresLabel = _bsrLabel }
+  uId <- asks _uiUserId
+  let secret = Base64.fromText _bsrSecret
+  n <- Db.updateCount $ \bk -> do
+    set bk [ BotKeyLabel =. val _bsrLabel ]
+    where_ $ (bk ^. BotKeyFkUser ==. val uId)
+         &&. (bk ^. BotKeySecret ==. val secret)
+  if n == 0
+    then throwError $ ErrDatabase "BotKey not found"
+    else pure BotKeySetLabelResponse{ _bsresLabel = _bsrLabel }
 
 delete
   :: (Db.Read m, Db.Delete m, MonadReader UserInfo m, MonadError AppError m)
   => BotKeyDeleteRequest
   -> m ()
 delete BotKeyDeleteRequest{..} = do
-  (bKey, _) <- getBotKey _bdrSecret
-  Db.delete bKey
+  uId <- asks _uiUserId
+  let secret = Base64.fromText _bdrSecret
+  n <- Db.deleteCount $ from $ \bk ->
+    where_ $ (bk ^. BotKeyFkUser ==. val uId)
+         &&. (bk ^. BotKeySecret ==. val secret)
+  when (n == 0) $ throwError $ ErrDatabase "BotKey not found"
 
 --
 
-getBotKey
-  :: (Db.Read m, MonadReader UserInfo m, MonadError AppError m)
-  => Secret
-  -> m (BotKeyId, Model.BotKey)
-getBotKey secret = do
-  uId <- asks _uiUserId
-  ls <- Db.join1ToMWhere2' UserId BotKeyFkUser
-                           UserId uId
-                           BotKeySecret (Base64.fromText secret)
-  case ls of
-    []    -> throwError $ ErrDatabase "botkey not found"
-    _:_:_ -> throwError $ ErrDatabase "multiple botkeys in database"
-    [(_, Entity bKey botKey)] -> pure (bKey, botKey)
+forEach
+  :: Functor m
+  => m a
+  -> (a -> b)
+  -> m b
+forEach = flip fmap

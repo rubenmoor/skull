@@ -4,9 +4,9 @@
 
 module Types where
 
-import           Data.Text        (Text)
-import           Database.Gerippe (ConnectionPool)
-import           Diener           (LogEnv)
+import           Data.Text          (Text)
+import           Database.Esqueleto (ConnectionPool)
+import           Diener             (LogEnv)
 
 type Env = LogEnv AppEnv
 

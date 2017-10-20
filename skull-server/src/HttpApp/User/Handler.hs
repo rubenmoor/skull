@@ -7,15 +7,13 @@
 
 module HttpApp.User.Handler where
 
-import           Control.Lens
-import           Control.Monad.Except                (ExceptT (ExceptT),
-                                                      MonadError, runExceptT,
+import           Control.Lens                        (view)
+import           Control.Monad.Except                (MonadError, runExceptT,
                                                       throwError)
 import           Control.Monad.IO.Class              (MonadIO, liftIO)
 import           Control.Monad.Reader                (MonadReader, asks)
-import           Data.Foldable                       (for_)
+import           Control.Monad.Trans.Class           (lift)
 import qualified Data.Time.Clock                     as Clock
-import           Database.Gerippe                    (Entity (..))
 import           Servant                             ((:<|>) (..), ServerT)
 import           System.Entropy                      (getEntropy)
 import           TextShow                            (showt)
@@ -24,6 +22,8 @@ import           Auth.Types                          (UserInfo, sessionLength,
                                                       uiUserId, uiUserName)
 import qualified Data.ByteString.Base64.URL.Extended as Base64
 import qualified Database.Class                      as Db
+import           Database.Esqueleto                  (Entity (..), from, val,
+                                                      where_, (==.), (^.))
 import           Handler                             (HandlerProtectedT,
                                                       HandlerT)
 import           HttpApp.Model                       (EntityField (..),
@@ -31,8 +31,8 @@ import           HttpApp.Model                       (EntityField (..),
                                                       UserId)
 import qualified HttpApp.User.Api                    as Api
 import           HttpApp.User.Api.Types
-import           HttpApp.User.Types                  (SessionKey, mkPwHash,
-                                                      verifyPassword)
+import           HttpApp.User.Types                  (SessionKey, UserName,
+                                                      mkPwHash, verifyPassword)
 import           Types                               (AppError (..))
 
 public :: ServerT Api.Public (HandlerT IO)
@@ -50,9 +50,9 @@ userNew :: (MonadIO m, Db.Read m, Db.Insert m)
         => UserNewRequest
         -> m UserNewResponse
 userNew UserNewRequest{..} =
-  Db.getOneWhere UserName _unrUserName >>= \case
-    Right _ -> pure $ UserNewFailed "username already exists"
-    Left  _ -> do
+  null <$> getUsersByName _unrUserName >>= \case
+    False -> pure $ UserNewFailed "username already exists"
+    True  -> do
       pwHash <- mkPwHash _unrPassword
       uId <- Db.insert User
         { userName = _unrUserName
@@ -66,7 +66,7 @@ userExists :: (Db.Read m, Monad m)
            => UserExistsRequest
            -> m Bool
 userExists UserExistsRequest{..} =
-  not . null <$> Db.getWhere UserName _uerName
+  not . null <$> getUsersByName _uerName
 
 login :: (Db.Read m, Db.Delete m, Db.Insert m, MonadIO m)
           => LoginRequest
@@ -83,8 +83,10 @@ login LoginRequest{..} =
       checkPassword_ user
       pure user
     getUser =
-      ExceptT $ over _Left (\_ -> "user name unknown") <$>
-        Db.getOneWhere UserName _lrUserName
+      lift (getUsersByName _lrUserName) >>= \case
+        []    -> throwError "username unknown"
+        _:_:_ -> throwError "database inconsistency: multiple users"
+        [u]   -> pure u
     checkPassword_ (Entity _ User{..}) =
       if verifyPassword _lrPassword userPwHash
         then pure ()
@@ -92,8 +94,7 @@ login LoginRequest{..} =
 
     getSession uId = do
       -- when logged in: log out first
-      ss <- Db.getWhere SessionFkUser uId
-      for_ ss $ \(Entity sId _) -> Db.delete sId
+      Db.delete $ from $ \s -> where_ $ s ^. SessionFkUser ==. val uId
       -- and create brand-new session
       createSession uId
 
@@ -101,10 +102,10 @@ logout :: (MonadError AppError m, Db.Read m, Db.Delete m, MonadReader UserInfo m
        => m LogoutResponse
 logout = do
   uId <- asks $ view uiUserId
-  Db.getOneWhere SessionFkUser uId >>= \case
-    Left msg              -> throwError $ ErrBug msg
-    Right (Entity sKey _) -> Db.delete sKey
-  pure LogoutResponse
+  n <- Db.deleteCount $ from $ \s -> where_ $ s ^. SessionFkUser ==. val uId
+  if n == 0
+    then throwError $ ErrBug "not logged in"
+    else pure LogoutResponse
 
 getName :: MonadReader UserInfo m
      => m UserNameResponse
@@ -123,3 +124,12 @@ createSession sessionFkUser = do
   sessionExpiry <- liftIO $ Clock.addUTCTime sessionLength <$> Clock.getCurrentTime
   Db.insert_ Session{..}
   pure sessionKey
+
+getUsersByName
+  :: Db.Read m
+  => UserName
+  -> m [Entity User]
+getUsersByName str =
+  Db.select $ from $ \u -> do
+    where_ $ u ^. UserName ==. val str
+    pure u

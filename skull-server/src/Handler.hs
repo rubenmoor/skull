@@ -35,8 +35,8 @@ import qualified Data.ByteString.Lazy        as ByteString.Lazy
 import           Data.Monoid                 ((<>))
 import qualified Data.Text                   as Text
 import qualified Data.Text.Encoding          as Text
-import           Database.Gerippe            (SqlPersistT, runSqlPool)
-import qualified Database.Gerippe            as Gerippe
+import qualified Database.Esqueleto          as Esqueleto
+import qualified Database.Persist            as Persist (delete)
 import           Diener                      (DienerT (..), LogEnv (logEnv),
                                               logError, runDienerT, throwError)
 import           Servant                     ((:~>) (..), Handler,
@@ -55,6 +55,7 @@ deriving instance MonadBase IO m => MonadBase IO (HandlerT m)
 
 instance MonadReader UserInfo m => MonadReader UserInfo (HandlerT m) where
   ask = lift ask
+  -- TODO: local
 
 instance MonadTransControl HandlerT where
   type StT HandlerT m = StT (DienerT AppError AppEnv) m
@@ -98,34 +99,29 @@ type IOConstraint m = (MonadBaseControl IO m, MonadIO m)
 
 runQuery
   :: IOConstraint m
-  => SqlPersistT (HandlerT m) a
+  => Esqueleto.SqlPersistT (HandlerT m) a
   -> HandlerT m a
 runQuery query = do
   pool <- HandlerT $ asks $ envDbConnection . logEnv
-  catch (runSqlPool query pool) $ \(SomeException e) -> do
+  catch (Esqueleto.runSqlPool query pool) $ \(SomeException e) -> do
     let msg = Text.pack $ show e
     $logError "runSqlPool failed."
     $logError $ "Error: " <> msg
     throwError $ ErrDatabase msg
 
 instance IOConstraint m => Db.Read (HandlerT m) where
-  get = runQuery . Gerippe.get
-  getAll = runQuery Gerippe.getAll
-  getWhere field value = runQuery $ Gerippe.getWhere field value
-  joinMTo1Where' fkField idField field value =
-    runQuery $ Gerippe.joinMTo1Where' fkField idField field value
-  join1ToMWhere idField fkField field value =
-    runQuery $ Gerippe.join1ToMWhere idField fkField field value
-  join1ToMWhere' idField fkField field value =
-    runQuery $ Gerippe.join1ToMWhere' idField fkField field value
-  join1ToMWhere2' idField fkField field1 value1 field2 value2 =
-    runQuery $ Gerippe.join1ToMWhere2' idField fkField field1 value1 field2 value2
+  get = runQuery . Esqueleto.get
+  select = runQuery . Esqueleto.select
 
 instance IOConstraint m => Db.Insert (HandlerT m) where
-  insert = runQuery . Gerippe.insert
+  insert = runQuery . Esqueleto.insert
+  insertSelect = runQuery . Esqueleto.insertSelect
 
 instance IOConstraint m => Db.Delete (HandlerT m) where
-  delete = runQuery . Gerippe.delete
+  deleteByKey = runQuery . Persist.delete
+  delete = runQuery . Esqueleto.delete
+  deleteCount = runQuery . Esqueleto.deleteCount
 
 instance IOConstraint m => Db.Update (HandlerT m) where
-  update key = runQuery . Gerippe.replace key
+  update = runQuery . Esqueleto.update
+  updateCount = runQuery . Esqueleto.updateCount
