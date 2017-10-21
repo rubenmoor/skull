@@ -27,5 +27,11 @@ render _ = nav
           ]
           [ text "BotKeys"
           ]
+      , button
+        [ cl "button--navigation"
+        , Events.onClick $ Events.input_ GotoPlayNow
+        ]
+        [ text "Play now"
+        ]
       ]
   ]

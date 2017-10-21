@@ -47,31 +47,31 @@ protected =
   :<|> getName
 
 userNew :: (MonadIO m, Db.Read m, Db.Insert m)
-        => UserNewRequest
-        -> m UserNewResponse
-userNew UserNewRequest{..} =
-  null <$> getUsersByName _unrUserName >>= \case
-    False -> pure $ UserNewFailed "username already exists"
+        => UserNewRq
+        -> m UserNewResp
+userNew UserNewRq{..} =
+  null <$> getUsersByName _nrqUserName >>= \case
+    False -> pure $ NewFailed "username already exists"
     True  -> do
-      pwHash <- mkPwHash _unrPassword
+      pwHash <- mkPwHash _nrqPassword
       uId <- Db.insert User
-        { userName = _unrUserName
+        { userName = _nrqUserName
         , userPwHash = pwHash
         , userEmail = Nothing
         }
       sKey <- createSession uId
-      pure $ UserNewSuccess _unrUserName $ showt sKey
+      pure $ NewSuccess _nrqUserName $ showt sKey
 
 userExists :: (Db.Read m, Monad m)
-           => UserExistsRequest
+           => UserExistsRq
            -> m Bool
-userExists UserExistsRequest{..} =
-  not . null <$> getUsersByName _uerName
+userExists UserExistsRq{..} =
+  not . null <$> getUsersByName _erqUserName
 
 login :: (Db.Read m, Db.Delete m, Db.Insert m, MonadIO m)
-          => LoginRequest
-          -> m LoginResponse
-login LoginRequest{..} =
+          => LoginRq
+          -> m LoginResp
+login LoginRq{..} =
     checkLogin >>= \case
       Left  err  -> pure $ LoginFailed err
       Right (Entity uId User{..}) -> do
@@ -83,12 +83,12 @@ login LoginRequest{..} =
       checkPassword_ user
       pure user
     getUser =
-      lift (getUsersByName _lrUserName) >>= \case
+      lift (getUsersByName _lrqUserName) >>= \case
         []    -> throwError "username unknown"
         _:_:_ -> throwError "database inconsistency: multiple users"
         [u]   -> pure u
     checkPassword_ (Entity _ User{..}) =
-      if verifyPassword _lrPassword userPwHash
+      if verifyPassword _lrqPassword userPwHash
         then pure ()
         else throwError "wrong password"
 
@@ -99,19 +99,19 @@ login LoginRequest{..} =
       createSession uId
 
 logout :: (MonadError AppError m, Db.Read m, Db.Delete m, MonadReader UserInfo m)
-       => m LogoutResponse
+       => m LogoutResp
 logout = do
   uId <- asks $ view uiUserId
   n <- Db.deleteCount $ from $ \s -> where_ $ s ^. SessionFkUser ==. val uId
   if n == 0
     then throwError $ ErrBug "not logged in"
-    else pure LogoutResponse
+    else pure LogoutResp
 
 getName :: MonadReader UserInfo m
-     => m UserNameResponse
+     => m UserNameResp
 getName = do
   name <- asks $ view uiUserName
-  pure UserNameResponse { _unrName = name }
+  pure UserNameResp { _nrespUserName = name }
 
 --
 
@@ -120,7 +120,7 @@ createSession
   => UserId
   -> m SessionKey
 createSession sessionFkUser = do
-  sessionKey <- Base64.encode <$> liftIO (getEntropy 32)
+  sessionKey <- liftIO $ Base64.encode <$> getEntropy 32
   sessionExpiry <- liftIO $ Clock.addUTCTime sessionLength <$> Clock.getCurrentTime
   Db.insert_ Session{..}
   pure sessionKey

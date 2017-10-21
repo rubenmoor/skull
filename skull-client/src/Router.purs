@@ -3,7 +3,6 @@ module Router where
 import Control.Alternative ((<|>))
 import Control.Monad.Eff.Class (class MonadEff, liftEff)
 import DOM (DOM)
-import Data.Function (($))
 import Prelude (Unit, (<$), (<$>), (<<<))
 import Routing.Hash (setHash)
 import Routing.Match (Match)
@@ -26,6 +25,7 @@ data PublicLocation
 
 data PrivateLocation
   = LocBotKeys
+  | LocPlayNow
 
 data AuthFormLocation
   = LocSignupForm
@@ -38,7 +38,9 @@ routing =
                                                     <|> LocLoginForm  <$ lit "login"
                                                    )
                        )
-  <|> LocLoggedIn  <$> (    LocPrivate         <$> (LocBotKeys <$ lit "botKeys")
+  <|> LocLoggedIn  <$> (    LocPrivate         <$> (    LocBotKeys <$ lit "botKeys"
+                                                    <|> LocPlayNow <$ lit "playNow"
+                                                   )
                         <|> LocLoggedInPublic  <$> (LocHome    <$ lit "private")
                        )
 
@@ -49,6 +51,7 @@ toPath = case _ of
       LocHome -> "private"
     LocPrivate        sLoc -> case sLoc of
       LocBotKeys -> "botKeys"
+      LocPlayNow -> "playNow"
   LocLoggedOut loc -> case loc of
     LocLoggedOutPublic sLoc -> case sLoc of
       LocHome -> "public"

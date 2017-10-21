@@ -10,33 +10,33 @@ import           GHC.Generics       (Generic)
 
 import           HttpApp.User.Types (UserName)
 
-data UserNewRequest = UserNewRequest
-  { _unrUserName :: UserName
-  , _unrPassword :: Text
+data UserNewRq = UserNewRq
+  { _nrqUserName :: UserName
+  , _nrqPassword :: Text
   } deriving (Generic, FromJSON, ToJSON)
 
-data UserNewResponse
-  = UserNewSuccess UserName Text
-  | UserNewFailed Text
+data UserNewResp
+  = NewSuccess UserName Text
+  | NewFailed Text
   deriving (Generic, ToJSON)
 
-data UserNameResponse = UserNameResponse
-  { _unrName :: UserName
+data UserNameResp = UserNameResp
+  { _nrespUserName :: UserName
   } deriving (Generic, ToJSON)
 
-data LoginRequest = LoginRequest
-  { _lrUserName :: UserName
-  , _lrPassword :: Text
+data LoginRq = LoginRq
+  { _lrqUserName :: UserName
+  , _lrqPassword :: Text
   } deriving (Generic, FromJSON, ToJSON)
 
-data LoginResponse
+data LoginResp
   = LoginSuccess UserName Text
   | LoginFailed Text
   deriving (Generic, ToJSON)
 
-data LogoutResponse = LogoutResponse
+data LogoutResp = LogoutResp
   deriving (Generic, ToJSON)
 
-data UserExistsRequest = UserExistsRequest
-  { _uerName :: UserName
+data UserExistsRq = UserExistsRq
+  { _erqUserName :: UserName
   } deriving (Generic, FromJSON, ToJSON)

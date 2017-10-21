@@ -17,7 +17,7 @@ type Protected =
   :<|> Set
   :<|> Del
 
-type New = "new" :> Post '[JSON] BotKeyNewResponse
-type All = "all" :> Get '[JSON] BotKeyAllResponse
-type Set = "set" :> "label" :> ReqBody '[JSON] BotKeySetLabelRequest :> Post '[JSON] BotKeySetLabelResponse
-type Del = ReqBody '[JSON] BotKeyDeleteRequest :> Delete '[JSON] ()
+type New = "new" :> Post '[JSON] BKNewResp
+type All = "all" :> Get '[JSON] BKAllResp
+type Set = "set" :> "label" :> ReqBody '[JSON] BKSetLabelRq :> Post '[JSON] BKSetLabelResp
+type Del = ReqBody '[JSON] BKDeleteRq :> Delete '[JSON] ()

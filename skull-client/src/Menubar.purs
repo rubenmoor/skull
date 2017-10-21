@@ -7,7 +7,7 @@ import Basil (clearSessionKey)
 import Control.Monad.State (put)
 import Halogen (Component, ComponentDSL, component)
 import Halogen.HTML (HTML)
-import HttpApp.User.Api.Types (LogoutResponse(..))
+import HttpApp.User.Api.Types (LogoutResp(..))
 import Menubar.Render (render)
 import Menubar.Types (Input, Message, Query(..), State, Effects, initial)
 import Prelude (type (~>), discard, pure, ($))
@@ -32,7 +32,7 @@ eval = case _ of
     put mUserName
     pure next
   Logout next -> do
-    mkRequest getUserLogout $ \LogoutResponse -> do
+    mkRequest getUserLogout $ \LogoutResp -> do
       clearSessionKey
       gotoLocation $ LocLoggedOut $ LocLoggedOutPublic LocHome
     pure next

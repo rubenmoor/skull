@@ -12,7 +12,7 @@ import Data.Lens (use, (.=))
 import Data.String (null)
 import Halogen (Component, ParentDSL, parentComponent)
 import Halogen.HTML (HTML)
-import HttpApp.User.Api.Types (UserNewRequest(..), UserNewResponse(..))
+import HttpApp.User.Api.Types (UserNewRq(..), UserNewResp(..))
 import Router (Location(..), LoggedInLocation(..), PublicLocation(..), gotoLocation)
 import ServerAPI (postUserNew)
 import Ulff (Ulff, mkRequest)
@@ -50,13 +50,13 @@ eval = case _ of
       pure next
   where
     submit name pwd = do
-      let userNewRequest = UserNewRequest
-            { _unrUserName: name
-            , _unrPassword: pwd
+      let userNewRequest = UserNewRq
+            { _nrqUserName: name
+            , _nrqPassword: pwd
             }
       mkRequest (postUserNew userNewRequest) $ case _ of
-        UserNewFailed msg -> formError .= msg
-        UserNewSuccess userName sessionKey -> do
+        NewFailed msg -> formError .= msg
+        NewSuccess userName sessionKey -> do
           setSessionKey sessionKey
           gotoLocation $ LocLoggedIn $ LocLoggedInPublic LocHome
 

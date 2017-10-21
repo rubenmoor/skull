@@ -5,8 +5,12 @@ module Game.Api where
 
 import           Servant
 
-import           Game.Api.Types
+import           Game.Api.Types (ErrorOr, GameJoinRequest, PlayFirstCard)
+import           Game.Types     (Info)
 
 type Routes =
-       "join" :> ReqBody '[JSON] GameJoinRequest :> Post '[JSON] (ErrorOr GameState)
-  :<|> "play" :> "firstcard" :> ReqBody '[JSON] PlayFirstCard :> Post '[JSON] (ErrorOr GameState)
+       Join
+  :<|> FirstCard
+
+type Join = "join" :> ReqBody '[JSON] GameJoinRequest :> Post '[JSON] (ErrorOr Info)
+type FirstCard = "play" :> "firstcard" :> ReqBody '[JSON] PlayFirstCard :> Post '[JSON] (ErrorOr Info)

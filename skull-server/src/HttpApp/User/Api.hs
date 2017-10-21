@@ -13,10 +13,10 @@ import           Servant                ((:<|>), (:>), Get, JSON, Post, ReqBody)
 import           HttpApp.User.Api.Types
 
 type Public =
-       "new" :> ReqBody '[JSON] UserNewRequest :> Post '[JSON] UserNewResponse
-  :<|> "exists" :> ReqBody '[JSON] UserExistsRequest :> Post '[JSON] Bool
-  :<|> "login" :> ReqBody '[JSON] LoginRequest :> Post '[JSON] LoginResponse
+       "new" :> ReqBody '[JSON] UserNewRq :> Post '[JSON] UserNewResp
+  :<|> "exists" :> ReqBody '[JSON] UserExistsRq :> Post '[JSON] Bool
+  :<|> "login" :> ReqBody '[JSON] LoginRq :> Post '[JSON] LoginResp
 
 type Protected =
-       "logout" :> Get '[JSON] LogoutResponse
-  :<|> "name" :> Get '[JSON] UserNameResponse
+       "logout" :> Get '[JSON] LogoutResp
+  :<|> "name" :> Get '[JSON] UserNameResp

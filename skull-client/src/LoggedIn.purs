@@ -7,7 +7,7 @@ import Data.Lens ((.=), (^.))
 import Data.Maybe (Maybe(..))
 import Halogen (Component, ParentDSL, action, lifecycleParentComponent)
 import Halogen.HTML (HTML)
-import HttpApp.User.Api.Types (UserNameResponse(..), unrName)
+import HttpApp.User.Api.Types (nrespUserName)
 import LoggedIn.Render (render)
 import LoggedIn.Types (ChildQuery, ChildSlot, Effects, Input, Message, Query(..), State, location, userName, initial)
 import Prelude (type (~>), Unit, discard, ($), ($>))
@@ -40,7 +40,7 @@ initialize
      ParentDSL State Query ChildQuery ChildSlot Message (Ulff (Effects eff)) Unit
 initialize =
     mkRequest' resetAuth getUserName $ \resp ->
-      userName .= resp ^. unrName
+      userName .= resp ^. nrespUserName
   where
     resetAuth _ = do
       clearSessionKey

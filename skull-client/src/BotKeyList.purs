@@ -12,7 +12,7 @@ import Data.Maybe (Maybe(..))
 import Halogen (Component, action, lifecycleParentComponent)
 import Halogen.Component (ParentDSL)
 import Halogen.HTML (HTML)
-import HttpApp.BotKey.Api.Types (barBotKeys, bnrBotKey)
+import HttpApp.BotKey.Api.Types (arespBotKeys, nrespBotKey)
 import Prelude (type (~>), const, discard, pure)
 import ServerAPI (getBotKeyAll, postBotKeyNew)
 import Ulff (Ulff, mkRequest)
@@ -35,11 +35,11 @@ eval = case _ of
   Initialize next -> do
     mkRequest getBotKeyAll $ \resp -> do
       isLoading .= false
-      botKeys .= fromFoldable (resp ^. barBotKeys)
+      botKeys .= fromFoldable (resp ^. arespBotKeys)
     pure next
   CreateNew next -> do
     mkRequest postBotKeyNew $ \resp ->
-      botKeys %= Cons (resp ^. bnrBotKey)
+      botKeys %= Cons (resp ^. nrespBotKey)
     pure next
   Delete (BotKey.MsgDelete bk) next -> do
     botKeys %= delete bk

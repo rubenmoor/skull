@@ -1,8 +1,10 @@
-module Navigation.Types where
+module PlayNow.Types where
 
 import DOM (DOM)
-import Data.Unit (Unit, unit)
+import Data.Maybe (Maybe(..))
+import Data.Unit (Unit)
 import Data.Void (Void)
+import Game.Types (Info)
 import Types (MkRequestEffects)
 
 type Effects e =
@@ -13,15 +15,16 @@ type Effects e =
 
 type Input = Unit
 
-type State = Unit
+type State = Maybe Info
 
 initial :: Input -> State
-initial _ = unit
+initial _ = Nothing
 
 data Query a
-  = HandleInput Input a
-  | GotoHome a
-  | GotoBotKeys a
-  | GotoPlayNow a
+  = Initialize a
+  | NewGame Int a
+  | AbortGame a
+
+type Slot = Int
 
 type Message = Void

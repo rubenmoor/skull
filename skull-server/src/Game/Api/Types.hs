@@ -6,19 +6,19 @@
 
 module Game.Api.Types where
 
-import           Control.Arrow (second)
-import           Data.Aeson    (FromJSON, ToJSON)
-import           Data.Bool     (Bool (..))
-import           Data.Functor  (fmap)
-import           Data.Monoid   ((<>))
-import           Data.Proxy    (Proxy (..))
-import           Data.Text     (Text)
-import           GHC.Generics  (Generic)
-import           Prelude       (($))
+import           Control.Arrow        (second)
+import           Data.Aeson           (FromJSON, ToJSON)
+import           Data.Functor         (fmap)
+import           Data.Monoid          ((<>))
+import           Data.Proxy           (Proxy (..))
+import           Data.Text            (Text)
+import           GHC.Generics         (Generic)
+import           Prelude              (($))
 
-import           Servant.Docs  (ToSample (..), singleSample)
+import           Servant.Docs         (ToSample (..), singleSample)
 
 import           Game.Types
+import           HttpApp.BotKey.Types (BotKey, sampleBotKey)
 
 -- TODO: custom json instances
 --  * check overloaded record fields
@@ -39,62 +39,38 @@ instance ToSample a => ToSample (ErrorOr a) where
     in  error <> results
 
 data GameJoinRequest = GameJoinRequest
-  { gjrGameId :: GameId
-  , gjrBotId  :: BotId
+  { _gjrGameKey :: GameKey
+  , _gjrBotKey  :: BotKey
   } deriving (Generic, FromJSON, ToJSON)
 
 instance ToSample GameJoinRequest where
   toSamples _ =
-    let gjrGameId = sampleGameId
-        gjrBotId  = sampleBotId
+    let _gjrGameKey = sampleGameKey
+        _gjrBotKey  = sampleBotKey
     in  singleSample GameJoinRequest{..}
 
 -- authentication information for every move
 
 data AuthInfo = AuthInfo
-  { aiGameId   :: GameId
-  , aiBotId    :: BotId
-  , aiPlayerId :: PlayerId
+  { _aiGameKey   :: GameKey
+  , _aiBotKey    :: BotKey
+  , _aiPlayerKey :: PlayerKey
   } deriving (Generic, FromJSON, ToJSON)
 
 sampleAuthInfo :: AuthInfo
 sampleAuthInfo = AuthInfo
-  { aiGameId   = sampleGameId
-  , aiBotId    = sampleBotId
-  , aiPlayerId = samplePlayerId
+  { _aiGameKey   = sampleGameKey
+  , _aiBotKey    = sampleBotKey
+  , _aiPlayerKey = samplePlayerKey
   }
 
 data PlayFirstCard = PlayFirstCard
-  { pfcCard :: Card
-  , pfcAuth :: AuthInfo
+  { _pfcCard :: Card
+  , _pfcAuth :: AuthInfo
   } deriving (Generic, FromJSON, ToJSON)
 
 instance ToSample PlayFirstCard where
   toSamples _ =
-    let pfcCard = Plain
-        pfcAuth = sampleAuthInfo
+    let _pfcCard = Plain
+        _pfcAuth = sampleAuthInfo
     in  singleSample PlayFirstCard{..}
-
-data GameState = GameState
-  { gsPlayerId :: PlayerId
-  , gsRound    :: Round
-  , gsPhase    :: Phase
-  , gsMyStack  :: MyStack
-  , gsHand     :: Hand
-  , gsStacks   :: Stacks
-  , gsBets     :: Bets
-  } deriving (Generic, ToJSON)
-
-instance ToSample GameState where
-  toSamples _ =
-    let gsPlayerId = samplePlayerId
-        gsRound    = 3
-        gsPhase    = CardOrBet
-        gsMyStack  = MyStack [Skull, Plain]
-        gsHand     =
-          let handNumPlains = 2
-              handHasSkull = False
-          in  Hand{..}
-        gsStacks   = Stacks [1, 1, 2]
-        gsBets     = Bets [0, 0, 0]
-    in  singleSample GameState{..}

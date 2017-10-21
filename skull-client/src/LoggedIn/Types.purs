@@ -1,6 +1,7 @@
 module LoggedIn.Types where
 
 import BotKeyList.Types as BotKeyList
+import PlayNow.Types as PlayNow
 import Home.Types as Home
 import Menubar.Types as Menubar
 import Navigation.Types as Navigation
@@ -56,10 +57,12 @@ type ChildQuery =
   <\/> Navigation.Query
   <\/> Home.Query
   <\/> BotKeyList.Query
+  <\/> PlayNow.Query
   <\/> Const Void
 
 type ChildSlot =
      Unit
+  \/ Unit
   \/ Unit
   \/ Unit
   \/ Unit

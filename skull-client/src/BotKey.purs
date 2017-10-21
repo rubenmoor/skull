@@ -14,7 +14,7 @@ import Data.NaturalTransformation (type (~>))
 import Halogen (Component, parentComponent, raise)
 import Halogen.Component (ParentDSL)
 import Halogen.HTML (HTML)
-import HttpApp.BotKey.Api.Types (BotKeyDeleteRequest(BotKeyDeleteRequest), BotKeySetLabelRequest(BotKeySetLabelRequest), bsresLabel)
+import HttpApp.BotKey.Api.Types (BKDeleteRq(BKDeleteRq), BKSetLabelRq(BKSetLabelRq), slrespLabel)
 import HttpApp.BotKey.Types (bkLabel, bkSecret)
 import Prelude (discard, bind)
 import ServerAPI (deleteBotKey, postBotKeySetLabel)
@@ -40,17 +40,17 @@ eval = case _ of
     pure next
   SetLabel (EditField.NewLabel str) next -> do
     secret <- use bkSecret
-    let body = BotKeySetLabelRequest
-          { _bsrSecret: secret
-          , _bsrLabel: str
+    let body = BKSetLabelRq
+          { _slrqSecret: secret
+          , _slrqLabel: str
           }
     mkRequest (postBotKeySetLabel body) $ \resp ->
-      bkLabel .= resp ^. bsresLabel
+      bkLabel .= resp ^. slrespLabel
     pure next
   Delete next -> do
     bk <- get
-    let body = BotKeyDeleteRequest
-          { _bdrSecret: bk ^. bkSecret
+    let body = BKDeleteRq
+          { _drqSecret: bk ^. bkSecret
           }
     mkRequest (deleteBotKey body) $ \_ ->
       raise $ MsgDelete bk

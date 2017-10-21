@@ -10,7 +10,7 @@ import Data.Lens (use, (.=))
 import Data.String (null)
 import Halogen (Component, ComponentDSL, component)
 import Halogen.HTML (HTML)
-import HttpApp.User.Api.Types (LoginRequest(..), LoginResponse(..))
+import HttpApp.User.Api.Types (LoginRq(..), LoginResp(..))
 import Prelude (type (~>), bind, not, pure, unit, ($), (&&), (<<<), discard)
 import Router (Location(..), LoggedInLocation(..), PublicLocation(..), gotoLocation)
 import ServerAPI (postUserLogin)
@@ -49,9 +49,9 @@ eval = case _ of
       pure next
   where
     submit name pwd = do
-      let loginRequest = LoginRequest
-            { _lrUserName: name
-            , _lrPassword: pwd
+      let loginRequest = LoginRq
+            { _lrqUserName: name
+            , _lrqPassword: pwd
             }
       mkRequest (postUserLogin loginRequest) $ case _ of
         LoginFailed msg -> formError .= msg

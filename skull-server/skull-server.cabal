@@ -19,6 +19,7 @@ library
                      , Api.Types
                      , Auth
                      , Auth.Types
+                     , Data.Functor.Extended
                      , Database.Class
                      , Game.Api
                      , Game.Api.Types
@@ -36,6 +37,9 @@ library
                      , HttpApp.User.Api.Types
                      , HttpApp.User.Handler
                      , HttpApp.User.Types
+                     , HttpApp.PlayNow.Api
+                     , HttpApp.PlayNow.Api.Types
+                     , HttpApp.PlayNow.Handler
                      , Data.ByteString.Base64.URL.Extended
                      , Types
   build-depends:       aeson

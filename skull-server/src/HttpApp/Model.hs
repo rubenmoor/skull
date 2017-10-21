@@ -19,22 +19,27 @@ import           Database.Persist.TH                 (mkMigrate, mkPersist,
                                                       sqlSettings)
 
 import           Data.ByteString.Base64.URL.Extended (Base64)
+import           Game.Types                          (Info)
 import           HttpApp.User.Types                  (Email, PwHash, SessionKey,
                                                       UserName)
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 User
-  name     UserName
-  pwHash   PwHash
-  email    Email Maybe
+  name            UserName
+  pwHash          PwHash
+  email           Email Maybe
   deriving Eq Ord
 Session
-  fkUser   UserId
-  key      SessionKey
-  expiry   UTCTime
+  fkUser          UserId
+  key             SessionKey
+  expiry          UTCTime
 BotKey
-  fkUser   UserId
-  label    Text
-  secret   Base64
-  USecret  secret
+  fkUser          UserId
+  label           Text
+  secret          Base64
+  USecret secret
+Game
+  fkUser          UserId
+  key             Base64
+  info            Info
 |]

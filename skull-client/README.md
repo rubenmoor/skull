@@ -2,15 +2,19 @@
 
   $ npm install
 
+# install purescript/javascript packages
+
+  $ node_modules/.bin/bower install
+
 # generate code
 
 see skull-server
 
-# build client
+# build client ...
 
   $ npm run build
 
-# run client (watch)
+# ... or build and run client (watch)
 
   $ npm run watch
 

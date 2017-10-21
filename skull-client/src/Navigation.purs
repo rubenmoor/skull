@@ -8,7 +8,7 @@ import Data.Maybe (Maybe(..))
 import Data.NaturalTransformation (type (~>))
 import Halogen (Component, component)
 import Halogen.Component (ComponentDSL)
-import Halogen.HTML (HTML(..))
+import Halogen.HTML (HTML)
 import Navigation.Render (render)
 import Navigation.Types (Input, Message, Query(..), State, Effects, initial)
 import Prelude (discard)
@@ -36,4 +36,7 @@ eval = case _ of
     pure next
   GotoBotKeys next -> do
     gotoLocation $ LocLoggedIn $ LocPrivate LocBotKeys
+    pure next
+  GotoPlayNow next -> do
+    gotoLocation $ LocLoggedIn $ LocPrivate LocPlayNow
     pure next
