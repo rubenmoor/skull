@@ -7,6 +7,7 @@
 module Game.Types where
 
 import           Data.Aeson          (FromJSON, ToJSON)
+import           Data.Function       (on)
 import           Data.Text           (Text)
 import           Database.Persist.TH (derivePersistField)
 import           GHC.Generics        (Generic)
@@ -25,7 +26,7 @@ samplePlayerKey = "f40jf920s0"
 
 data Info = Info
   { _giKey     :: GameKey
-  , _giState   :: State
+  , _giState   :: GState
   , _giPhase   :: Phase
   , _giPlayers :: [Player]
   }
@@ -44,13 +45,13 @@ instance ToSample Info where
 
 -- state
 
-data State
+data GState
   = Round Int
   | Finished VictoryInfo
   | Aborted Text
   deriving (Generic, Show, Read, Eq, ToJSON)
 
-sampleState :: State
+sampleState :: GState
 sampleState = Round 3
 
 data VictoryInfo = VictoryInfo
@@ -87,6 +88,9 @@ data Player = Player
   , _plStack    :: Stack
   , _plBetState :: BetState
   } deriving (Generic, ToJSON, Show, Read, Eq)
+
+instance Ord Player where
+  compare = compare `on` _plKey
 
 samplePlayer1 :: Player
 samplePlayer1 = Player

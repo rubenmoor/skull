@@ -17,11 +17,10 @@ import           Servant.PureScript                  (HasBridge (..),
                                                       writeAPIModuleWithSettings)
 
 import           Api.Types
-import           Game.Types                          (BetState, Card, Hand,
-                                                      Info, Nature, Phase,
-                                                      Player, Stack, State,
-                                                      Victory, VictoryInfo,
-                                                      VictoryType)
+import           Game.Types                          (BetState, Card, GState,
+                                                      Hand, Info, Nature, Phase,
+                                                      Player, Stack, Victory,
+                                                      VictoryInfo, VictoryType)
 import           HttpApp.Api                         (Routes)
 import           HttpApp.BotKey.Types                (BotKey)
 
@@ -43,8 +42,9 @@ types =
   , mkSumType (Proxy :: Proxy PNNewRq)
   , mkSumType (Proxy :: Proxy PNNewResp)
   , mkSumType (Proxy :: Proxy PNAllResp)
+  , mkSumType (Proxy :: Proxy PNDeleteRq)
   , mkSumType (Proxy :: Proxy Info)
-  , mkSumType (Proxy :: Proxy State)
+  , mkSumType (Proxy :: Proxy GState)
   , mkSumType (Proxy :: Proxy VictoryInfo)
   , mkSumType (Proxy :: Proxy VictoryType)
   , mkSumType (Proxy :: Proxy Phase)

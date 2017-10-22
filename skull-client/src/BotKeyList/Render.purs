@@ -7,12 +7,10 @@ import Data.Array as Array
 import Halogen.HTML.Events as Events
 import BotKey (botKey)
 import BotKeyList.Types (Effects, Query(..), Slot, State, botKeys, isLoading)
-import Data.Function (($))
-import Data.Functor (mapFlipped)
+import Data.Function (flip, ($))
+import Data.FunctorWithIndex (mapWithIndex)
 import Data.Lens ((^.))
-import Data.List (List(..), null, (:))
-import Data.Semiring ((+))
-import Data.Tuple (Tuple(..))
+import Data.List (null)
 import Halogen.Component (ParentHTML)
 import Halogen.HTML.Extended (button, cl, cldiv_, clspan_, slot, table, tbody_, td_, text, thead)
 import Ulff (Ulff)
@@ -45,16 +43,10 @@ render st = cldiv_ "bgwhite p1 mx-auto col-8"
                         [ text "Key"
                         ]
                     ]
-                , tbody_
-                    let bks = enumerate $ st ^. botKeys
-                    in  Array.fromFoldable $ mapFlipped bks $ \(Tuple i bk) ->
+                , tbody_ $
+                    let bks = Array.fromFoldable $ st ^. botKeys
+                        forIndex = flip mapWithIndex
+                    in  forIndex bks $ \i bk ->
                           slot i botKey bk (Events.input Delete)
                 ]
   ]
-
-enumerate :: forall a. List a -> List (Tuple Int a)
-enumerate = enumerate' 0
-  where
-    enumerate' :: Int -> List a -> List (Tuple Int a)
-    enumerate' _ Nil = Nil
-    enumerate' n (x:xs)  = Tuple n x : enumerate' (n + 1) xs

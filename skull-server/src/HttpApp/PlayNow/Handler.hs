@@ -13,6 +13,7 @@ import           Control.Monad                       (when)
 import           Control.Monad.Except                (MonadError, throwError)
 import           Control.Monad.IO.Class              (MonadIO, liftIO)
 import           Control.Monad.Reader                (MonadReader, asks)
+import           Data.List                           (sort)
 import           Data.Traversable                    (for)
 import           Database.Esqueleto                  (Value (..), from, val,
                                                       where_, (&&.), (==.),
@@ -37,6 +38,7 @@ protected :: ServerT Api.Protected (HandlerProtectedT IO)
 protected =
        new
   :<|> all
+  :<|> del
 
 new
   :: (Monad m, MonadIO m, MonadError AppError m, MonadReader UserInfo m, Db.Insert m)
@@ -67,7 +69,7 @@ new PNNewRq{..} = do
         { _plKey = key
         , _plNature = Bot
         }
-      _giPlayers = humanPlayer : players
+      _giPlayers = sort $ humanPlayer : players
       _giKey = showt gameKey
       _giState = Round 0
       _giPhase = FirstCard
@@ -93,11 +95,11 @@ all = do
     _:_:_      -> throwError $ ErrDatabase "found more than one game"
   pure PNAllResp{..}
 
-delete
+del
   :: (Db.Delete m, MonadReader UserInfo m, MonadError AppError m)
   => PNDeleteRq
   -> m ()
-delete PNDeleteRq{..} = do
+del PNDeleteRq{..} = do
   uId <- asks $ view uiUserId
   let gameKey = Base64.fromText _drqKey
   n <- Db.deleteCount $ from $ \g ->

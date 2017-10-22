@@ -4,19 +4,21 @@ module PlayNow
 
 import BotKey.Types as BotKey
 import Control.Applicative (pure)
-import Control.Bind (discard)
-import Control.Monad.State (put)
+import Control.Bind (discard, bind)
+import Control.Monad.State (get, put)
+import Data.Foldable (for_)
 import Data.Function (const, ($))
 import Data.Lens ((^.))
 import Data.Maybe (Maybe(..))
 import Data.NaturalTransformation (type (~>))
+import Game.Types (giKey)
 import Halogen (Component, action, lifecycleParentComponent)
 import Halogen.Component (ParentDSL)
 import Halogen.HTML (HTML)
-import HttpApp.PlayNow.Api.Types (PNNewRq(..), arespInfo, nrespInfo)
+import HttpApp.PlayNow.Api.Types (PNDeleteRq(..), PNNewRq(..), arespInfo, nrespInfo)
 import PlayNow.Render (render)
 import PlayNow.Types (Effects, Input, Query(..), Slot, State, Message, initial)
-import ServerAPI (getPlayNowAll, postPlayNowNew)
+import ServerAPI (deletePlayNow, getPlayNowAll, postPlayNowNew)
 import Ulff (Ulff, mkRequest)
 
 playNow
@@ -48,5 +50,10 @@ eval = case _ of
       put $ Just $ resp ^. nrespInfo
     pure next
   AbortGame next -> do
-    put Nothing
+    mInfo <- get
+    for_ mInfo $ \info -> do
+      let body = PNDeleteRq
+            { _drqKey: info ^. giKey
+            }
+      mkRequest (deletePlayNow body) $ \_ -> put Nothing
     pure next

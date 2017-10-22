@@ -64,3 +64,7 @@ body, html {
 .cursor-pointer {
   cursor: pointer;
 }
+
+.inactive {
+  color: $anthrazit-medium-dark;
+}

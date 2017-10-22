@@ -3,7 +3,6 @@ module EditField.Types where
 import DOM (DOM)
 import Data.Lens (lens)
 import Data.Lens.Types (Lens')
-import Types (MkRequestEffects)
 
 type Effects e =
     ( dom :: DOM

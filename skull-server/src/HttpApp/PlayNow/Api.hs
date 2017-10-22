@@ -6,14 +6,16 @@ module HttpApp.PlayNow.Api
   , Protected
   ) where
 
-import           Servant                   ((:<|>), (:>), Get, JSON, Post,
-                                            ReqBody)
+import           Servant                   ((:<|>), (:>), Delete, Get, JSON,
+                                            Post, ReqBody)
 
 import           HttpApp.PlayNow.Api.Types
 
 type Protected =
        New
   :<|> All
+  :<|> Del
 
 type New = "new" :> ReqBody '[JSON] PNNewRq :> Post '[JSON] PNNewResp
 type All = "all" :> Get '[JSON] PNAllResp
+type Del = ReqBody '[JSON] PNDeleteRq :> Delete '[JSON] ()

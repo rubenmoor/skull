@@ -9,4 +9,5 @@
 /src/HttpApp/
 /src/ServerAPI.purs
 /public/
+/src-public/img/
 npm-debug.log

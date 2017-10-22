@@ -6,9 +6,9 @@ import Data.Lens ((.=))
 import Data.Maybe (Maybe(..))
 import Halogen (Component, ComponentDSL, component)
 import Halogen.HTML (HTML)
-import Prelude (type (~>), const, pure, bind, discard)
+import Prelude (type (~>), const, discard, pure)
 import Public.Render (render)
-import Public.Types (Effects, Input, Message, Query(..), State, _location, initialState)
+import Public.Types (Input, Message, Query(HandleInput), State, _location, initialState)
 import Ulff (Ulff)
 
 public :: forall eff.

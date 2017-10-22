@@ -11,7 +11,7 @@ import Data.Generic (class Generic)
 newtype Info =
     Info {
       _giKey :: String
-    , _giState :: State
+    , _giState :: GState
     , _giPhase :: Phase
     , _giPlayers :: Array Player
     }
@@ -19,7 +19,7 @@ newtype Info =
 derive instance genericInfo :: Generic Info
 
 --------------------------------------------------------------------------------
-_Info :: Prism' Info { _giKey :: String, _giState :: State, _giPhase :: Phase, _giPlayers :: Array Player}
+_Info :: Prism' Info { _giKey :: String, _giState :: GState, _giPhase :: Phase, _giPlayers :: Array Player}
 _Info = prism' Info f
   where
     f (Info r) = Just r
@@ -31,7 +31,7 @@ giKey = lens get set
     get (Info r) = r._giKey
     set (Info r) = Info <<< r { _giKey = _ }
 
-giState :: Lens' Info State
+giState :: Lens' Info GState
 giState = lens get set
   where
     get (Info r) = r._giState
@@ -50,27 +50,27 @@ giPlayers = lens get set
     set (Info r) = Info <<< r { _giPlayers = _ }
 
 --------------------------------------------------------------------------------
-data State =
+data GState =
     Round Int
   | Finished VictoryInfo
   | Aborted String
 
-derive instance genericState :: Generic State
+derive instance genericGState :: Generic GState
 
 --------------------------------------------------------------------------------
-_Round :: Prism' State Int
+_Round :: Prism' GState Int
 _Round = prism' Round f
   where
     f (Round a) = Just $ a
     f _ = Nothing
 
-_Finished :: Prism' State VictoryInfo
+_Finished :: Prism' GState VictoryInfo
 _Finished = prism' Finished f
   where
     f (Finished a) = Just $ a
     f _ = Nothing
 
-_Aborted :: Prism' State String
+_Aborted :: Prism' GState String
 _Aborted = prism' Aborted f
   where
     f (Aborted a) = Just $ a

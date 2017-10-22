@@ -33,7 +33,7 @@ options = Options
   <$> txtOption   (  long "database-name"
                   <> short 'd'
                   <> metavar "DBNAME"
-                  <> value "test"
+                  <> value "test.db3"
                   <> showDefault
                   <> help "Database name for Postgres database"
                   )
