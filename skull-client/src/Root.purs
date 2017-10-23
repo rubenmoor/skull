@@ -9,14 +9,17 @@ import Halogen.HTML (HTML)
 import Prelude (type (~>), bind, const, pure, unit, ($), discard)
 import Root.Render (render)
 import Root.Types (ChildQuery, ChildSlot, Effects, Input, Message, Query(..), State, location, initial)
+import Types (UrlRoot)
 import Ulff (Ulff)
 
-root :: forall eff.
-        Component HTML Query Input Message (Ulff (Effects eff))
-root =
+root
+  :: forall eff.
+     UrlRoot
+  -> Component HTML Query Input Message (Ulff (Effects eff))
+root urlRoot =
   parentComponent
     { initialState: initial
-    , render
+    , render: render urlRoot
     , eval
     , receiver: const Nothing
     }

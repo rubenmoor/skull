@@ -19,15 +19,17 @@ import HttpApp.PlayNow.Api.Types (PNDeleteRq(..), PNNewRq(..), arespInfo, nrespI
 import PlayNow.Render (render)
 import PlayNow.Types (Effects, Input, Query(..), Slot, State, Message, initial)
 import ServerAPI (deletePlayNow, getPlayNowAll, postPlayNowNew)
+import Types (UrlRoot)
 import Ulff (Ulff, mkRequest)
 
 playNow
   :: forall eff.
-     Component HTML Query Input Message (Ulff (Effects eff))
-playNow =
+     UrlRoot
+  -> Component HTML Query Input Message (Ulff (Effects eff))
+playNow urlRoot =
   lifecycleParentComponent
     { initialState: initial
-    , render
+    , render: render urlRoot
     , eval
     , receiver: const Nothing
     , initializer: Just $ action Initialize

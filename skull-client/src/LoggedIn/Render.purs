@@ -16,12 +16,14 @@ import Navigation (navigation)
 import PlayNow (playNow)
 import Prelude (absurd, unit)
 import Router (LoggedInLocation(..), PrivateLocation(..), PublicLocation(..))
+import Types (UrlRoot)
 import Ulff (Ulff)
 
 render :: forall eff.
-          State
+          UrlRoot
+       -> State
        -> ParentHTML Query ChildQuery ChildSlot (Ulff (Effects eff))
-render st =
+render urlRoot st =
   div_
     [ slot' cp1 unit menubar (Just $ st ^. userName) absurd
     , slot' cp2 unit navigation unit absurd
@@ -29,5 +31,5 @@ render st =
         LocLoggedInPublic LocHome -> slot' cp3 unit home unit absurd
         LocPrivate loc -> case loc of
           LocBotKeys -> slot' cp4 unit botKeyList unit absurd
-          LocPlayNow -> slot' cp5 unit playNow unit absurd
+          LocPlayNow -> slot' cp5 unit (playNow urlRoot) unit absurd
     ]

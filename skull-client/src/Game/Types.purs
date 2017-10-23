@@ -169,7 +169,7 @@ _Reveal = prism' (\_ -> Reveal) f
 newtype Player =
     Player {
       _plKey :: String
-    , _plNature :: Nature
+    , _plKind :: Kind
     , _plVictory :: Victory
     , _plHand :: Hand
     , _plAlive :: Boolean
@@ -180,7 +180,7 @@ newtype Player =
 derive instance genericPlayer :: Generic Player
 
 --------------------------------------------------------------------------------
-_Player :: Prism' Player { _plKey :: String, _plNature :: Nature, _plVictory :: Victory, _plHand :: Hand, _plAlive :: Boolean, _plStack :: Stack, _plBetState :: BetState}
+_Player :: Prism' Player { _plKey :: String, _plKind :: Kind, _plVictory :: Victory, _plHand :: Hand, _plAlive :: Boolean, _plStack :: Stack, _plBetState :: BetState}
 _Player = prism' Player f
   where
     f (Player r) = Just r
@@ -192,11 +192,11 @@ plKey = lens get set
     get (Player r) = r._plKey
     set (Player r) = Player <<< r { _plKey = _ }
 
-plNature :: Lens' Player Nature
-plNature = lens get set
+plKind :: Lens' Player Kind
+plKind = lens get set
   where
-    get (Player r) = r._plNature
-    set (Player r) = Player <<< r { _plNature = _ }
+    get (Player r) = r._plKind
+    set (Player r) = Player <<< r { _plKind = _ }
 
 plVictory :: Lens' Player Victory
 plVictory = lens get set
@@ -249,23 +249,23 @@ _One = prism' (\_ -> One) f
     f _ = Nothing
 
 --------------------------------------------------------------------------------
-data Nature =
+data Kind =
     Human 
-  | Bot 
+  | BotLaplace 
 
-derive instance genericNature :: Generic Nature
+derive instance genericKind :: Generic Kind
 
 --------------------------------------------------------------------------------
-_Human :: Prism' Nature Unit
+_Human :: Prism' Kind Unit
 _Human = prism' (\_ -> Human) f
   where
     f Human = Just unit
     f _ = Nothing
 
-_Bot :: Prism' Nature Unit
-_Bot = prism' (\_ -> Bot) f
+_BotLaplace :: Prism' Kind Unit
+_BotLaplace = prism' (\_ -> BotLaplace) f
   where
-    f Bot = Just unit
+    f BotLaplace = Just unit
     f _ = Nothing
 
 --------------------------------------------------------------------------------
@@ -298,16 +298,24 @@ hHasSkull = lens get set
 
 --------------------------------------------------------------------------------
 newtype Stack =
-    Stack (Array Card)
+    Stack {
+      _stCards :: Array Card
+    }
 
 derive instance genericStack :: Generic Stack
 
 --------------------------------------------------------------------------------
-_Stack :: Prism' Stack (Array Card)
+_Stack :: Prism' Stack { _stCards :: Array Card}
 _Stack = prism' Stack f
   where
-    f (Stack a) = Just $ a
+    f (Stack r) = Just r
 
+
+stCards :: Lens' Stack (Array Card)
+stCards = lens get set
+  where
+    get (Stack r) = r._stCards
+    set (Stack r) = Stack <<< r { _stCards = _ }
 
 --------------------------------------------------------------------------------
 data Card =

@@ -23,6 +23,7 @@ library
                      , Database.Class
                      , Game.Api
                      , Game.Api.Types
+                     , Game.Bot
                      , Game.Handler
                      , Game.Types
                      , Handler
@@ -59,6 +60,7 @@ library
                      , monad-control
                      , monad-logger
                      , mtl
+                     , MonadRandom
                      , parsec
                      , persistent
                      , persistent-template
@@ -87,6 +89,7 @@ executable skull-server-exe
                      , data-default
                      , diener
                      , directory
+                     , monad-logger
                      , mtl
                      , optparse-applicative
                      , persistent-sqlite

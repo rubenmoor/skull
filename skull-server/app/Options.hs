@@ -5,6 +5,7 @@ module Options
   , getOptions
   ) where
 
+import           Control.Monad.Logger     (LogLevel (..))
 import           Data.Monoid              ((<>))
 import           Data.Text                (Text)
 import qualified Data.Text                as Text
@@ -16,6 +17,7 @@ data Options = Options
   { optDbName   :: Text
   , optAssetDir :: FilePath -- String
   , optPort     :: Port
+  , optLogLevel :: LogLevel
   }
 
 txtOption :: Mod OptionFields String -> Parser Text
@@ -50,3 +52,10 @@ options = Options
                  <> showDefault
                  <> help "Port where the server listens"
                  )
+  <*> option auto ( long "log-level"
+                 <> short 'l'
+                 <> metavar "LOGLEVEL"
+                 <> value LevelInfo
+                 <> showDefault
+                 <> help "LevelDebug, LevelInfo, LevelWarn, LevelError"
+                  )

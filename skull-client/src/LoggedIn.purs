@@ -13,14 +13,17 @@ import LoggedIn.Types (ChildQuery, ChildSlot, Effects, Input, Message, Query(..)
 import Prelude (type (~>), Unit, discard, ($), ($>))
 import Router (Location(..), LoggedOutLocation(..), PublicLocation(..), gotoLocation)
 import ServerAPI (getUserName)
+import Types (UrlRoot)
 import Ulff (Ulff, mkRequest')
 
-loggedIn :: forall eff.
-            Component HTML Query Input Message (Ulff (Effects eff))
-loggedIn =
+loggedIn
+  :: forall eff.
+     UrlRoot
+  -> Component HTML Query Input Message (Ulff (Effects eff))
+loggedIn urlRoot =
   lifecycleParentComponent
     { initialState: initial
-    , render
+    , render: render urlRoot
     , eval
     , receiver: Events.input HandleInput
     , initializer: Just $ action Initialize

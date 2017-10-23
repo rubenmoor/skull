@@ -18,7 +18,7 @@ import           Servant.PureScript                  (HasBridge (..),
 
 import           Api.Types
 import           Game.Types                          (BetState, Card, GState,
-                                                      Hand, Info, Nature, Phase,
+                                                      Hand, Info, Kind, Phase,
                                                       Player, Stack, Victory,
                                                       VictoryInfo, VictoryType)
 import           HttpApp.Api                         (Routes)
@@ -50,7 +50,7 @@ types =
   , mkSumType (Proxy :: Proxy Phase)
   , mkSumType (Proxy :: Proxy Player)
   , mkSumType (Proxy :: Proxy Victory)
-  , mkSumType (Proxy :: Proxy Nature)
+  , mkSumType (Proxy :: Proxy Kind)
   , mkSumType (Proxy :: Proxy Hand)
   , mkSumType (Proxy :: Proxy Stack)
   , mkSumType (Proxy :: Proxy Card)

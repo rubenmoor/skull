@@ -15,6 +15,7 @@
 
 @import "controls";
 @import "table";
+@import "playnow";
 
 :root {
   --border-color: $red;
@@ -52,6 +53,11 @@ body, html {
   color: $anthrazit-dark;
 }
 
+.bglight {
+  background-color: $anthrazit-light;
+  color: $anthrazit-dark;
+}
+
 .bgred {
   background-color: $red;
   color: $white;
@@ -67,4 +73,8 @@ body, html {
 
 .inactive {
   color: $anthrazit-medium-dark;
+}
+
+.yellow {
+  color: $yellow;
 }

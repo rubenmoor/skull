@@ -12,8 +12,10 @@ import           Control.Lens                        (view)
 import           Control.Monad                       (when)
 import           Control.Monad.Except                (MonadError, throwError)
 import           Control.Monad.IO.Class              (MonadIO, liftIO)
+import           Control.Monad.Random                (evalRand, getStdGen)
 import           Control.Monad.Reader                (MonadReader, asks)
-import           Data.List                           (sort)
+import           Data.Function                       (on)
+import           Data.List                           (sortBy)
 import           Data.Traversable                    (for)
 import           Database.Esqueleto                  (Value (..), from, val,
                                                       where_, (&&.), (==.),
@@ -26,6 +28,7 @@ import           Auth.Types                          (UserInfo (..), uiUserId)
 import qualified Data.ByteString.Base64.URL.Extended as Base64
 import           Data.Functor.Extended               (forEach, (<$>))
 import qualified Database.Class                      as Db
+import           Game.Bot                            (playCard)
 import           Game.Types
 import           Handler                             (HandlerProtectedT)
 import           HttpApp.Model                       (EntityField (..),
@@ -56,7 +59,7 @@ new PNNewRq{..} = do
         }
       humanPlayer = Player
         { _plKey = humanKey
-        , _plNature = Human
+        , _plKind = Human
         , _plVictory = None
         , _plHand = startHand
         , _plAlive = True
@@ -65,11 +68,16 @@ new PNNewRq{..} = do
         }
   plKeys <- map (showt . Base64.encode) <$>
     for [(1 :: Int)..3] (\_ -> liftIO $ getEntropy 32)
-  let players = forEach plKeys $ \key -> humanPlayer
-        { _plKey = key
-        , _plNature = Bot
-        }
-      _giPlayers = sort $ humanPlayer : players
+  players <- for plKeys $ \key -> do
+        let p = humanPlayer
+              { _plKey = key
+              , _plKind = BotLaplace
+              }
+        stdGen <- liftIO getStdGen
+        case evalRand (agentDo p playCard) stdGen of
+          Just player -> pure player
+          Nothing     -> throwError $ ErrBug "illegal move"
+  let _giPlayers = sortBy (compare `on` _plKey) $ humanPlayer : players
       _giKey = showt gameKey
       _giState = Round 0
       _giPhase = FirstCard

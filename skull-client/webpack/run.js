@@ -26,5 +26,4 @@ app
     }
   }))
   .use(require('webpack-hot-middleware')(compiler))
-  .use(express.static('./public'))
   .listen(3001);

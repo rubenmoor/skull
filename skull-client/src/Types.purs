@@ -16,8 +16,10 @@ type MkRequestEffects e =
   | e
   )
 
+type UrlRoot = String
+
 newtype Env = Env
-  { httpUrlRoot :: String
+  { httpUrlRoot :: UrlRoot
   , ajaxError :: AVar Error
   }
 

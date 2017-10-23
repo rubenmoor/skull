@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TypeOperators     #-}
@@ -16,7 +17,8 @@ import           Data.Text                (Text)
 import qualified Data.Text                as Text
 import           Data.Text.IO
 import qualified Database.Persist.Sqlite  as Sqlite
-import           Diener                   (LogEnv (..), withLogger)
+import           Diener                   (LogEnv (..), LogLevel, withLogger)
+import           Diener.Logger            (Settings (..))
 import qualified Network.Wai.Handler.Warp as Warp
 import           Servant
 import           System.Directory         (doesFileExist)
@@ -43,14 +45,14 @@ main = do
   when (not fileExists) $
     Sqlite.runSqlite optDbName $ Sqlite.runMigration Model.migrateAll
 
-  runInHandlerEnv optDbName $ \env -> do
+  runInHandlerEnv optDbName optLogLevel $ \env -> do
     putStrLn $ "Serving public directory " <> showt optAssetDir
     putStrLn $ "Listening to port " <> showt optPort <> " ..."
     Warp.run optPort $ serve (Proxy :: Proxy Api.Routes)
                              (app env optAssetDir)
 
-runInHandlerEnv :: Text -> (Env -> IO a) -> IO a
-runInHandlerEnv dbName action =
-  withLogger def $ \logFn ->
+runInHandlerEnv :: Text -> LogLevel -> (Env -> IO a) -> IO a
+runInHandlerEnv dbName logLevel action =
+  withLogger def{ logLevel } $ \logFn ->
     Sqlite.withSqlitePool dbName 1 $ \pool -> do
       liftIO $ action $ LogEnv logFn (AppEnv pool)

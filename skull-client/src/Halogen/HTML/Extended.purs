@@ -21,6 +21,9 @@ cldiv_ cls = div [ cl cls ]
 clspan_ :: forall p i. String -> Array (HTML p i) -> HTML p i
 clspan_ cls = span [ cl cls ]
 
+clsection_ :: forall p i. String -> Array (HTML p i) -> HTML p i
+clsection_ cls = section [ cl cls]
+
 doNothingForm_ :: forall p i. Array (HTML p i) -> HTML p i
 doNothingForm_ = form [ attr (AttrName "onsubmit") "return false" ]
 
