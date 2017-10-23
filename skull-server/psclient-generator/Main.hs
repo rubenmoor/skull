@@ -1,15 +1,19 @@
 {-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE OverloadedLists   #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
+import           Control.Applicative                 ((<|>))
 import           Control.Lens                        ((&), (.~))
 import           Data.Proxy
 import qualified Data.Set                            as Set
 import           Language.PureScript.Bridge          (BridgePart, SumType,
                                                       buildBridge,
                                                       defaultBridge, mkSumType,
-                                                      writePSTypes)
+                                                      typeName, writePSTypes,
+                                                      (^==))
+import           Language.PureScript.Bridge.PSTypes  (psString)
 import           Language.PureScript.Bridge.TypeInfo (Language (Haskell))
 import           Servant.PureScript                  (HasBridge (..),
                                                       defaultSettings,
@@ -17,6 +21,7 @@ import           Servant.PureScript                  (HasBridge (..),
                                                       writeAPIModuleWithSettings)
 
 import           Api.Types
+import           Auth.Types                          (AuthToken)
 import           Game.Types                          (BetState, Card, GState,
                                                       Hand, Info, Kind, Phase,
                                                       Player, Stack, Victory,
@@ -26,7 +31,8 @@ import           HttpApp.BotKey.Types                (BotKey)
 
 types :: [SumType 'Haskell]
 types =
-  [ mkSumType (Proxy :: Proxy UserNewRq)
+  [ mkSumType (Proxy :: Proxy AuthToken)
+  , mkSumType (Proxy :: Proxy UserNewRq)
   , mkSumType (Proxy :: Proxy UserNewResp)
   , mkSumType (Proxy :: Proxy UserNameResp)
   , mkSumType (Proxy :: Proxy UserExistsRq)
@@ -57,8 +63,11 @@ types =
   , mkSumType (Proxy :: Proxy BetState)
   ]
 
+base64Bridge :: BridgePart
+base64Bridge = typeName ^== "Base64" >> pure psString
+
 bridge :: BridgePart
-bridge = defaultBridge
+bridge = defaultBridge <|> base64Bridge
 
 data Bridge
 
@@ -69,7 +78,7 @@ main :: IO ()
 main = do
   let outDir = "../skull-client/src"
       settings =
-        defaultSettings & readerParams .~ Set.fromList
+        defaultSettings & readerParams .~
           [ "AuthToken"
           , "baseURL"
           ]

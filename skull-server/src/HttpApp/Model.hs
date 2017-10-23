@@ -19,7 +19,8 @@ import           Database.Persist.TH                 (mkMigrate, mkPersist,
                                                       sqlSettings)
 
 import           Data.ByteString.Base64.URL.Extended (Base64)
-import           Game.Types                          (Info)
+import           Game.Types                          (BetState, Hand, Info,
+                                                      Kind, Stack, Victory)
 import           HttpApp.User.Types                  (Email, PwHash, SessionKey,
                                                       UserName)
 
@@ -35,6 +36,7 @@ Session
   expiry          UTCTime
 BotKey
   fkUser          UserId
+  created         UTCTime
   label           Text
   secret          Base64
   USecret secret
@@ -42,4 +44,15 @@ Game
   fkUser          UserId
   key             Base64
   info            Info
+Player
+  fkGame          GameId
+  fkBotKey        BotKeyId
+  fkUser          UserId
+  key             Base64
+  kind            Kind
+  victory         Victory
+  hand            Hand
+  alive           Bool
+  stack           Stack
+  betState        BetState
 |]

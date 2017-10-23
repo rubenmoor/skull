@@ -7,23 +7,30 @@ module Game.Handler where
 
 import           Prelude              hiding (all, round)
 
-import           Control.Monad.Except (runExceptT, throwError)
+import           Control.Lens         ((^.))
+import           Control.Monad.Except (MonadError, runExceptT, throwError)
 import           Servant              ((:<|>) (..), ServerT)
 
+import           Auth                 (authHandlerBotKey)
 import qualified Database.Class       as Db
 import qualified Game.Api             as Api
 import           Game.Api.Types
 import           Game.Types
-import           Handler              (HandlerProtectedT)
+import           Handler              (HandlerT)
+import           Types                (AppError (..))
 
-handlers :: ServerT Api.Routes (HandlerProtectedT IO)
+handlers :: ServerT Api.Routes (HandlerT IO)
 handlers =
-       gameJoin
-  :<|> playFirstCard
+  authHandlerBotKey
+    (
+          gameJoin
+     :<|> playCard
+    )
 
-gameJoin :: (Db.Insert m, Monad m)
-         => GameJoinRequest
-         -> m (ErrorOr Info)
+gameJoin
+  :: (Db.Insert m, Monad m)
+  => GameJoinRequest
+  -> m (ErrorOr Info)
 gameJoin GameJoinRequest { .. } = do
   -- find game by id or throw error
   let numPlayers = undefined
@@ -36,17 +43,24 @@ gameJoin GameJoinRequest { .. } = do
   -- once the game is full, reply with game state
   pure $ Result $ undefined
 
-playFirstCard :: (Db.Insert m, Monad m)
-              => PlayFirstCard
-              -> m (ErrorOr Info)
-playFirstCard PlayFirstCard { .. } =
+playCard
+  :: (Db.Insert m, Db.Read m, Monad m, MonadError AppError m)
+  => PlayCardRq
+  -> m (ErrorOr Info)
+playCard pcrq = do
+
     withError $ do
+      -- case pcrq ^. pcrqAuth ^. aiBotKey of
+      --   Left  bk   -> do rs <- Db.select $ from $ \bk ->
+      --                      where_ $ bk ^.
+      --                    when (null rs)
+      --   Right sKey ->
       -- lookup game by id
       let numPlayers = undefined
       -- check if bot and player id are in the game
       let round = undefined
       let hand = undefined
-      newHand <- case _pfcCard of
+      newHand <- case pcrq ^. pcrqCard of
         Skull -> playSkullOrError hand
         Plain -> playPlainOrError hand
       -- poll the db every second until timeout

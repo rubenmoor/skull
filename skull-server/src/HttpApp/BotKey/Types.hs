@@ -4,12 +4,13 @@
 
 module HttpApp.BotKey.Types where
 
-import           Data.Aeson   (FromJSON, ToJSON)
-import           Data.Text    (Text)
-import           GHC.Generics (Generic)
+import           Data.Aeson                          (FromJSON, ToJSON)
+import           Data.ByteString.Base64.URL.Extended as Base64
+import           Data.Text                           (Text)
+import           GHC.Generics                        (Generic)
 
 type Label = Text
-type Secret = Text
+type Secret = Base64
 
 data BotKey = BotKey
   { _bkLabel  :: Label
@@ -19,5 +20,5 @@ data BotKey = BotKey
 sampleBotKey :: BotKey
 sampleBotKey = BotKey
   { _bkLabel = "Paul"
-  , _bkSecret = "34t90erfdsf90wf"
+  , _bkSecret = Base64.fromText "34t90erfdsf90wf"
   }

@@ -8,8 +8,8 @@ import BotKey.Render (render)
 import BotKey.Types (Effects, Input, Message(..), Query(..), Slot, State, initial)
 import Control.Applicative (pure)
 import Control.Monad.State (get, put)
-import Data.Function (($))
-import Data.Lens (use, (.=), (^.))
+import Data.Function ((#), ($))
+import Data.Lens ((.~), (^.))
 import Data.NaturalTransformation (type (~>))
 import Halogen (Component, parentComponent, raise)
 import Halogen.Component (ParentDSL)
@@ -39,13 +39,13 @@ eval = case _ of
     put bk
     pure next
   SetLabel (EditField.NewLabel str) next -> do
-    secret <- use bkSecret
+    bk <- get
     let body = BKSetLabelRq
-          { _slrqSecret: secret
+          { _slrqSecret: bk ^. bkSecret
           , _slrqLabel: str
           }
     mkRequest (postBotKeySetLabel body) $ \resp ->
-      bkLabel .= resp ^. slrespLabel
+      raise $ MsgUpdate $ bk # bkLabel .~ resp ^. slrespLabel
     pure next
   Delete next -> do
     bk <- get

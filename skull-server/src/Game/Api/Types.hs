@@ -3,11 +3,14 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module Game.Api.Types where
 
 import           Control.Arrow        (second)
+import           Control.Lens.TH      (makeLenses)
 import           Data.Aeson           (FromJSON, ToJSON)
+import           Data.Either          (Either (..))
 import           Data.Functor         (fmap)
 import           Data.Monoid          ((<>))
 import           Data.Proxy           (Proxy (..))
@@ -53,24 +56,25 @@ instance ToSample GameJoinRequest where
 
 data AuthInfo = AuthInfo
   { _aiGameKey   :: GameKey
-  , _aiBotKey    :: BotKey
   , _aiPlayerKey :: PlayerKey
   } deriving (Generic, FromJSON, ToJSON)
 
 sampleAuthInfo :: AuthInfo
 sampleAuthInfo = AuthInfo
   { _aiGameKey   = sampleGameKey
-  , _aiBotKey    = sampleBotKey
   , _aiPlayerKey = samplePlayerKey
   }
 
-data PlayFirstCard = PlayFirstCard
-  { _pfcCard :: Card
-  , _pfcAuth :: AuthInfo
+data PlayCardRq = PlayCardRq
+  { _pcrqCard :: Card
+  , _pcrqAuth :: AuthInfo
   } deriving (Generic, FromJSON, ToJSON)
 
-instance ToSample PlayFirstCard where
+instance ToSample PlayCardRq where
   toSamples _ =
-    let _pfcCard = Plain
-        _pfcAuth = sampleAuthInfo
-    in  singleSample PlayFirstCard{..}
+    let _pcrqCard = Plain
+        _pcrqAuth = sampleAuthInfo
+    in  singleSample PlayCardRq{..}
+
+makeLenses ''AuthInfo
+makeLenses ''PlayCardRq

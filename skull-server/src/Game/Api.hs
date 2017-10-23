@@ -3,14 +3,17 @@
 
 module Game.Api where
 
-import           Servant
+import           Servant        ((:<|>), (:>), JSON, Post, ReqBody)
 
-import           Game.Api.Types (ErrorOr, GameJoinRequest, PlayFirstCard)
+import           Auth.Types     (AuthProtect)
+import           Game.Api.Types (ErrorOr, GameJoinRequest, PlayCardRq)
 import           Game.Types     (Info)
 
 type Routes =
-       Join
-  :<|> FirstCard
+  AuthProtect :>
+    (     Join
+     :<|> PlayCard
+    )
 
 type Join = "join" :> ReqBody '[JSON] GameJoinRequest :> Post '[JSON] (ErrorOr Info)
-type FirstCard = "play" :> "firstcard" :> ReqBody '[JSON] PlayFirstCard :> Post '[JSON] (ErrorOr Info)
+type PlayCard = "playCard" :> ReqBody '[JSON] PlayCardRq :> Post '[JSON] (ErrorOr Info)

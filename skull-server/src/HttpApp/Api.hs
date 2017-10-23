@@ -13,7 +13,6 @@ import qualified HttpApp.BotKey.Api  as BotKey.Api
 import qualified HttpApp.PlayNow.Api as PlayNow.Api
 import qualified HttpApp.User.Api    as User.Api
 
-
 type Routes =
        "user"   :> User.Api.Public
   :<|> AuthProtect :> Protected

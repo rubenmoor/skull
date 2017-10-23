@@ -9,7 +9,7 @@ import           GHC.Generics         (Generic)
 import           HttpApp.BotKey.Types (BotKey, Label, Secret)
 
 data BKNewResp = BKNewResp
-  { _nrespBotKey :: BotKey
+  { _nrespBotKey  :: BotKey
   } deriving (Generic, ToJSON)
 
 data BKAllResp = BKAllResp

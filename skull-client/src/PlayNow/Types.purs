@@ -5,6 +5,7 @@ import Data.Maybe (Maybe(..))
 import Data.Unit (Unit)
 import Data.Void (Void)
 import Game.Types (Info)
+import HttpApp.BotKey.Types (BotKey)
 import Types (MkRequestEffects)
 
 type Effects e =
@@ -16,6 +17,11 @@ type Effects e =
 type Input = Unit
 
 type State = Maybe Info
+
+type HumanGame =
+  { _hgInfo :: Info
+  , _hgBotKey :: BotKey
+  }
 
 initial :: Input -> State
 initial _ = Nothing

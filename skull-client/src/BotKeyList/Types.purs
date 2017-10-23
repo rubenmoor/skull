@@ -37,8 +37,8 @@ isLoading = lens _._isLoading (\r b -> r { _isLoading = b})
 
 data Query a
   = Initialize a
+  | HandleMsg BotKey.Message a
   | CreateNew a
-  | Delete BotKey.Message a
 
 type Slot = Int
 

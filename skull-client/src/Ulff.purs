@@ -119,6 +119,6 @@ apiCall call = do
             { baseURL : httpUrlRoot
             -- in case of a auth-protected request by a public component,
             -- let the ajax request fail and report the error
-            , authToken: AuthToken $ fromMaybe "" mSessionKey
+            , authToken: AuthSession $ fromMaybe "" mSessionKey
             }
       runExceptT (flip runReaderT apiSettings call)

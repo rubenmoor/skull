@@ -6,15 +6,20 @@
 
 module HttpApp.BotKey.Handler where
 
+import           Control.Applicative                 (pure)
 import           Control.Monad                       (when)
 import           Control.Monad.Except                (MonadError, throwError)
 import           Control.Monad.IO.Class              (MonadIO, liftIO)
 import           Control.Monad.Reader                (MonadReader, asks)
+import           Data.Eq                             ((==))
+import           Data.Function                       (flip, on, ($), (.))
 import           Data.Functor.Extended               (forEach, (<$>))
-import           Prelude                             (IO, pure, ($), (==))
+import           Data.List                           (sortBy)
+import           Data.Ord                            (compare)
+import           Data.Time.Clock                     (getCurrentTime)
+import           Prelude                             (IO)
 import           Servant                             ((:<|>) (..), ServerT)
 import           System.Entropy                      (getEntropy)
-import           TextShow                            (showt)
 
 import           Auth.Types                          (UserInfo (..))
 import qualified Data.ByteString.Base64.URL.Extended as Base64
@@ -44,16 +49,18 @@ new
 new = do
   let _bkLabel = ""
   botKeySecret <- Base64.encode <$> liftIO (getEntropy 32)
+  now <- liftIO getCurrentTime
   uId <- asks _uiUserId
   Db.insert_ Model.BotKey
     { botKeyFkUser = uId
+    , botKeyCreated = now
     , botKeySecret
     , botKeyLabel  = _bkLabel
     }
   pure BKNewResp
     { _nrespBotKey = BotKey
       { _bkLabel
-      , _bkSecret = showt botKeySecret
+      , _bkSecret = botKeySecret
       }
     }
 
@@ -66,9 +73,10 @@ all = do
     where_ $ (bk ^. BotKeyFkUser ==. u ^. UserId)
          &&. (u ^. UserId ==. val uId)
     pure bk
-  let _arespBotKeys = forEach bks $ \(Entity _ Model.BotKey{..}) -> BotKey
+  let bksSorted = sortBy (flip compare `on` Model.botKeyCreated . entityVal) bks
+      _arespBotKeys = forEach bksSorted $ \(Entity _ Model.BotKey{..}) -> BotKey
         { _bkLabel = botKeyLabel
-        , _bkSecret = showt botKeySecret
+        , _bkSecret = botKeySecret
         }
   pure BKAllResp{..}
 
@@ -78,11 +86,10 @@ setLabel
   -> m BKSetLabelResp
 setLabel BKSetLabelRq{..} = do
   uId <- asks _uiUserId
-  let secret = Base64.fromText _slrqSecret
   n <- Db.updateCount $ \bk -> do
     set bk [ BotKeyLabel =. val _slrqLabel ]
     where_ $ (bk ^. BotKeyFkUser ==. val uId)
-         &&. (bk ^. BotKeySecret ==. val secret)
+         &&. (bk ^. BotKeySecret ==. val _slrqSecret)
   if n == 0
     then throwError $ ErrDatabase "BotKey not found"
     else pure BKSetLabelResp{ _slrespLabel = _slrqLabel }
@@ -93,8 +100,7 @@ delete
   -> m ()
 delete BKDeleteRq{..} = do
   uId <- asks _uiUserId
-  let secret = Base64.fromText _drqSecret
   n <- Db.deleteCount $ from $ \bk ->
     where_ $ (bk ^. BotKeyFkUser ==. val uId)
-         &&. (bk ^. BotKeySecret ==. val secret)
+         &&. (bk ^. BotKeySecret ==. val _drqSecret)
   when (n == 0) $ throwError $ ErrDatabase "BotKey not found"

@@ -28,11 +28,24 @@ samplePlayerKey = "f40jf920s0"
 
 -- game info
 
+data Game = Game
+  { _gInfo    :: Info
+  , _gPlayers :: [Player]
+  }
+
+sampleGame :: Game
+sampleGame = Game
+  { _gInfo = sampleInfo
+  , _gPlayers = samplePlayers
+  }
+
+instance ToSample Game where
+  toSamples _ = singleSample sampleGame
+
 data Info = Info
-  { _giKey     :: GameKey
-  , _giState   :: GState
-  , _giPhase   :: Phase
-  , _giPlayers :: [Player]
+  { _giKey   :: GameKey
+  , _giState :: GState
+  , _giPhase :: Phase
   }
   deriving (Generic, Show, Read, Eq, ToJSON)
 
@@ -41,11 +54,7 @@ sampleInfo = Info
   { _giKey = sampleGameKey
   , _giState = sampleState
   , _giPhase = samplePhase
-  , _giPlayers = samplePlayers
   }
-
-instance ToSample Info where
-  toSamples _ = singleSample sampleInfo
 
 -- state
 
@@ -144,6 +153,11 @@ data BetState
   deriving (Generic, Show, Read, Eq, ToJSON)
 
 derivePersistField "Info"
+derivePersistField "Kind"
+derivePersistField "Victory"
+derivePersistField "Hand"
+derivePersistField "Stack"
+derivePersistField "BetState"
 
 --
 

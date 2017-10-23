@@ -74,7 +74,7 @@ render urlRoot = case _ of
                       ]
               in  [ cldiv_ "clearfix" bots
                   , cldiv_ "clearfix center"
-                      [ cldiv_ "col-4 m0"
+                      [ cldiv_ "container"
                           [ div_
                               [ imgStack urlRoot me
                               ]
@@ -143,7 +143,7 @@ myHand urlRoot pl =
             else []
       n = pl ^. plHand ^. hNumPlains
       plains = replicate n $ imgCard urlRoot ImgPlain Nothing
-  in  clsection_ "container"
+  in  clsection_ "container--small"
         [ cldiv_ "clearfix" $ skull <> plains
         ]
 
@@ -163,7 +163,7 @@ imgCard urlRoot imgSP mAction =
   let str = case imgSP of
         ImgPlain -> "plain"
         ImgSkull -> "skull"
-  in  cldiv_ "col col-2"
+  in  cldiv_ "col col-3 pl1"
         [ img
             [ src $ urlRoot <> "img/card-" <> str <> ".svg"
             ]

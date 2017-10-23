@@ -37,4 +37,6 @@ type Slot = Unit
 
 -- output
 
-data Message = MsgDelete BotKey
+data Message
+  = MsgDelete BotKey
+  | MsgUpdate BotKey

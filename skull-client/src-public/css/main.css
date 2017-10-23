@@ -20,6 +20,19 @@
 :root {
   --border-color: $red;
   --border-width: 2px;
+  --container-width: 800px;
+}
+
+.container {
+  max-width: var(--container-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.container--small {
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .border-bottom {

@@ -47,6 +47,6 @@ render st = cldiv_ "bgwhite p1 mx-auto col-8"
                     let bks = Array.fromFoldable $ st ^. botKeys
                         forIndex = flip mapWithIndex
                     in  forIndex bks $ \i bk ->
-                          slot i botKey bk (Events.input Delete)
+                          slot i botKey bk (Events.input HandleMsg)
                 ]
   ]
