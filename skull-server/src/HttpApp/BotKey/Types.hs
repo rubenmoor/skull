@@ -20,5 +20,5 @@ data BotKey = BotKey
 sampleBotKey :: BotKey
 sampleBotKey = BotKey
   { _bkLabel = "Paul"
-  , _bkSecret = Base64.fromText "34t90erfdsf90wf"
+  , _bkSecret = Base64.fromTextUnsafe "34t90erfdsf90wf"
   }

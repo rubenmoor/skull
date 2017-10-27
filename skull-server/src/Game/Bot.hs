@@ -2,9 +2,9 @@ module Game.Bot where
 
 import           Control.Lens         ((^.))
 import           Control.Monad.Random (MonadRandom, getRandom)
-import           Game.Types           (Agent (..), Card (..), Hand (..),
-                                       Stack (..), aHand, aStack, hHasSkull,
-                                       hNumPlains, stCards)
+import           Game.Agent           (Agent (..), aHand, aStack)
+import           Game.Types           (Card (..), Hand (..), Stack (..),
+                                       hHasSkull, hNumPlains, stCards)
 
 playCard
   :: MonadRandom m

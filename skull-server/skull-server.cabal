@@ -21,6 +21,9 @@ library
                      , Auth.Types
                      , Data.Functor.Extended
                      , Database.Class
+                     , Database.Query
+                     , Game
+                     , Game.Agent
                      , Game.Api
                      , Game.Api.Types
                      , Game.Bot

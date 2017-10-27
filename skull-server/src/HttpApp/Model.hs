@@ -19,8 +19,8 @@ import           Database.Persist.TH                 (mkMigrate, mkPersist,
                                                       sqlSettings)
 
 import           Data.ByteString.Base64.URL.Extended (Base64)
-import           Game.Types                          (BetState, Hand, Info,
-                                                      Kind, Stack, Victory)
+import           Game.Types                          (BetState, GState, Hand,
+                                                      Phase, Stack, Victory)
 import           HttpApp.User.Types                  (Email, PwHash, SessionKey,
                                                       UserName)
 
@@ -43,13 +43,13 @@ BotKey
 Game
   fkUser          UserId
   key             Base64
-  info            Info
+  state           GState
+  phase           Phase
 Player
   fkGame          GameId
-  fkBotKey        BotKeyId
-  fkUser          UserId
-  key             Base64
-  kind            Kind
+  fkBotKey        BotKeyId Maybe -- Just => Kind: BotUser
+  fkUser          UserId   Maybe -- Just => Kind: HumanPlayNow
+  key             Base64         -- Nothing, Nothing => Kind: BotLaplace
   victory         Victory
   hand            Hand
   alive           Bool

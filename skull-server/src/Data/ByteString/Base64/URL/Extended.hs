@@ -8,7 +8,7 @@ module Data.ByteString.Base64.URL.Extended
   , fromByteString
   , fromByteStringUnsafe
   , decode
-  , fromText
+  , fromTextUnsafe
   , toByteString
   )where
 
@@ -25,7 +25,7 @@ import           Database.Persist.Sql       (PersistField (..),
                                              PersistFieldSql (..))
 
 newtype Base64 = Base64 { unBase64 :: ByteString }
-  deriving(Eq, Ord)
+  deriving(Eq, Ord, Read, Show)
 
 instance ToJSON Base64 where
   toJSON = toJSON . Text.decodeUtf8 . unBase64
@@ -60,5 +60,5 @@ decode = Base64.decodeLenient . unBase64
 instance Text.TextShow Base64 where
   showb = Text.fromText . Text.decodeUtf8 . unBase64
 
-fromText :: Text -> Base64
-fromText = Base64 . Text.encodeUtf8
+fromTextUnsafe :: Text -> Base64
+fromTextUnsafe = Base64 . Text.encodeUtf8
