@@ -7,7 +7,7 @@ import           Servant        ((:<|>), (:>), JSON, Post, ReqBody)
 
 import           Auth.Types     (AuthProtect)
 import           Game.Api.Types (ErrorOr, GameJoinRequest, PlayCardRq)
-import           Game.Types     (Info)
+import           Game.Types     (Game)
 
 type Routes =
   AuthProtect :>
@@ -15,5 +15,5 @@ type Routes =
      :<|> PlayCard
     )
 
-type Join = "join" :> ReqBody '[JSON] GameJoinRequest :> Post '[JSON] (ErrorOr Info)
-type PlayCard = "playCard" :> ReqBody '[JSON] PlayCardRq :> Post '[JSON] (ErrorOr Info)
+type Join = "join" :> ReqBody '[JSON] GameJoinRequest :> Post '[JSON] (ErrorOr Game)
+type PlayCard = "playCard" :> ReqBody '[JSON] PlayCardRq :> Post '[JSON] (ErrorOr Game)

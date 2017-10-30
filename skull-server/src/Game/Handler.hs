@@ -30,7 +30,7 @@ handlers =
 gameJoin
   :: (Db.Insert m, Monad m)
   => GameJoinRequest
-  -> m (ErrorOr Info)
+  -> m (ErrorOr Game)
 gameJoin GameJoinRequest { .. } = do
   -- find game by id or throw error
   let numPlayers = undefined
@@ -46,16 +46,10 @@ gameJoin GameJoinRequest { .. } = do
 playCard
   :: (Db.Insert m, Db.Read m, Monad m, MonadError AppError m)
   => PlayCardRq
-  -> m (ErrorOr Info)
+  -> m (ErrorOr Game)
 playCard pcrq = do
 
     withError $ do
-      -- case pcrq ^. pcrqAuth ^. aiBotKey of
-      --   Left  bk   -> do rs <- Db.select $ from $ \bk ->
-      --                      where_ $ bk ^.
-      --                    when (null rs)
-      --   Right sKey ->
-      -- lookup game by id
       let numPlayers = undefined
       -- check if bot and player id are in the game
       let round = undefined

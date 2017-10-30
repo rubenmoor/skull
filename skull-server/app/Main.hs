@@ -25,6 +25,7 @@ import           System.Directory         (doesFileExist)
 import           TextShow
 
 import qualified Api
+import qualified Game.Handler             as Game
 import           Handler                  (transform)
 import qualified HttpApp.Handler          as HttpApp
 import qualified HttpApp.Model            as Model
@@ -34,6 +35,7 @@ import           Types                    (AppEnv (..), Env)
 app :: Env -> FilePath -> Server Api.Routes
 app env path =
        transform env HttpApp.handlers
+  :<|> transform env Game.handlers
   :<|> serveDirectory path
 
 main :: IO ()

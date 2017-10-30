@@ -32,6 +32,24 @@ playerToModel playerFkGame playerFkBotKey playerFkUser Player{..} = do
       playerBetState = _plBetState
   pure Model.Player{..}
 
+playerFromModel
+  :: GameKey
+  -> Model.Player
+  -> Maybe Player
+playerFromModel _plGameKey Model.Player{..} = do
+  let _plKey = playerKey
+      _plVictory = playerVictory
+      _plHand = playerHand
+      _plAlive = playerAlive
+      _plStack = playerStack
+      _plBetState = playerBetState
+  _plKind <- case (playerFkUser, playerFkBotKey) of
+               (Just _, Nothing)  -> Just HumanPlayNow
+               (Nothing, Just _)  -> Just BotUser
+               (Nothing, Nothing) -> Just BotLaplace
+               _                  -> Nothing
+  pure Player{..}
+
 gameToModel
   :: Model.UserId
   -> Game
@@ -40,6 +58,16 @@ gameToModel gameFkUser Game{..} =
   let gameKey = _gKey
       gameState = _gState
       gamePhase = _gPhase
+      gameRound = _gRound
   in  Model.Game{..}
 
 gameFromModel
+  :: [Player]
+  -> Model.Game
+  -> Game
+gameFromModel _gPlayers Model.Game{..} =
+  let _gKey = gameKey
+      _gState = gameState
+      _gPhase = gamePhase
+      _gRound = gameRound
+  in  Game{..}

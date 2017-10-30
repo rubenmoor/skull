@@ -31,6 +31,7 @@ data Game = Game
   { _gKey     :: GameKey
   , _gState   :: GState
   , _gPhase   :: Phase
+  , _gRound   :: Int
   , _gPlayers :: [Player]
   }
   deriving (Generic, Show, Read, Eq, ToJSON)
@@ -41,6 +42,7 @@ sampleGame = Game
   { _gKey = sampleGameKey
   , _gState = sampleState
   , _gPhase = samplePhase
+  , _gRound = 0
   , _gPlayers = samplePlayers
   }
 
@@ -50,13 +52,13 @@ instance ToSample Game where
 -- state
 
 data GState
-  = Round Int
+  = Active
   | Finished VictoryInfo
   | Aborted Text
   deriving (Generic, Show, Read, Eq, ToJSON)
 
 sampleState :: GState
-sampleState = Round 3
+sampleState = Active
 
 data VictoryInfo = VictoryInfo
   { _viWinner :: PlayerKey
@@ -116,6 +118,12 @@ data Hand = Hand
 
 sampleHand1 :: Hand
 sampleHand1 = Hand
+  { _hNumPlains = 3
+  , _hHasSkull = True
+  }
+
+startHand :: Hand
+startHand = Hand
   { _hNumPlains = 3
   , _hHasSkull = True
   }

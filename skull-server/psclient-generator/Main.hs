@@ -23,7 +23,7 @@ import           Servant.PureScript                  (HasBridge (..),
 import           Api.Types
 import           Auth.Types                          (AuthToken)
 import           Game.Types                          (BetState, Card, GState,
-                                                      Hand, Info, Kind, Phase,
+                                                      Game, Hand, Kind, Phase,
                                                       Player, Stack, Victory,
                                                       VictoryInfo, VictoryType)
 import           HttpApp.Api                         (Routes)
@@ -49,7 +49,7 @@ types =
   , mkSumType (Proxy :: Proxy PNNewResp)
   , mkSumType (Proxy :: Proxy PNAllResp)
   , mkSumType (Proxy :: Proxy PNDeleteRq)
-  , mkSumType (Proxy :: Proxy Info)
+  , mkSumType (Proxy :: Proxy Game)
   , mkSumType (Proxy :: Proxy GState)
   , mkSumType (Proxy :: Proxy VictoryInfo)
   , mkSumType (Proxy :: Proxy VictoryType)

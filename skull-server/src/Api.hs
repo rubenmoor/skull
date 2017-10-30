@@ -7,7 +7,6 @@ module Api
 
 import           Servant     ((:<|>), (:>), Raw)
 
-import           Auth.Types  (AuthProtect)
 import qualified Game.Api    as Game
 import qualified HttpApp.Api as HttpApp
 

@@ -4,7 +4,7 @@ import DOM (DOM)
 import Data.Maybe (Maybe(..))
 import Data.Unit (Unit)
 import Data.Void (Void)
-import Game.Types (Info)
+import Game.Types (Game)
 import HttpApp.BotKey.Types (BotKey)
 import Types (MkRequestEffects)
 
@@ -16,12 +16,7 @@ type Effects e =
 
 type Input = Unit
 
-type State = Maybe Info
-
-type HumanGame =
-  { _hgInfo :: Info
-  , _hgBotKey :: BotKey
-  }
+type State = Maybe Game
 
 initial :: Input -> State
 initial _ = Nothing

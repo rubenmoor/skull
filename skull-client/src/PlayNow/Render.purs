@@ -17,7 +17,7 @@ import Data.Semiring ((+))
 import Data.Show (show)
 import Data.Tuple (Tuple(..))
 import Game (handSize)
-import Game.Types (GState(Aborted, Finished, Round), Kind(BotLaplace, Human), Phase(Reveal, Bet, CardOrBet, FirstCard), Player, Victory(None, One), giPhase, giPlayers, giState, hHasSkull, hNumPlains, plAlive, plHand, plKind, plStack, plVictory, stCards)
+import Game.Types (GState(Aborted, Finished, Round), Kind(HumanPlayNow), Phase(Reveal, Bet, CardOrBet, FirstCard), Player, Victory(None, One), gPhase, gPlayers, gState, hHasSkull, hNumPlains, plAlive, plHand, plKind, plStack, plVictory, stCards)
 import Halogen.Component (ParentHTML)
 import Halogen.HTML.Extended (button, cl, cldiv_, clsection_, clspan_, div_, faIcon_, img, text, HTML)
 import Halogen.HTML.Properties (src)
@@ -41,19 +41,19 @@ render urlRoot = case _ of
     ]
   Just info -> cldiv_ "bgwhite p1"
     [ cldiv_ ""
-        [ case info ^. giState of
+        [ case info ^. gState of
             Round n -> text $ "Round " <> show n
             Finished vInfo -> text "Game over"
             Aborted str -> text $ "Game aborted: " <> str
         ]
     , cldiv_ ""
-        [ case info ^. giPhase of
+        [ case info ^. gPhase of
             FirstCard -> text "First card: all players put down one card"
             CardOrBet -> text "Either put down a card, or initiate the betting"
             Bet -> text "Either bet a higher number or pass"
             Reveal -> text "The highest bidder reveals the required number of cards"
         ]
-    , clsection_ "container" $ case createSeating $ info ^. giPlayers of
+    , clsection_ "container" $ case createSeating $ info ^. gPlayers of
             Just seating ->
               let Tuple meNumber me = seating.sitMe
                   bots = mapFlipped seating.sitOthers $ \(Tuple i player) ->
@@ -110,8 +110,8 @@ type Seating =
 createSeating :: Array Player -> Maybe Seating
 createSeating ps = do
   meI <- findIndex (\p -> case p ^. plKind of
-                             Human      -> true
-                             BotLaplace -> false) ps
+                             HumanPlayNow -> true
+                             _ -> false) ps
   let pis = mapWithIndex Tuple ps
   me <- pis !! meI
   let rights = slice 0 meI pis

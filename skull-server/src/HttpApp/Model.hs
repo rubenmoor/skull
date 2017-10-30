@@ -11,6 +11,8 @@
 
 module HttpApp.Model where
 
+import           Data.Eq                             (Eq (..))
+import           Data.Function                       (on)
 import           Data.Text                           (Text)
 import           Data.Time                           (UTCTime)
 
@@ -45,6 +47,7 @@ Game
   key             Base64
   state           GState
   phase           Phase
+  round           Int
 Player
   fkGame          GameId
   fkBotKey        BotKeyId Maybe -- Just => Kind: BotUser
@@ -56,3 +59,9 @@ Player
   stack           Stack
   betState        BetState
 |]
+
+instance Eq Game where
+  (==) = (==) `on` gameKey
+
+instance Ord Game where
+  compare = compare `on` gameKey

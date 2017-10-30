@@ -19,6 +19,7 @@ library
                      , Api.Types
                      , Auth
                      , Auth.Types
+                     , Data.ByteString.Base64.URL.Extended
                      , Data.Functor.Extended
                      , Database.Class
                      , Database.Query
@@ -44,7 +45,6 @@ library
                      , HttpApp.PlayNow.Api
                      , HttpApp.PlayNow.Api.Types
                      , HttpApp.PlayNow.Handler
-                     , Data.ByteString.Base64.URL.Extended
                      , Types
   build-depends:       aeson
                      , base >= 4.7 && < 5

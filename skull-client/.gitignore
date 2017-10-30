@@ -7,7 +7,8 @@
 /.psa*
 /dist/
 /src/HttpApp/
-/src/Auth/
+/src/Auth/Types.purs
+/src/Game/
 /src/ServerAPI.purs
 /public/
 /src-public/img/

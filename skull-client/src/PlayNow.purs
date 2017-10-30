@@ -11,11 +11,11 @@ import Data.Function (const, ($))
 import Data.Lens ((^.))
 import Data.Maybe (Maybe(..))
 import Data.NaturalTransformation (type (~>))
-import Game.Types (giKey)
+import Game.Types (gKey)
 import Halogen (Component, action, lifecycleParentComponent)
 import Halogen.Component (ParentDSL)
 import Halogen.HTML (HTML)
-import HttpApp.PlayNow.Api.Types (PNDeleteRq(..), PNNewRq(..), arespInfo, nrespInfo)
+import HttpApp.PlayNow.Api.Types (PNDeleteRq(..), PNNewRq(..), arespGame, nrespGame)
 import PlayNow.Render (render)
 import PlayNow.Types (Effects, Input, Query(..), Slot, State, Message, initial)
 import ServerAPI (deletePlayNow, getPlayNowAll, postPlayNowNew)
@@ -42,20 +42,20 @@ eval
 eval = case _ of
   Initialize next -> do
     mkRequest getPlayNowAll $ \resp ->
-      put $ resp ^. arespInfo
+      put $ resp ^. arespGame
     pure next
   NewGame n next -> do
     let body = PNNewRq
           { _nrqNumPlayers: n
           }
     mkRequest (postPlayNowNew body) $ \resp ->
-      put $ Just $ resp ^. nrespInfo
+      put $ Just $ resp ^. nrespGame
     pure next
   AbortGame next -> do
     mInfo <- get
     for_ mInfo $ \info -> do
       let body = PNDeleteRq
-            { _drqKey: info ^. giKey
+            { _drqKey: info ^. gKey
             }
       mkRequest (deletePlayNow body) $ \_ -> put Nothing
     pure next

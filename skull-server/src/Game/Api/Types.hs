@@ -10,13 +10,11 @@ module Game.Api.Types where
 import           Control.Arrow        (second)
 import           Control.Lens.TH      (makeLenses)
 import           Data.Aeson           (FromJSON, ToJSON)
-import           Data.Either          (Either (..))
-import           Data.Functor         (fmap)
+import           Data.Functor         ((<$>))
 import           Data.Monoid          ((<>))
 import           Data.Proxy           (Proxy (..))
 import           Data.Text            (Text)
 import           GHC.Generics         (Generic)
-import           Prelude              (($))
 
 import           Servant.Docs         (ToSample (..), singleSample)
 
@@ -36,7 +34,7 @@ data ErrorOr a
 
 instance ToSample a => ToSample (ErrorOr a) where
   toSamples _ =
-    let results = fmap (second Result) $ toSamples (Proxy :: Proxy a)
+    let results = second Result <$> toSamples (Proxy :: Proxy a)
         geMsg = GameError "Illegal play: skull. Your hand doesn't have the skull card."
         error = singleSample Error{..}
     in  error <> results
