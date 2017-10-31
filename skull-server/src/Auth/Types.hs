@@ -35,7 +35,7 @@ data UserInfo = UserInfo
   { _uiUserId       :: UserId
   , _uiUserName     :: UserName
   , _uiEmail        :: Maybe Email
-  , _uiActiveBotKey :: Maybe BotKey
+  , _uiActiveBotKey :: Maybe BotKey -- Nothing => PlayNow
   }
 
 sessionLength :: Clock.NominalDiffTime

@@ -15,8 +15,7 @@ import           Control.Monad.IO.Class              (MonadIO, liftIO)
 import           Control.Monad.Random                (evalRand, getStdGen)
 import           Control.Monad.Reader                (MonadReader, asks)
 import           Data.Foldable                       (for_)
-import           Data.Function                       (on)
-import           Data.List                           (sortBy)
+import           Data.List                           (sort)
 import           Data.Traversable                    (for)
 import           Database.Esqueleto                  (Entity (..),
                                                       InnerJoin (..), from, set,
@@ -81,7 +80,7 @@ new PNNewRq{..} = do
     case evalRand (agentDo p playCard) stdGen of
       Just player -> pure player
       Nothing     -> throwError $ ErrBug "illegal move"
-  let allPlayers = sortBy (compare `on` _plKey) $ humanPlayer : botPlayers
+  let allPlayers = sort $ humanPlayer : botPlayers
 
   -- game
 

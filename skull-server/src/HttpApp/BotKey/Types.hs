@@ -1,9 +1,11 @@
 {-# LANGUAGE DeriveAnyClass    #-}
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module HttpApp.BotKey.Types where
 
+import           Control.Lens.TH                     (makeLenses)
 import           Data.Aeson                          (FromJSON, ToJSON)
 import           Data.ByteString.Base64.URL.Extended as Base64
 import           Data.Text                           (Text)
@@ -22,3 +24,5 @@ sampleBotKey = BotKey
   { _bkLabel = "Paul"
   , _bkSecret = Base64.fromTextUnsafe "34t90erfdsf90wf"
   }
+
+makeLenses ''BotKey

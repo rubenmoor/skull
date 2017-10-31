@@ -16,8 +16,9 @@ import Data.Monoid ((<>))
 import Data.Semiring ((+))
 import Data.Show (show)
 import Data.Tuple (Tuple(..))
+import Data.Unit (Unit)
 import Game (handSize)
-import Game.Types (GState(Aborted, Finished, Round), Kind(HumanPlayNow), Phase(Reveal, Bet, CardOrBet, FirstCard), Player, Victory(None, One), gPhase, gPlayers, gState, hHasSkull, hNumPlains, plAlive, plHand, plKind, plStack, plVictory, stCards)
+import Game.Types (Card(..), Kind(HumanPlayNow), Phase(Reveal, Bet, CardOrBet, FirstCard), Player, Victory(None, One), gPhase, gPlayers, gRound, hHasSkull, hNumPlains, plAlive, plHand, plKind, plStack, plVictory, stCards)
 import Halogen.Component (ParentHTML)
 import Halogen.HTML.Extended (button, cl, cldiv_, clsection_, clspan_, div_, faIcon_, img, text, HTML)
 import Halogen.HTML.Properties (src)
@@ -39,21 +40,18 @@ render urlRoot = case _ of
         [ text "New Game"
         ]
     ]
-  Just info -> cldiv_ "bgwhite p1"
+  Just game -> cldiv_ "bgwhite p1"
     [ cldiv_ ""
-        [ case info ^. gState of
-            Round n -> text $ "Round " <> show n
-            Finished vInfo -> text "Game over"
-            Aborted str -> text $ "Game aborted: " <> str
+        [ text $ show $ game ^. gRound
         ]
     , cldiv_ ""
-        [ case info ^. gPhase of
+        [ case game ^. gPhase of
             FirstCard -> text "First card: all players put down one card"
             CardOrBet -> text "Either put down a card, or initiate the betting"
             Bet -> text "Either bet a higher number or pass"
             Reveal -> text "The highest bidder reveals the required number of cards"
         ]
-    , clsection_ "container" $ case createSeating $ info ^. gPlayers of
+    , clsection_ "container" $ case createSeating $ game ^. gPlayers of
             Just seating ->
               let Tuple meNumber me = seating.sitMe
                   bots = mapFlipped seating.sitOthers $ \(Tuple i player) ->
@@ -86,7 +84,7 @@ render urlRoot = case _ of
                                       ]
                                   , text $ "Player " <> show (meNumber + 1)
                                   ] <> victoryTrophy me
-                              , myHand urlRoot me
+                              , myHand urlRoot (game ^. gPhase) me
                               ]
                           ]
                       ]
@@ -131,43 +129,48 @@ victoryTrophy player =
 
 -- my hand
 
-myHand
-  :: forall p i.
-     UrlRoot
-  -> Player
-  -> HTML p i
-myHand urlRoot pl =
-  let skull =
-        if pl ^. plHand ^. hHasSkull
-            then [ imgCard urlRoot ImgSkull Nothing ]
-            else []
-      n = pl ^. plHand ^. hNumPlains
-      plains = replicate n $ imgCard urlRoot ImgPlain Nothing
-  in  clsection_ "container--small"
-        [ cldiv_ "clearfix" $ skull <> plains
-        ]
-
 data ImgCard
   = ImgPlain
   | ImgSkull
 
-type SubmitMoveAction = Maybe Int
-
-imgCard
-  :: forall p i.
-     UrlRoot
-  -> ImgCard
-  -> Maybe SubmitMoveAction
-  -> HTML p i
-imgCard urlRoot imgSP mAction =
-  let str = case imgSP of
-        ImgPlain -> "plain"
-        ImgSkull -> "skull"
-  in  cldiv_ "col col-3 pl1"
-        [ img
-            [ src $ urlRoot <> "img/card-" <> str <> ".svg"
-            ]
+myHand
+  :: forall t.
+     String
+  -> Phase
+  -> Player
+  -> HTML t (Query Unit)
+myHand urlRoot phase pl =
+  let renderImg imgCard =
+        let str = case imgCard of
+              ImgPlain -> "plain"
+              ImgSkull -> "skull"
+        in img
+             [ src $ urlRoot <> "img/card-" <> str <> ".svg"
+             ]
+      renderButton contents = button
+        [ cl "button--pure"
+        , Events.onClick $ Events.input_ $ PlayCard Skull
         ]
+        [ contents
+        ]
+      renderCard img =
+        cldiv_ "col col-3 pl1"
+          [ case phase of
+               FirstCard -> renderButton $ renderImg img
+               CardOrBet -> renderButton $ renderImg img
+               _         -> renderImg img
+          ]
+      skull =
+        if pl ^. plHand ^. hHasSkull
+            then [ renderCard ImgSkull ]
+            else []
+      n = pl ^. plHand ^. hNumPlains
+      plains = replicate n $ renderCard ImgPlain
+  in  clsection_ "container--small"
+        [ cldiv_ "clearfix" $ skull <> plains
+        ]
+
+type SubmitMoveAction = Maybe Int
 
 -- img hand and stack
 

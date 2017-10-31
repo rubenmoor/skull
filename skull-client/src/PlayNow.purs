@@ -18,7 +18,7 @@ import Halogen.HTML (HTML)
 import HttpApp.PlayNow.Api.Types (PNDeleteRq(..), PNNewRq(..), arespGame, nrespGame)
 import PlayNow.Render (render)
 import PlayNow.Types (Effects, Input, Query(..), Slot, State, Message, initial)
-import ServerAPI (deletePlayNow, getPlayNowAll, postPlayNowNew)
+import ServerAPI (deletePlayNow, getPlayNowActive, postPlayNowNew)
 import Types (UrlRoot)
 import Ulff (Ulff, mkRequest)
 
@@ -41,7 +41,7 @@ eval
      Query ~> ParentDSL State Query BotKey.Query Slot Message (Ulff (Effects eff))
 eval = case _ of
   Initialize next -> do
-    mkRequest getPlayNowAll $ \resp ->
+    mkRequest getPlayNowActive $ \resp ->
       put $ resp ^. arespGame
     pure next
   NewGame n next -> do
@@ -50,6 +50,8 @@ eval = case _ of
           }
     mkRequest (postPlayNowNew body) $ \resp ->
       put $ Just $ resp ^. nrespGame
+    pure next
+  PlayCard c next -> do
     pure next
   AbortGame next -> do
     mInfo <- get

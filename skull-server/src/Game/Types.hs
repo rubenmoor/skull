@@ -10,6 +10,7 @@ import           Control.Lens.TH                     (makeLenses)
 import           Data.Aeson                          (FromJSON, ToJSON)
 import           Data.ByteString.Base64.URL.Extended (Base64)
 import qualified Data.ByteString.Base64.URL.Extended as Base64
+import           Data.Function                       (on)
 import           Data.Text                           (Text)
 import           Database.Persist.TH                 (derivePersistField)
 import           GHC.Generics                        (Generic)
@@ -94,7 +95,13 @@ data Player = Player
   , _plAlive    :: Bool
   , _plStack    :: Stack
   , _plBetState :: BetState
-  } deriving (Generic, ToJSON, Show, Read, Eq)
+  } deriving (Generic, ToJSON, Show, Read)
+
+instance Eq Player where
+  (==) = (==) `on` _plKey
+
+instance Ord Player where
+  compare = compare `on` _plKey
 
 samplePlayer1 :: Player
 samplePlayer1 = Player
@@ -163,6 +170,7 @@ derivePersistField "Phase"
 
 --
 
+makeLenses ''Game
 makeLenses ''Player
 makeLenses ''Stack
 makeLenses ''Hand

@@ -6,7 +6,8 @@
 {-# LANGUAGE TypeOperators         #-}
 
 module Auth
-  ( authHandler
+  ( module Auth.Types
+  , authHandler
   , authHandlerBotKey
   ) where
 
@@ -20,8 +21,7 @@ import           Diener                 (DienerT (..), throwError)
 import           Servant                ((:~>) (..), enter)
 import           Servant.Utils.Enter    (Enter)
 
-import           Auth.Types             (AuthToken (..), UserInfo (..),
-                                         sessionLength)
+import           Auth.Types
 import qualified Database.Class         as Db
 import           Handler                (HandlerProtectedT, HandlerT (..),
                                          runHandlerT)

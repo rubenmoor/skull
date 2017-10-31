@@ -2,12 +2,16 @@ module ErrorMessage where
 
 import ErrorMessage.Types
 import Halogen.HTML.Events as Events
+import Control.Applicative (pure)
+import Control.Bind (discard)
+import Control.Category ((<<<))
+import Data.Function (($))
 import Data.Lens ((.=))
 import Data.Maybe (Maybe(..), maybe)
+import Data.NaturalTransformation (type (~>))
 import ErrorMessage.Render (render)
 import Halogen (Component, ComponentDSL, component, put)
 import Halogen.HTML (HTML)
-import Prelude (type (~>), bind, pure, ($), (<<<), discard)
 import Ulff (Ulff)
 
 errorMessage :: forall eff.

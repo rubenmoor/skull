@@ -4,8 +4,7 @@ import DOM (DOM)
 import Data.Maybe (Maybe(..))
 import Data.Unit (Unit)
 import Data.Void (Void)
-import Game.Types (Game)
-import HttpApp.BotKey.Types (BotKey)
+import Game.Types (Card, Game)
 import Types (MkRequestEffects)
 
 type Effects e =
@@ -24,6 +23,7 @@ initial _ = Nothing
 data Query a
   = Initialize a
   | NewGame Int a
+  | PlayCard Card a
   | AbortGame a
 
 type Slot = Int

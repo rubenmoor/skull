@@ -1,12 +1,12 @@
 { mkDerivation, aeson, base, base64-bytestring, bytestring
-, case-insensitive, containers, data-default, diener, directory
-, email-validate, entropy, esqueleto, http-api-data, http-types
-, lens, lifted-base, monad-control, monad-logger, MonadRandom, mtl
-, optparse-applicative, parsec, persistent, persistent-sqlite
-, persistent-template, product-profunctors, purescript-bridge
-, pwstore-fast, servant, servant-docs, servant-purescript
-, servant-server, servant-subscriber, stdenv, text, text-show, time
-, transformers, transformers-base, wai, warp
+, case-insensitive, containers, data-default, data-ordlist, diener
+, directory, email-validate, entropy, esqueleto, http-api-data
+, http-types, lens, lifted-base, monad-control, monad-logger
+, MonadRandom, mtl, optparse-applicative, parsec, persistent
+, persistent-sqlite, persistent-template, product-profunctors
+, purescript-bridge, pwstore-fast, servant, servant-docs
+, servant-purescript, servant-server, servant-subscriber, stdenv
+, text, text-show, time, transformers, transformers-base, wai, warp
 }:
 mkDerivation {
   pname = "skull-server";
@@ -16,11 +16,11 @@ mkDerivation {
   isExecutable = true;
   libraryHaskellDepends = [
     aeson base base64-bytestring bytestring case-insensitive containers
-    diener email-validate entropy esqueleto http-api-data http-types
-    lens lifted-base monad-control monad-logger MonadRandom mtl parsec
-    persistent persistent-template product-profunctors pwstore-fast
-    servant servant-docs servant-purescript servant-server text
-    text-show time transformers transformers-base wai
+    data-ordlist diener email-validate entropy esqueleto http-api-data
+    http-types lens lifted-base monad-control monad-logger MonadRandom
+    mtl parsec persistent persistent-template product-profunctors
+    pwstore-fast servant servant-docs servant-purescript servant-server
+    text text-show time transformers transformers-base wai
   ];
   executableHaskellDepends = [
     aeson base bytestring containers data-default diener directory
