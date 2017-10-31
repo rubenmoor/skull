@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE Rank2Types            #-}
 {-# LANGUAGE RecordWildCards       #-}
 
 module Game.Handler where
@@ -9,13 +10,17 @@ import           Prelude                   hiding (all, round)
 
 import           Control.Lens              ((%~), (&), (-~), (.~), (^.))
 import           Control.Monad             (unless, when)
-import           Control.Monad.Except      (MonadError, runExceptT, throwError)
+import           Control.Monad.Except      (Except, ExceptT, MonadError,
+                                            runExcept, runExceptT, throwError)
 import           Control.Monad.Reader      (MonadReader, ask)
-import           Control.Monad.State       (execState, get, put)
+import           Control.Monad.State       (MonadState, State, execState, get,
+                                            modify, put, runState)
+import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe (MaybeT (..))
 import           Data.Foldable             (for_)
 import           Data.List                 (break, sort)
 import           Data.List.Ordered         (insertSet)
+import           Data.Text                 (Text)
 import           Data.Traversable          (for)
 import           Database.Esqueleto        (Entity (..), InnerJoin (..), from,
                                             just, val, where_, (&&.), (==.))
@@ -83,7 +88,7 @@ sortCheckPlayers
   => Either Model.UserId BotKey
   -> PlayerKey
   -> [Player]
-  -> m [Player]
+  -> m (Player, [Player])
 sortCheckPlayers check key players = do
   case check of
     Left uId -> do
@@ -107,50 +112,80 @@ sortCheckPlayers check key players = do
 sortPlayers
   :: PlayerKey
   -> [Player]
-  -> Maybe [Player]
+  -> Maybe (Player, [Player])
 sortPlayers key players =
   let (left, right) = break (\p -> p ^. plKey == key) $ sort players
-  in  if null right
-         then Nothing
-         else Just $ right ++ left
+  in  case right of
+        me:others -> Just (me, others ++ left)
+        []        -> Nothing
+
+makeMove
+  :: (MonadError GameError m, MonadState Game m)
+  => (Game -> Player -> Except GameError Player)
+  -> Player
+  -> m ()
+makeMove move player = do
+  game <- get
+  newPlayer <- either throwError pure $ runExcept $ move game player
+  put $ game & gPlayers %~ insertSet newPlayer
+
+withGame
+  -- :: (MonadError GameError m, MonadState Game m)
+  :: (Db.ReadWrite m, MonadError AppError m, MonadReader UserInfo m)
+  => AuthInfo
+  -> (Player -> [Player] -> ExceptT GameError (State Game) ())
+  -> m (ErrorOr Game)
+withGame authInfo action = do
+    userInfo <- ask
+    let gameKey = authInfo ^. aiGameKey
+        playerKey = authInfo ^. aiPlayerKey
+        mBotKey = userInfo ^. uiActiveBotKey
+        uId = userInfo ^. uiUserId
+        check = maybe (Left uId) Right mBotKey
+    game <- getGame gameKey
+    (me, others) <- sortCheckPlayers check playerKey $ game ^. gPlayers
+    let (eResult, newGame) = flip runState game $ runExceptT $ action me others
+    -- TODO: persist game
+    pure $ case eResult of
+      Left err -> Error err
+      Right () -> Result newGame
 
 playCard
   :: (Db.ReadWrite m, MonadError AppError m, MonadReader UserInfo m)
   => PlayCardRq
   -> m (ErrorOr Game)
-playCard req = do
-    userInfo <- ask
-    let gameKey = req ^. pcrqAuth ^. aiGameKey
-        playerKey = req ^. pcrqAuth ^. aiPlayerKey
-        mBotKey = userInfo ^. uiActiveBotKey
-        uId = userInfo ^. uiUserId
-        check = maybe (Left uId) Right mBotKey
-    game <- getGame gameKey
-    players <- sortCheckPlayers check playerKey $ game ^. gPlayers
-    let newGame = flip execState game $ do
-          for_ players $ \player -> do
-            g <- get
-            let newPlayer = movePlayCard g player
-            put $ g & gPlayers %~ (insertSet newPlayer)
-    pure newGame
+playCard req =
+  withGame (req ^. pcrqAuth) $ \me others -> do
+    makeMove (movePlayCardMe $ req ^. pcrqCard) me
+    for_ others $ \player ->
+      makeMove movePlayCardBot player
 
-    withError $ do
-      let numPlayers = undefined
-      -- check if bot and player id are in the game
-      let round = undefined
-      let hand = undefined
-      newHand <- case req ^. pcrqCard of
-        Skull -> playSkullOrError hand
-        Plain -> playPlainOrError hand
-      -- poll the db every second until timeout
-      -- once everyone has played, reply with game state
-      pure $ undefined
+    -- withError $ do
+    --   let numPlayers = undefined
+    --   -- check if bot and player id are in the game
+    --   let round = undefined
+    --   let hand = undefined
+    --   newHand <- case req ^. pcrqCard of
+    --     Skull -> playSkullOrError hand
+    --     Plain -> playPlainOrError hand
+    --   -- poll the db every second until timeout
+    --   -- once everyone has played, reply with game state
+    --   pure $ undefined
   where
-    movePlayCard
-      :: Game
+    movePlayCardBot
+      :: MonadError GameError m
+      => Game
       -> Player
+      -> m Player
+    movePlayCardBot game player = pure player
+
+    movePlayCardMe
+      :: MonadError GameError m
+      => Card
+      -> Game
       -> Player
-    movePlayCard game player = player
+      -> m Player
+    movePlayCardMe card game player = pure player
 
     withError action = either Error Result <$> runExceptT action
     playSkullOrError h =
