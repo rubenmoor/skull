@@ -30,7 +30,7 @@ library
                      , Game.Bot
                      , Game.Handler
                      , Game.Types
-                     , Handler
+                     , Handler.Types
                      , HttpApp.Api
                      , HttpApp.Handler
                      , HttpApp.BotKey.Api
@@ -45,18 +45,20 @@ library
                      , HttpApp.PlayNow.Api
                      , HttpApp.PlayNow.Api.Types
                      , HttpApp.PlayNow.Handler
-                     , Types
+                     , Logger
   build-depends:       aeson
-                     , base >= 4.7 && < 5
+                     , ansi-terminal
+                     , base
                      , base64-bytestring
                      , bytestring
                      , case-insensitive
                      , containers
+                     , data-default
                      , data-ordlist
-                     , diener
                      , email-validate
                      , entropy
                      , esqueleto
+                     , fast-logger
                      , http-api-data
                      , http-types
                      , lens
@@ -91,7 +93,6 @@ executable skull-server-exe
   build-depends:       base
                      , bytestring
                      , data-default
-                     , diener
                      , directory
                      , monad-logger
                      , mtl

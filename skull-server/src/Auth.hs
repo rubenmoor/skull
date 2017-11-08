@@ -1,54 +1,67 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE RecordWildCards       #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
-{-# LANGUAGE TypeOperators         #-}
 
 module Auth
   ( module Auth.Types
-  , authHandler
-  , authHandlerBotKey
+  , hoistAuthApp
+  , hoistAuthAppBotKey
   ) where
 
-import           Control.Monad.Except   (ExceptT (..), MonadError)
+import           Control.Monad.Except   (MonadError, throwError)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (ReaderT (..))
 import qualified Data.Time.Clock        as Clock
 import           Database.Esqueleto     (Entity (..), InnerJoin (..), from, set,
                                          val, where_, (&&.), (=.), (==.), (^.))
-import           Diener                 (DienerT (..), throwError)
-import           Servant                ((:~>) (..), enter)
-import           Servant.Utils.Enter    (Enter)
+import qualified Servant
+import           Servant.Utils.Enter    ((:~>) (..), Enter, enter)
 
 import           Auth.Types
 import qualified Database.Class         as Db
-import           Handler                (HandlerProtectedT, HandlerT (..),
-                                         runHandlerT)
+import           Handler.Types          (AppEnv (..), AppError (..),
+                                         HandlerAuthT, HandlerT, runHandlerT,
+                                         toServantError)
 import qualified HttpApp.BotKey.Types   as BotKey
 import           HttpApp.Model          (BotKey (..), EntityField (..),
                                          Session (..), User (..))
 import           HttpApp.User.Types     (SessionKey)
-import           Types                  (AppError (ErrForbidden, ErrUnauthorized))
 
 -- middleware
 
-authHandler
-  :: (Enter h1 (HandlerProtectedT IO :~> HandlerT IO) h2)
-  => h1
+hoistAuthApp
+  :: Enter h (HandlerAuthT IO) Servant.Handler s
+  => AppEnv
+  -> h
   -> Maybe AuthToken
-  -> h2
-authHandler h mAuth =
-  flip enter h $ Nat $ \action -> do
-    auth <- maybe (throwError $ ErrForbidden "Missing auth token")
-                  pure
-                  mAuth
-    sKey <- case auth of
-      AuthSession sKey -> pure sKey
-      AuthBotKey  _    -> throwError $ ErrForbidden "BotKey auth not supported here"
-    userInfo <- lookupSession sKey
-    HandlerT $ DienerT $ ExceptT $ ReaderT $ \env ->
-      runReaderT (runHandlerT env action) userInfo
+  -> s
+hoistAuthApp env a mAuth =
+    flip enter a $ NT $ fromAuthApp env mAuth
+
+fromAuthApp
+  :: AppEnv
+  -> Maybe AuthToken
+  -> HandlerAuthT IO a
+  -> Servant.Handler a
+fromAuthApp env mAuth action = do
+  eUserInfo <- liftIO $ runHandlerT env $ getAuthEnv mAuth
+  userInfo <- either (throwError . toServantError) pure eUserInfo
+  e <- liftIO $ runReaderT (runHandlerT env action) userInfo
+  either (throwError . toServantError) pure e
+
+getAuthEnv
+  :: Maybe AuthToken
+  -> HandlerT IO UserInfo
+getAuthEnv mAuth = do
+  auth <- maybe (throwError $ ErrForbidden "Missing auth token")
+                pure
+                mAuth
+  sKey <- case auth of
+    AuthSession sKey -> pure sKey
+    AuthBotKey  _    -> throwError $ ErrForbidden "BotKey auth not supported here"
+  lookupSession sKey
 
 lookupSession :: (Db.Read m, Db.Delete m, Db.Update m, MonadIO m, MonadError AppError m)
               => SessionKey
@@ -83,21 +96,36 @@ lookupSession key = do
 
 -- authHandler that optionally allows authentification via botkey OR session
 
-authHandlerBotKey
-  :: (Enter h1 (HandlerProtectedT IO :~> HandlerT IO) h2)
-  => h1
+hoistAuthAppBotKey
+  :: Enter h (HandlerAuthT IO) Servant.Handler s
+  => AppEnv
+  -> h
   -> Maybe AuthToken
-  -> h2
-authHandlerBotKey h mAuth =
-  flip enter h $ Nat $ \action -> do
-    auth <- maybe (throwError $ ErrForbidden "Missing auth token")
-                  pure
-                  mAuth
-    userInfo <- case auth of
-      AuthSession sKey   -> lookupSession sKey
-      AuthBotKey  secret -> lookupBotKey secret
-    HandlerT $ DienerT $ ExceptT $ ReaderT $ \env ->
-      runReaderT (runHandlerT env action) userInfo
+  -> s
+hoistAuthAppBotKey env a mAuth =
+  flip enter a $ NT $ fromAuthAppBotKey env mAuth
+
+fromAuthAppBotKey
+  :: AppEnv
+  -> Maybe AuthToken
+  -> HandlerAuthT IO a
+  -> Servant.Handler a
+fromAuthAppBotKey env mAuth action = do
+  eUserInfo <- liftIO $ runHandlerT env $ getAuthEnvBotKey mAuth
+  userInfo <- either (throwError . toServantError) pure eUserInfo
+  e <- liftIO $ runReaderT (runHandlerT env action) userInfo
+  either (throwError . toServantError) pure e
+
+getAuthEnvBotKey
+  :: Maybe AuthToken
+  -> HandlerT IO UserInfo
+getAuthEnvBotKey mAuth = do
+  auth <- maybe (throwError $ ErrForbidden "Missing auth token")
+                pure
+                mAuth
+  case auth of
+    AuthSession sKey   -> lookupSession sKey
+    AuthBotKey  secret -> lookupBotKey secret
 
 lookupBotKey
   :: (Db.Read m, MonadError AppError m)

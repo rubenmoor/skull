@@ -24,8 +24,8 @@ import qualified Data.ByteString.Base64.URL.Extended as Base64
 import qualified Database.Class                      as Db
 import           Database.Esqueleto                  (Entity (..), from, val,
                                                       where_, (==.), (^.))
-import           Handler                             (HandlerProtectedT,
-                                                      HandlerT)
+import           Handler.Types                       (AppError (..),
+                                                      HandlerAuthT, HandlerT)
 import           HttpApp.Model                       (EntityField (..),
                                                       Session (..), User (..),
                                                       UserId)
@@ -33,7 +33,6 @@ import qualified HttpApp.User.Api                    as Api
 import           HttpApp.User.Api.Types
 import           HttpApp.User.Types                  (SessionKey, UserName,
                                                       mkPwHash, verifyPassword)
-import           Types                               (AppError (..))
 
 public :: ServerT Api.Public (HandlerT IO)
 public =
@@ -41,7 +40,7 @@ public =
   :<|> userExists
   :<|> login
 
-protected :: ServerT Api.Protected (HandlerProtectedT IO)
+protected :: ServerT Api.Protected (HandlerAuthT IO)
 protected =
        logout
   :<|> getName

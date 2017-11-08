@@ -28,15 +28,15 @@ import           Database.Esqueleto                  (Entity (..),
                                                       InnerJoin (..), from, set,
                                                       val, where_, (&&.), (=.),
                                                       (==.), (^.))
-import           Handler                             (HandlerProtectedT)
+import           Handler.Types                       (AppError (..),
+                                                      HandlerAuthT)
 import qualified HttpApp.BotKey.Api                  as Api
 import           HttpApp.BotKey.Api.Types
 import           HttpApp.BotKey.Types                (BotKey (..))
 import           HttpApp.Model                       (EntityField (..))
 import qualified HttpApp.Model                       as Model
-import           Types                               (AppError (..))
 
-protected :: ServerT Api.Protected (HandlerProtectedT IO)
+protected :: ServerT Api.Protected (HandlerAuthT IO)
 protected =
        new
   :<|> all

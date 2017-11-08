@@ -32,14 +32,14 @@ import           Database.Query                      (singleCollectSnd)
 import           Game
 import           Game.Agent                          (agentDo)
 import           Game.Bot                            (playCard)
-import           Handler                             (HandlerProtectedT)
+import           Handler.Types                       (AppError (..),
+                                                      HandlerAuthT)
 import           HttpApp.Model                       (EntityField (..))
 import qualified HttpApp.Model                       as Model
 import qualified HttpApp.PlayNow.Api                 as Api
 import           HttpApp.PlayNow.Api.Types
-import           Types                               (AppError (..))
 
-protected :: ServerT Api.Protected (HandlerProtectedT IO)
+protected :: ServerT Api.Protected (HandlerAuthT IO)
 protected =
        new
   :<|> active

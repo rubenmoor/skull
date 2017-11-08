@@ -9,25 +9,24 @@ module Game.Handler where
 import           Prelude                   hiding (all, round)
 
 import           Control.Lens              ((%~), (&), (-~), (.~), (^.))
-import           Control.Monad             (unless, when)
+import           Control.Monad             (when)
 import           Control.Monad.Except      (Except, ExceptT, MonadError,
                                             runExcept, runExceptT, throwError)
 import           Control.Monad.Reader      (MonadReader, ask)
-import           Control.Monad.State       (MonadState, State, execState, get,
-                                            modify, put, runState)
-import           Control.Monad.Trans.Class (lift)
+import           Control.Monad.State       (MonadState, State, get, put,
+                                            runState)
+
 import           Control.Monad.Trans.Maybe (MaybeT (..))
 import           Data.Foldable             (for_)
 import           Data.List                 (break, sort)
 import           Data.List.Ordered         (insertSet)
-import           Data.Text                 (Text)
 import           Data.Traversable          (for)
 import           Database.Esqueleto        (Entity (..), InnerJoin (..), from,
                                             just, val, where_, (&&.), (==.))
 import qualified Database.Esqueleto        as Q ((^.))
 import           Servant                   ((:<|>) (..), ServerT)
 
-import           Auth                      (UserInfo, authHandlerBotKey,
+import           Auth                      (UserInfo, hoistAuthAppBotKey,
                                             uiActiveBotKey, uiUserId)
 import qualified Database.Class            as Db
 import           Database.Query            (singleCollectSnd)
@@ -35,19 +34,15 @@ import           Game                      (gameFromModel, playerFromModel)
 import qualified Game.Api                  as Api
 import           Game.Api.Types
 import           Game.Types
-import           Handler                   (HandlerT)
+import           Handler.Types             (AppError (..), HandlerAuthT)
 import           HttpApp.BotKey.Types      (BotKey, bkSecret)
 import           HttpApp.Model             (EntityField (..))
 import qualified HttpApp.Model             as Model
-import           Types                     (AppError (..))
 
-handlers :: ServerT Api.Routes (HandlerT IO)
+handlers :: ServerT Api.Routes (HandlerAuthT IO)
 handlers =
-  authHandlerBotKey
-    (
           gameJoin
      :<|> playCard
-    )
 
 gameJoin
   :: (Db.Insert m, Monad m)
