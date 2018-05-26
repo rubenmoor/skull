@@ -58,7 +58,7 @@ gameJoin GameJoinRequest { .. } = do
   -- save botId and playerId in game
   -- poll the database every second until timeout
   -- once the game is full, reply with game state
-  pure $ Result $ undefined
+  pure $ Result undefined
 
 getGame
   :: (Db.Read m, MonadError AppError m)

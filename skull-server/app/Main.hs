@@ -1,15 +1,17 @@
 {-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE OverloadedStrings #-}
+
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TypeOperators     #-}
 
 module Main where
 
+
 import           Prelude                  hiding (putStrLn)
 
-import           Control.Monad            (when)
+import           Control.Monad            (unless)
+
 import           Control.Monad.IO.Class   (liftIO)
 import           Control.Monad.Logger     (LogLevel)
 import           Data.Default             (def)
@@ -44,8 +46,8 @@ main = do
 
   putStrLn $ "Database filename " <> showt optDbName
   fileExists <- doesFileExist $ Text.unpack optDbName
-  when (not fileExists) $ do
-    putStrLn $ "Creating new database"
+  unless fileExists $ do
+    putStrLn "Creating new database"
     Sqlite.runSqlite optDbName $ Sqlite.runMigration Model.migrateAll
 
   runInHandlerEnv optDbName optLogLevel $ \env -> do

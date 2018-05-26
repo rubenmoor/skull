@@ -1,12 +1,13 @@
-{ mkDerivation, aeson, base, base64-bytestring, bytestring
-, case-insensitive, containers, data-default, data-ordlist, diener
-, directory, email-validate, entropy, esqueleto, http-api-data
-, http-types, lens, lifted-base, monad-control, monad-logger
-, MonadRandom, mtl, optparse-applicative, parsec, persistent
-, persistent-sqlite, persistent-template, product-profunctors
-, purescript-bridge, pwstore-fast, servant, servant-docs
-, servant-purescript, servant-server, servant-subscriber, stdenv
-, text, text-show, time, transformers, transformers-base, wai, warp
+{ mkDerivation, aeson, ansi-terminal, base, base64-bytestring
+, bytestring, case-insensitive, containers, data-default
+, data-ordlist, directory, email-validate, entropy, esqueleto
+, fast-logger, http-api-data, http-types, lens, lifted-base
+, monad-control, monad-logger, MonadRandom, mtl
+, optparse-applicative, parsec, persistent, persistent-sqlite
+, persistent-template, product-profunctors, purescript-bridge
+, pwstore-fast, servant, servant-docs, servant-purescript
+, servant-server, servant-subscriber, stdenv, text, text-show, time
+, transformers, transformers-base, wai, warp
 }:
 mkDerivation {
   pname = "skull-server";
@@ -15,15 +16,16 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson base base64-bytestring bytestring case-insensitive containers
-    data-ordlist diener email-validate entropy esqueleto http-api-data
+    aeson ansi-terminal base base64-bytestring bytestring
+    case-insensitive containers data-default data-ordlist
+    email-validate entropy esqueleto fast-logger http-api-data
     http-types lens lifted-base monad-control monad-logger MonadRandom
     mtl parsec persistent persistent-template product-profunctors
     pwstore-fast servant servant-docs servant-purescript servant-server
     text text-show time transformers transformers-base wai
   ];
   executableHaskellDepends = [
-    aeson base bytestring containers data-default diener directory
+    aeson base bytestring containers data-default directory
     http-api-data http-types lens monad-logger mtl optparse-applicative
     persistent-sqlite purescript-bridge servant servant-docs
     servant-purescript servant-server servant-subscriber text text-show
