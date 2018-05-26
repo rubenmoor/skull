@@ -59,5 +59,5 @@ main = do
 runInHandlerEnv :: Text -> LogLevel -> (AppEnv -> IO a) -> IO a
 runInHandlerEnv dbName logLevel action =
   withLogger def{ logLevel } $ \envLogFn ->
-    Sqlite.withSqlitePool dbName 1 $ \envDbConnection -> do
+    Sqlite.withSqlitePool dbName 1 $ \envDbConnection ->
       liftIO $ action AppEnv {..}
