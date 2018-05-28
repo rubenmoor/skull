@@ -113,6 +113,7 @@ executable psclient-generator
                      , base
                      , aeson
                      , containers
+                     , directory
                      , http-api-data
                      , http-types
                      , lens
@@ -120,6 +121,7 @@ executable psclient-generator
                      , servant
                      , servant-purescript
                      , servant-subscriber
+                     , temporary
                      , text
 
 -- executable api-doc-generator

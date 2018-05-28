@@ -6,8 +6,6 @@
 
 module HttpApp.PlayNow.Handler where
 
-import           Prelude                             hiding (round)
-
 import           Control.Lens                        (view)
 import           Control.Monad                       (when)
 import           Control.Monad.Except                (MonadError, throwError)

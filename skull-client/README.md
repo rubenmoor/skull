@@ -1,5 +1,9 @@
 # install deps
 
+install purescript 0.11.7
+
+then
+
   $ npm install
 
 # install purescript/javascript packages

@@ -4,10 +4,13 @@
 
 module Main where
 
+import           Prelude                             hiding (lines, unlines, readFile, writeFile)
+
 import           Control.Applicative                 ((<|>))
 import           Control.Lens                        ((&), (.~))
 import           Data.Proxy
-import qualified Data.Set                            as Set
+import           Data.Text                           (Text, lines, unlines)
+import           Data.Text.IO                        (readFile, writeFile)
 import           Language.PureScript.Bridge          (BridgePart, SumType,
                                                       buildBridge,
                                                       defaultBridge, mkSumType,
@@ -19,6 +22,11 @@ import           Servant.PureScript                  (HasBridge (..),
                                                       defaultSettings,
                                                       readerParams,
                                                       writeAPIModuleWithSettings)
+import           System.Directory                    (copyFile, removeFile)
+import           System.IO                           (IOMode (ReadMode, WriteMode),
+                                                      withFile)
+
+import           System.IO.Temp                      (withTempFile)
 
 import           Api.Types
 import           Auth.Types                          (AuthToken)
@@ -84,3 +92,23 @@ main = do
           ]
   writeAPIModuleWithSettings settings outDir (Proxy :: Proxy Bridge) (Proxy :: Proxy Routes)
   writePSTypes outDir  (buildBridge bridge) types
+
+  insertLineFile "../skull-client/src/HttpApp/BotKey/Types.purs"
+                24
+                "derive instance eqBotKey :: Eq BotKey"
+  -- hack to create Eq instance in ps
+
+insertLineFile :: FilePath -> Int -> Text -> IO ()
+insertLineFile sourceFileName lineNumber str = do
+    let tmpFilename = "tmp.txt"
+    ls <- lines <$> readFile sourceFileName
+    let newLs = insertAt lineNumber str ls
+    writeFile tmpFilename $ unlines newLs
+    removeFile sourceFileName
+    copyFile tmpFilename sourceFileName
+    removeFile tmpFilename
+  where
+    insertAt :: Int -> a -> [a] -> [a]
+    insertAt n x xs = as ++ [x] ++ bs
+      where
+        (as, bs) = splitAt n xs

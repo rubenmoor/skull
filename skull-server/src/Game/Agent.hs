@@ -25,9 +25,9 @@ checkAgent
   :: Agent
   -> Bool
 checkAgent a =
-  let nPlainsHand = a ^. aHand ^. hNumPlains
-      nSkullHand = if a ^. aHand ^. hHasSkull then 1 else 0
-      (plainsStack, skullsStack) = partition (Plain ==) $ a ^. aStack ^. stCards
+  let nPlainsHand = a ^. aHand . hNumPlains
+      nSkullHand = if a ^. aHand . hHasSkull then 1 else 0
+      (plainsStack, skullsStack) = partition (Plain ==) $ a ^. aStack . stCards
       nPlainsStack = length plainsStack
       nSkullsStack = length skullsStack
       nHand = nPlainsHand + nSkullHand
@@ -54,9 +54,9 @@ checkNewPlayer
   -> Player
   -> Bool
 checkNewPlayer p1 p2 =
-     p2 ^. plHand ^. hNumPlains <= p1 ^. plHand ^. hNumPlains
-  && p1 ^. plHand ^. hHasSkull || not (p2 ^. plHand ^. hHasSkull)
-  && length (p2 ^. plStack ^. stCards) >= length (p1 ^. plStack ^. stCards)
+     p2 ^. plHand . hNumPlains <= p1 ^. plHand . hNumPlains
+  && p1 ^. plHand . hHasSkull || not (p2 ^. plHand . hHasSkull)
+  && length (p2 ^. plStack . stCards) >= length (p1 ^. plStack . stCards)
   && case p1 ^. plBetState of
        NothingYet -> True
        Fold       -> case p2 ^. plBetState of
