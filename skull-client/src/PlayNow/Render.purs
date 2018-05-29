@@ -3,16 +3,16 @@ module PlayNow.Render
   ) where
 
 import BotKey.Types as BotKey
-import Halogen.HTML.Events as Events
 import Control.Applicative (pure)
 import Control.Bind (bind)
-import Data.Array (findIndex, length, replicate, slice, (!!))
+import Data.Array (findIndex, length, replicate, slice, (!!), null, (:))
 import Data.Function (($))
 import Data.Functor (mapFlipped)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Lens ((^.))
 import Data.Maybe (Maybe(..))
 import Data.Monoid ((<>))
+import Data.Ring ((-))
 import Data.Semiring ((+))
 import Data.Show (show)
 import Data.Tuple (Tuple(..))
@@ -20,8 +20,9 @@ import Data.Unit (Unit)
 import Game (handSize)
 import Game.Types (Card(..), Kind(HumanPlayNow), Phase(Reveal, Bet, CardOrBet, FirstCard), Player, Victory(None, One), gPhase, gPlayers, gRound, hHasSkull, hNumPlains, plAlive, plHand, plKind, plStack, plVictory, stCards)
 import Halogen.Component (ParentHTML)
-import Halogen.HTML.Extended (button, cl, cldiv_, clsection_, clspan_, div_, faIcon_, img, text, HTML)
-import Halogen.HTML.Properties (src)
+import Halogen.HTML.Events as Events
+import Halogen.HTML.Extended (HTML, button, cl, cldiv_, clsection_, clspan_, div_, faIcon_, img, text)
+import Halogen.HTML.Properties (src, width)
 import PlayNow.Types (Effects, Query(..), Slot, State)
 import Types (UrlRoot)
 import Ulff (Ulff)
@@ -66,17 +67,13 @@ render urlRoot = case _ of
                               ] <> victoryTrophy player
                         , imgHand urlRoot player
                         ]
-                      , div_
-                          [ imgStack urlRoot player
-                          ]
+                      , div_ $ imgStack urlRoot player
                       ]
               in  [ cldiv_ "clearfix" bots
+                  , cldiv_ "clearfix center" $ imgStack urlRoot me
                   , cldiv_ "clearfix center"
                       [ cldiv_ "container"
-                          [ div_
-                              [ imgStack urlRoot me
-                              ]
-                          , cldiv_ "bglight p1"
+                          [ cldiv_ "bglight p1"
                               [
                                 cldiv_ "h2" $
                                   [ clspan_ "pr1"
@@ -174,24 +171,29 @@ type SubmitMoveAction = Maybe Int
 
 -- img hand and stack
 
+imgStack :: forall p i. UrlRoot -> Player -> Array (HTML p i)
+imgStack urlRoot player =
+    let cards = player ^. plStack ^. stCards
+    in  if null cards
+        then [ img
+                 [ src $ urlRoot <> "img/card-stack-0.svg"
+                 , width 60
+                 ]
+             ]
+        else imgStack' $ length cards
+  where
+    imgStack' :: Int -> Array (HTML p i)
+    imgStack' 1 = [ imgCardBack ]
+    imgStack' n = imgCardBack : imgStack' (n - 1)
+
+    imgCardBack = img
+      [ src $ urlRoot <> "img/card-back.svg"
+      , width 60
+      ]
+
 imgHand :: forall p i. UrlRoot -> Player -> HTML p i
 imgHand urlRoot player =
-  imgHandStack urlRoot player ImgHand (\p -> handSize $ p ^. plHand)
-
-imgStack :: forall p i. UrlRoot -> Player -> HTML p i
-imgStack urlRoot player =
-  imgHandStack urlRoot player ImgStack (\p -> length $ p ^. plStack ^. stCards)
-
-data ImgHandStack
-  = ImgHand
-  | ImgStack
-
-imgHandStack :: forall p i. UrlRoot -> Player -> ImgHandStack -> (Player -> Int) -> HTML p i
-imgHandStack urlRoot player imgHS getNumber =
-  let n = show $ getNumber player
-      str = case imgHS of
-        ImgHand -> "hand"
-        ImgStack -> "stack"
+  let n = show $ handSize $ player ^. plHand
   in  img
-        [ src $ urlRoot <> "img/card-" <> str <> "-" <> n <> ".svg"
+        [ src $ urlRoot <> "img/card-hand-" <> n <> ".svg"
         ]
