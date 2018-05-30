@@ -18,7 +18,7 @@ import Halogen.HTML (HTML)
 import HttpApp.PlayNow.Api.Types (PNDeleteRq(..), PNNewRq(..), arespGame, nrespGame)
 import PlayNow.Render (render)
 import PlayNow.Types (Effects, Input, Query(..), Slot, State, Message, initial)
-import ServerAPI (deletePlayNow, getPlayNowActive, postPlayNowNew)
+import ServerAPI (deletePlayNow, getPlayNowActive, postPlayNowNew, postPlayCard)
 import Types (UrlRoot)
 import Ulff (Ulff, mkRequest)
 
@@ -52,6 +52,12 @@ eval = case _ of
       put $ Just $ resp ^. nrespGame
     pure next
   PlayCard c next -> do
+    let body = PlayCardRq
+          {
+          }
+    mkRequest (postPlayCard body) $ case _ of
+      Error _ ->  put Nothing
+      Result g -> put $ Just g
     pure next
   AbortGame next -> do
     mInfo <- get

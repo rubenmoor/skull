@@ -1,41 +1,49 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedLists   #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeOperators     #-}
 
 module Main where
 
-import           Prelude                             hiding (lines, unlines, readFile, writeFile)
+import           Prelude                                   hiding (lines,
+                                                            readFile, unlines,
+                                                            writeFile)
 
-import           Control.Applicative                 ((<|>))
-import           Control.Lens                        ((&), (.~))
+import           Control.Applicative                       ((<|>))
+import           Control.Lens                              ((&), (.~))
 import           Data.Proxy
-import           Data.Text                           (Text, lines, unlines)
-import           Data.Text.IO                        (readFile, writeFile)
-import           Language.PureScript.Bridge          (BridgePart, SumType,
-                                                      buildBridge,
-                                                      defaultBridge, mkSumType,
-                                                      typeName, writePSTypes,
-                                                      (^==))
-import           Language.PureScript.Bridge.PSTypes  (psString)
-import           Language.PureScript.Bridge.TypeInfo (Language (Haskell))
-import           Servant.PureScript                  (HasBridge (..),
-                                                      defaultSettings,
-                                                      readerParams,
-                                                      writeAPIModuleWithSettings)
-import           System.Directory                    (copyFile, removeFile)
-import           System.IO                           (IOMode (ReadMode, WriteMode),
-                                                      withFile)
-
-import           System.IO.Temp                      (withTempFile)
+import           Data.Text                                 (Text, lines,
+                                                            unlines)
+import           Data.Text.IO                              (readFile, writeFile)
+import           Language.PureScript.Bridge                (BridgePart, SumType,
+                                                            buildBridge,
+                                                            defaultBridge,
+                                                            mkSumType, typeName,
+                                                            writePSTypes, (^==))
+import           Language.PureScript.Bridge.PSTypes        (psString)
+import           Language.PureScript.Bridge.TypeInfo       (Language (Haskell))
+import           Language.PureScript.Bridge.TypeParameters (A)
+import           Servant                                   ((:<|>))
+import           Servant.PureScript                        (HasBridge (..),
+                                                            defaultSettings,
+                                                            readerParams,
+                                                            writeAPIModuleWithSettings)
+import           System.Directory                          (copyFile,
+                                                            removeFile)
 
 import           Api.Types
-import           Auth.Types                          (AuthToken)
-import           Game.Types                          (BetState, Card, GState,
-                                                      Game, Hand, Kind, Phase,
-                                                      Player, Stack, Victory,
-                                                      VictoryInfo, VictoryType)
-import           HttpApp.Api                         (Routes)
-import           HttpApp.BotKey.Types                (BotKey)
+import           Auth.Types                                (AuthToken)
+import           Game.Types                                (BetState, Card,
+                                                            GState, Game, Hand,
+                                                            Kind, Phase, Player,
+                                                            Stack, Victory,
+                                                            VictoryInfo,
+                                                            VictoryType)
+import           HttpApp.Api                               (Routes)
+import           HttpApp.BotKey.Types                      (BotKey)
+
+import qualified Game.Api                                  as Game
+import qualified Game.Api.Types                            as Game
 
 types :: [SumType 'Haskell]
 types =
@@ -53,10 +61,12 @@ types =
   , mkSumType (Proxy :: Proxy BKSetLabelResp)
   , mkSumType (Proxy :: Proxy BKDeleteRq)
   , mkSumType (Proxy :: Proxy BotKey)
+
   , mkSumType (Proxy :: Proxy PNNewRq)
   , mkSumType (Proxy :: Proxy PNNewResp)
   , mkSumType (Proxy :: Proxy PNAllResp)
   , mkSumType (Proxy :: Proxy PNDeleteRq)
+
   , mkSumType (Proxy :: Proxy Game)
   , mkSumType (Proxy :: Proxy GState)
   , mkSumType (Proxy :: Proxy VictoryInfo)
@@ -69,6 +79,9 @@ types =
   , mkSumType (Proxy :: Proxy Stack)
   , mkSumType (Proxy :: Proxy Card)
   , mkSumType (Proxy :: Proxy BetState)
+
+  , mkSumType (Proxy :: Proxy (Game.ErrorOr A))
+  , mkSumType (Proxy :: Proxy Game.PlayCardRq)
   ]
 
 base64Bridge :: BridgePart
@@ -90,7 +103,9 @@ main = do
           [ "AuthToken"
           , "baseURL"
           ]
-  writeAPIModuleWithSettings settings outDir (Proxy :: Proxy Bridge) (Proxy :: Proxy Routes)
+      pBridge = Proxy :: Proxy Bridge
+      pRoutes = Proxy :: Proxy (Routes :<|> Game.Routes)
+  writeAPIModuleWithSettings settings outDir pBridge pRoutes
   writePSTypes outDir  (buildBridge bridge) types
 
   insertLineFile "../skull-client/src/HttpApp/BotKey/Types.purs"

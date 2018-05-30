@@ -119,6 +119,7 @@ executable psclient-generator
                      , lens
                      , purescript-bridge
                      , servant
+                     , servant-server
                      , servant-purescript
                      , servant-subscriber
                      , temporary

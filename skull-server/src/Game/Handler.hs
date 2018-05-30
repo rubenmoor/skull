@@ -58,7 +58,7 @@ gameJoin GameJoinRequest { .. } = do
   -- save botId and playerId in game
   -- poll the database every second until timeout
   -- once the game is full, reply with game state
-  pure $ Result undefined
+  pure $ Result $ undefined
 
 getGame
   :: (Db.Read m, MonadError AppError m)
@@ -121,7 +121,8 @@ makeMove
   -> m ()
 makeMove move player = do
   game <- get
-  newPlayer <- either throwError pure $ runExcept $ move game player
+  let ePlayer = runExcept $ move game player
+  newPlayer <- either throwError pure ePlayer
   put $ game & gPlayers %~ insertSet newPlayer
 
 withGame
