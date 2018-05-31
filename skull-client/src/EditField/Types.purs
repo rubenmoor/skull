@@ -1,13 +1,7 @@
 module EditField.Types where
 
-import DOM (DOM)
 import Data.Lens (lens)
 import Data.Lens.Types (Lens')
-
-type Effects e =
-    ( dom :: DOM
-    | e
-    )
 
 -- input
 

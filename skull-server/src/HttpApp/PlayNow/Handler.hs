@@ -8,12 +8,16 @@ module HttpApp.PlayNow.Handler where
 
 import           Control.Lens                        (view)
 import           Control.Monad                       (when)
-import           Control.Monad.Except                (MonadError, throwError)
+import           Control.Monad.Except                (MonadError, runExceptT,
+                                                      throwError)
 import           Control.Monad.IO.Class              (MonadIO, liftIO)
-import           Control.Monad.Random                (evalRand, getStdGen)
+import           Control.Monad.Random                (MonadRandom)
+
 import           Control.Monad.Reader                (MonadReader, asks)
+import           Control.Monad.Trans.Maybe           (MaybeT (..), runMaybeT)
 import           Data.Foldable                       (for_)
 import           Data.List                           (sort)
+import           Data.Monoid                         ((<>))
 import           Data.Traversable                    (for)
 import           Database.Esqueleto                  (Entity (..),
                                                       InnerJoin (..), from, set,
@@ -21,6 +25,7 @@ import           Database.Esqueleto                  (Entity (..),
                                                       (==.), (^.))
 import           Servant                             ((:<|>) (..), ServerT)
 import           System.Entropy                      (getEntropy)
+import           TextShow                            (showt)
 
 import           Auth.Types                          (UserInfo (..), uiUserId)
 import qualified Data.ByteString.Base64.URL.Extended as Base64
@@ -29,7 +34,7 @@ import qualified Database.Class                      as Db
 import           Database.Query                      (singleCollectSnd)
 import           Game
 import           Game.Agent                          (agentDo)
-import           Game.Bot                            (playCard)
+import qualified Game.Bot                            as Bot
 import           Handler.Types                       (AppError (..),
                                                       HandlerAuthT)
 import           HttpApp.Model                       (EntityField (..))
@@ -44,7 +49,7 @@ protected =
   :<|> del
 
 new
-  :: (Monad m, MonadIO m, MonadError AppError m, MonadReader UserInfo m, Db.Insert m)
+  :: (Monad m, MonadIO m, MonadError AppError m, MonadReader UserInfo m, Db.Insert m, MonadRandom m)
   => PNNewRq
   -> m PNNewResp
 new PNNewRq{..} = do
@@ -58,26 +63,29 @@ new PNNewRq{..} = do
   -- players
 
   humanKey <- Base64.encode <$> liftIO (getEntropy 32)
-  let humanPlayer = Player
+  let humanAgent = Agent
+        { _aHand = startHand
+        , _aStack = Stack []
+        , _aBetState = NothingYet
+        }
+      humanPlayer = Player
         { _plKey = humanKey
         , _plGameKey = _gKey
         , _plKind = HumanPlayNow
         , _plVictory = None
-        , _plHand = startHand
         , _plAlive = True
-        , _plStack = Stack []
-        , _plBetState = NothingYet
+        , _plAgent = humanAgent
         }
   botPlayers <- for [(1 :: Int)..(_nrqNumPlayers - 1)] $ \_ -> do
     key <- Base64.encode <$> liftIO (getEntropy 32)
-    let p = humanPlayer
+    let p = humanPlayer -- make bots by copying the human player
           { _plKey = key
           , _plKind = BotLaplace
           }
-    stdGen <- liftIO getStdGen
-    case evalRand (agentDo p playCard) stdGen of
-      Just player -> pure player
-      Nothing     -> throwError $ ErrBug "illegal move"
+    ePlayer <- runExceptT $ agentDo p Bot.playCard
+    case ePlayer of
+      Left  gameError -> throwError $ ErrBug $ "illegal move on set-up: " <> showt gameError
+      Right player -> pure player
   let allPlayers = sort $ humanPlayer : botPlayers
 
   -- game
@@ -87,11 +95,11 @@ new PNNewRq{..} = do
       _gPhase = FirstCard
       _gRound = 0
       _gPlayers = allPlayers
-      _nrespGame = Game{..}
+      game = Game{..}
 
   -- persist
 
-  gameId <- Db.insert $ gameToModel uId _nrespGame
+  gameId <- Db.insert $ gameToModel uId game
   for_ allPlayers $ \player ->
     let mUserId = case view plKind player  of
                     HumanPlayNow -> Just uId
@@ -99,11 +107,14 @@ new PNNewRq{..} = do
     in  for_ (playerToModel gameId Nothing mUserId player) $ \pl ->
           Db.insert_ pl
 
-  pure PNNewResp{..}
+  pure PNNewResp
+    { _nrespGame = game
+    , _nrespPlayerKey = humanKey
+    }
 
 active
   :: (Monad m, MonadError AppError m, MonadReader UserInfo m, Db.Read m)
-  => m PNAllResp
+  => m PNActiveResp
 active = do
   uId <- asks $ view uiUserId
   rs <- Db.select $ from $ \(g `InnerJoin` p) -> do
@@ -111,13 +122,19 @@ active = do
          &&. (g ^. GameState ==. val Active)
          &&. (p ^. PlayerFkGame ==. g ^. GameId)
     pure (g, p)
-  _arespGame <- for (singleCollectSnd rs) $ \(Entity _ g, pls) -> do
+  mPNActive <- runMaybeT $ do
+    (Entity _ g, pls) <- MaybeT . pure $ singleCollectSnd rs
     players <- for pls $ \(Entity _ pl) ->
       case playerFromModel (Model.gameKey g) pl of
         Just p  -> pure p
         Nothing -> throwError $ ErrBug "playerFromModel failed"
-    pure $ gameFromModel players g
-  pure PNAllResp{..}
+    human <- MaybeT . pure $ findHumanPlayer players
+    let game = gameFromModel players g
+    pure PNActive
+      { _activeGame = game
+      , _activePlayerKey = view plKey human
+      }
+  pure $ PNActiveResp mPNActive
 
 del
   :: (Db.Update m, MonadReader UserInfo m, MonadError AppError m)

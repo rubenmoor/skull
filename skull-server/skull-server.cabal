@@ -25,10 +25,14 @@ library
                      , Database.Query
                      , Game
                      , Game.Agent
+                     , Game.Moves
                      , Game.Api
                      , Game.Api.Types
                      , Game.Bot
                      , Game.Handler
+                     , Game.Play.Api
+                     , Game.Play.Api.Types
+                     , Game.Play.Handler
                      , Game.Types
                      , Handler.Types
                      , HttpApp.Api
@@ -72,6 +76,7 @@ library
                      , persistent-template
                      , product-profunctors
                      , pwstore-fast
+                     , random
                      , servant
                      , servant-docs
                      , servant-server

@@ -1,3 +1,29 @@
 .player {
   width: 240px;
 }
+
+.card-stack-container {
+  position: static;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+.card-stack-1 {
+  position: relative;
+}
+
+.card-stack-2 {
+  position: relative;
+  left: -55px;
+  top: 5px;
+}
+
+.card-stack-3 {
+  position: relative;
+  left: -20px;
+}
+
+.card-stack-4 {
+  position: relative;
+  left: -30px;
+}

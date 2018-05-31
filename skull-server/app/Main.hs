@@ -27,6 +27,7 @@ import           TextShow
 import qualified Api
 import           Auth                     (hoistAuthAppBotKey)
 import qualified Game.Handler             as Game
+import qualified Game.Play.Handler        as Game.Play
 import           Handler.Types            (AppEnv (..))
 import qualified HttpApp.Handler          as HttpApp
 import qualified HttpApp.Model            as Model
@@ -37,6 +38,7 @@ app :: AppEnv -> FilePath -> Server Api.Routes
 app env path =
        HttpApp.handlers env
   :<|> hoistAuthAppBotKey env Game.handlers
+  :<|> hoistAuthAppBotKey env Game.Play.handlers
   :<|> serveDirectoryFileServer path
 
 main :: IO ()

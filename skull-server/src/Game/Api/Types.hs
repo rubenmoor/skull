@@ -15,6 +15,7 @@ import           Data.Monoid          ((<>))
 import           Data.Proxy           (Proxy (..))
 import           Data.Text            (Text)
 import           GHC.Generics         (Generic)
+import           TextShow             (TextShow (..))
 
 import           Servant.Docs         (ToSample (..), singleSample)
 
@@ -26,6 +27,9 @@ import           HttpApp.BotKey.Types (BotKey, sampleBotKey)
 
 newtype GameError = GameError { unGameError :: Text }
   deriving (Generic, ToJSON)
+
+instance TextShow GameError where
+  showb b = "GameError: " <> showb (unGameError b)
 
 data ErrorOr a
   = Error { geMsg :: GameError }
@@ -63,16 +67,4 @@ sampleAuthInfo = AuthInfo
   , _aiPlayerKey = samplePlayerKey
   }
 
-data PlayCardRq = PlayCardRq
-  { _pcrqCard :: Card
-  , _pcrqAuth :: AuthInfo
-  } deriving (Generic, FromJSON, ToJSON)
-
-instance ToSample PlayCardRq where
-  toSamples _ =
-    let _pcrqCard = Plain
-        _pcrqAuth = sampleAuthInfo
-    in  singleSample PlayCardRq{..}
-
 makeLenses ''AuthInfo
-makeLenses ''PlayCardRq

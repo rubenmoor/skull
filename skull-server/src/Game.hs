@@ -5,10 +5,17 @@ module Game
   , module Game.Types
   ) where
 
+import           Control.Lens  ((^.))
 import           Control.Monad (guard)
+import           Data.List     (find)
 
 import           Game.Types
 import qualified HttpApp.Model as Model
+
+-- play now mode
+
+findHumanPlayer :: [Player] -> Maybe Player
+findHumanPlayer = find (\p -> p ^. plKind == HumanPlayNow)
 
 -- to model
 
@@ -26,10 +33,11 @@ playerToModel playerFkGame playerFkBotKey playerFkUser Player{..} = do
     _                               -> False
   let playerKey = _plKey
       playerVictory = _plVictory
-      playerHand = _plHand
       playerAlive = _plAlive
-      playerStack = _plStack
-      playerBetState = _plBetState
+      Agent{..} = _plAgent
+      playerHand = _aHand
+      playerStack = _aStack
+      playerBetState = _aBetState
   pure Model.Player{..}
 
 playerFromModel
@@ -39,10 +47,11 @@ playerFromModel
 playerFromModel _plGameKey Model.Player{..} = do
   let _plKey = playerKey
       _plVictory = playerVictory
-      _plHand = playerHand
       _plAlive = playerAlive
-      _plStack = playerStack
-      _plBetState = playerBetState
+      _aHand = playerHand
+      _aStack = playerStack
+      _aBetState = playerBetState
+      _plAgent = Agent{..}
   _plKind <- case (playerFkUser, playerFkBotKey) of
                (Just _, Nothing)  -> Just HumanPlayNow
                (Nothing, Just _)  -> Just BotUser

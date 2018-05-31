@@ -31,19 +31,22 @@ import           Servant.PureScript                        (HasBridge (..),
 import           System.Directory                          (copyFile,
                                                             removeFile)
 
+import           Api                                       (HttpAppRoutes,
+                                                            PlayNowRoutes)
 import           Api.Types
 import           Auth.Types                                (AuthToken)
-import           Game.Types                                (BetState, Card,
-                                                            GState, Game, Hand,
-                                                            Kind, Phase, Player,
-                                                            Stack, Victory,
+import           Game.Types                                (Agent, BetState,
+                                                            Card, GState, Game,
+                                                            Hand, Kind, Phase,
+                                                            Player, Stack,
+                                                            Victory,
                                                             VictoryInfo,
                                                             VictoryType)
-import           HttpApp.Api                               (Routes)
 import           HttpApp.BotKey.Types                      (BotKey)
 
-import qualified Game.Api                                  as Game
 import qualified Game.Api.Types                            as Game
+import qualified Game.Play.Api                             as Game.Play
+import qualified Game.Play.Api.Types                       as Game.Play
 
 types :: [SumType 'Haskell]
 types =
@@ -64,7 +67,8 @@ types =
 
   , mkSumType (Proxy :: Proxy PNNewRq)
   , mkSumType (Proxy :: Proxy PNNewResp)
-  , mkSumType (Proxy :: Proxy PNAllResp)
+  , mkSumType (Proxy :: Proxy PNActiveResp)
+  , mkSumType (Proxy :: Proxy PNActive)
   , mkSumType (Proxy :: Proxy PNDeleteRq)
 
   , mkSumType (Proxy :: Proxy Game)
@@ -73,6 +77,7 @@ types =
   , mkSumType (Proxy :: Proxy VictoryType)
   , mkSumType (Proxy :: Proxy Phase)
   , mkSumType (Proxy :: Proxy Player)
+  , mkSumType (Proxy :: Proxy Agent)
   , mkSumType (Proxy :: Proxy Victory)
   , mkSumType (Proxy :: Proxy Kind)
   , mkSumType (Proxy :: Proxy Hand)
@@ -80,8 +85,10 @@ types =
   , mkSumType (Proxy :: Proxy Card)
   , mkSumType (Proxy :: Proxy BetState)
 
+  , mkSumType (Proxy :: Proxy Game.GameError)
+  , mkSumType (Proxy :: Proxy Game.AuthInfo)
   , mkSumType (Proxy :: Proxy (Game.ErrorOr A))
-  , mkSumType (Proxy :: Proxy Game.PlayCardRq)
+  , mkSumType (Proxy :: Proxy Game.Play.PlayCardRq)
   ]
 
 base64Bridge :: BridgePart
@@ -104,7 +111,7 @@ main = do
           , "baseURL"
           ]
       pBridge = Proxy :: Proxy Bridge
-      pRoutes = Proxy :: Proxy (Routes :<|> Game.Routes)
+      pRoutes = Proxy :: Proxy (HttpAppRoutes :<|> PlayNowRoutes)
   writeAPIModuleWithSettings settings outDir pBridge pRoutes
   writePSTypes outDir  (buildBridge bridge) types
 

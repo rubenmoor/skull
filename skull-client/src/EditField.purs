@@ -17,7 +17,7 @@ import Ulff (Ulff)
 
 editField
   :: forall eff.
-     Component HTML Query Input Message (Ulff (eff))
+     Component HTML Query Input Message (Ulff eff)
 editField =
   component
     { initialState: initial
@@ -28,7 +28,7 @@ editField =
 
 eval
   :: forall eff.
-     Query ~> ComponentDSL State Query Message (Ulff (eff))
+     Query ~> ComponentDSL State Query Message (Ulff eff)
 eval = case _ of
   HandleInput str next -> do
     _label .= str

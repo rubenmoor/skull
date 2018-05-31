@@ -9,18 +9,23 @@ import           Data.Aeson   (FromJSON, ToJSON)
 import           Data.Maybe   (Maybe (..))
 import           GHC.Generics (Generic)
 
-import           Game.Types   (Game, GameKey)
+import           Game.Types   (Game, GameKey, PlayerKey)
 
 newtype PNNewRq = PNNewRq
   { _nrqNumPlayers :: Int
   } deriving (Generic, FromJSON)
 
-newtype PNNewResp = PNNewResp
-  { _nrespGame :: Game
+data PNNewResp = PNNewResp
+  { _nrespGame      :: Game
+  , _nrespPlayerKey :: PlayerKey
   } deriving (Generic, ToJSON)
 
-newtype PNAllResp = PNAllResp
-  { _arespGame :: Maybe Game
+newtype PNActiveResp = PNActiveResp (Maybe PNActive)
+  deriving (Generic, ToJSON)
+
+data PNActive = PNActive
+  { _activeGame      :: Game
+  , _activePlayerKey :: PlayerKey
   } deriving (Generic, ToJSON)
 
 newtype PNDeleteRq = PNDeleteRq

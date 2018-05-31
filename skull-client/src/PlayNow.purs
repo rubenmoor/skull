@@ -2,7 +2,6 @@ module PlayNow
   ( playNow
   ) where
 
-import BotKey.Types as BotKey
 import Control.Applicative (pure)
 import Control.Bind (discard, bind)
 import Control.Monad.State (get, put)
@@ -15,10 +14,12 @@ import Game.Types (gKey)
 import Halogen (Component, action, lifecycleParentComponent)
 import Halogen.Component (ParentDSL)
 import Halogen.HTML (HTML)
-import HttpApp.PlayNow.Api.Types (PNDeleteRq(..), PNNewRq(..), arespGame, nrespGame)
+import HttpApp.PlayNow.Api.Types (PNActiveResp(..), PNDeleteRq(..), PNNewRq(..), activeGame, activePlayerKey, nrespGame, nrespPlayerKey)
 import PlayNow.Render (render)
-import PlayNow.Types (Effects, Input, Query(..), Slot, State, Message, initial)
-import ServerAPI (deletePlayNow, getPlayNowActive, postPlayNowNew, postPlayCard)
+import PlayNow.Types (Effects, Input, Message, Query(..), Slot, State, initial)
+import PlayNowGame.Types (game)
+import PlayNowGame.Types as PlayNowGame
+import ServerAPI (deletePlayNow, getPlayNowActive, postPlayNowNew)
 import Types (UrlRoot)
 import Ulff (Ulff, mkRequest)
 
@@ -38,32 +39,34 @@ playNow urlRoot =
 
 eval
   :: forall eff.
-     Query ~> ParentDSL State Query BotKey.Query Slot Message (Ulff (Effects eff))
+     Query ~> ParentDSL State Query PlayNowGame.Query Slot Message (Ulff (Effects eff))
 eval = case _ of
   Initialize next -> do
-    mkRequest getPlayNowActive $ \resp ->
-      put $ resp ^. arespGame
+    mkRequest getPlayNowActive $ \(PNActiveResp mActive) ->
+      case mActive of
+        Nothing -> put Nothing
+        Just active ->
+          let pngState =
+                { _game: active ^. activeGame
+                , _humanPlayerKey: active ^. activePlayerKey
+                }
+          in  put $ Just pngState
     pure next
   NewGame n next -> do
     let body = PNNewRq
           { _nrqNumPlayers: n
           }
     mkRequest (postPlayNowNew body) $ \resp ->
-      put $ Just $ resp ^. nrespGame
+      put $ Just
+        { _game: resp ^. nrespGame
+        , _humanPlayerKey: resp ^. nrespPlayerKey
+        }
     pure next
-  PlayCard c next -> do
-    let body = PlayCardRq
-          {
-          }
-    mkRequest (postPlayCard body) $ case _ of
-      Error _ ->  put Nothing
-      Result g -> put $ Just g
-    pure next
-  AbortGame next -> do
-    mInfo <- get
-    for_ mInfo $ \info -> do
+  HandleMsg PlayNowGame.Delete next -> do
+    mActive <- get
+    for_ mActive $ \active -> do
       let body = PNDeleteRq
-            { _drqKey: info ^. gKey
+            { _drqKey: active ^. game ^. gKey
             }
       mkRequest (deletePlayNow body) $ \_ -> put Nothing
     pure next

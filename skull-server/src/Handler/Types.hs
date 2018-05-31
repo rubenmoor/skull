@@ -28,6 +28,7 @@ import           Control.Monad.Except        (ExceptT (..), MonadError,
 import           Control.Monad.IO.Class      (MonadIO, liftIO)
 import           Control.Monad.Logger        (MonadLogger (..), logError,
                                               toLogStr)
+import           Control.Monad.Random        (MonadRandom)
 import           Control.Monad.Reader        (MonadReader (..), ReaderT (..),
                                               asks, runReaderT)
 import           Control.Monad.Trans.Class   (MonadTrans (..))
@@ -69,6 +70,8 @@ newtype HandlerT m a = HandlerT
   } deriving (Functor, Applicative, Monad, MonadIO, MonadError AppError)
 
 deriving instance MonadBase IO m => MonadBase IO (HandlerT m)
+
+deriving instance MonadRandom m => MonadRandom (HandlerT m)
 
 instance MonadReader UserInfo m => MonadReader UserInfo (HandlerT m) where
     ask = lift ask

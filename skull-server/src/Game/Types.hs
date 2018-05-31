@@ -86,15 +86,26 @@ samplePhase = CardOrBet
 
 -- player
 
+data Agent = Agent
+  { _aHand     :: Hand
+  , _aStack    :: Stack
+  , _aBetState :: BetState
+  } deriving (Generic, ToJSON, Show, Read)
+
+sampleAgent1 :: Agent
+sampleAgent1 = Agent
+  { _aHand = sampleHand1
+  , _aStack = Stack []
+  , _aBetState = NothingYet
+  }
+
 data Player = Player
-  { _plKey      :: PlayerKey
-  , _plGameKey  :: GameKey
-  , _plKind     :: Kind
-  , _plVictory  :: Victory
-  , _plHand     :: Hand
-  , _plAlive    :: Bool
-  , _plStack    :: Stack
-  , _plBetState :: BetState
+  { _plKey     :: PlayerKey
+  , _plGameKey :: GameKey
+  , _plKind    :: Kind
+  , _plVictory :: Victory
+  , _plAlive   :: Bool
+  , _plAgent   :: Agent
   } deriving (Generic, ToJSON, Show, Read)
 
 instance Eq Player where
@@ -109,10 +120,8 @@ samplePlayer1 = Player
   , _plGameKey  = sampleGameKey
   , _plKind     = HumanPlayNow
   , _plVictory  = None
-  , _plHand     = sampleHand1
   , _plAlive    = True
-  , _plStack    = Stack []
-  , _plBetState = NothingYet
+  , _plAgent    = sampleAgent1
   }
 
 samplePlayers :: [Player]
@@ -161,6 +170,8 @@ data BetState
   | Fold
   deriving (Generic, Show, Read, Eq, ToJSON)
 
+type RandFunc m = m Double
+
 derivePersistField "Victory"
 derivePersistField "Hand"
 derivePersistField "Stack"
@@ -171,6 +182,7 @@ derivePersistField "Phase"
 --
 
 makeLenses ''Game
+makeLenses ''Agent
 makeLenses ''Player
 makeLenses ''Stack
 makeLenses ''Hand

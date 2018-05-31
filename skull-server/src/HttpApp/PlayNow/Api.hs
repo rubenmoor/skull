@@ -17,5 +17,5 @@ type Protected =
   :<|> Del
 
 type New = "new" :> ReqBody '[JSON] PNNewRq :> Post '[JSON] PNNewResp
-type Active = "active" :> Get '[JSON] PNAllResp
+type Active = "active" :> Get '[JSON] PNActiveResp
 type Del = ReqBody '[JSON] PNDeleteRq :> Delete '[JSON] ()

@@ -1,11 +1,12 @@
 module PlayNow.Types where
 
 import DOM (DOM)
+import Data.Void (Void)
 import Data.Maybe (Maybe(..))
 import Data.Unit (Unit)
-import Data.Void (Void)
-import Game.Types (Card, Game)
 import Types (MkRequestEffects)
+
+import PlayNowGame.Types as PlayNowGame
 
 type Effects e =
   MkRequestEffects
@@ -15,7 +16,7 @@ type Effects e =
 
 type Input = Unit
 
-type State = Maybe Game
+type State = Maybe PlayNowGame.State
 
 initial :: Input -> State
 initial _ = Nothing
@@ -23,9 +24,8 @@ initial _ = Nothing
 data Query a
   = Initialize a
   | NewGame Int a
-  | PlayCard Card a
-  | AbortGame a
+  | HandleMsg PlayNowGame.Message a
 
-type Slot = Int
+type Slot = Unit
 
 type Message = Void
