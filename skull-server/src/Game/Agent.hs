@@ -6,12 +6,13 @@ module Game.Agent where
 
 import           Control.Lens         ((^.))
 import           Control.Monad        (unless)
-import           Control.Monad.Except (ExceptT, MonadError, lift, throwError,
+import           Control.Monad.Except (Except, MonadError, throwError,
                                        withExceptT)
 
 
 
-import           Control.Monad.Random (MonadRandom)
+
+import           Control.Monad.Random (Rand, StdGen, evalRand)
 import           Data.List            (partition)
 import           Data.Text            (Text)
 
@@ -23,14 +24,25 @@ import           Game.Types           (Agent (..), BetState (..), Card (..),
 
 
 agentDo
-  :: MonadRandom m
-  => Player
-  -> (Agent -> m Agent)
-  -> ExceptT GameError m Player
+  :: Player
+  -> (Agent -> Agent)
+  -> Except GameError Player
 agentDo player f = withExceptT GameError $ do
     oldAgent <- maybe (throwError "basic agent inconcistency before move") pure $
       toAgent player
-    newAgent <- lift $ f oldAgent
+    let newAgent = f oldAgent
+    checkAgentMove oldAgent newAgent
+    pure $ player { _plAgent = newAgent }
+
+agentDoBot
+  :: StdGen
+  -> Player
+  -> (Agent -> Rand StdGen Agent)
+  -> Except GameError Player
+agentDoBot stdGen player f = withExceptT GameError $ do
+    oldAgent <- maybe (throwError "basic agent inconcistency before move") pure $
+      toAgent player
+    let newAgent = flip evalRand stdGen $ f oldAgent
     checkAgentMove oldAgent newAgent
     pure $ player { _plAgent = newAgent }
 

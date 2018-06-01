@@ -126,10 +126,6 @@ victoryTrophy player =
 
 -- my hand
 
-data ImgCard
-  = ImgPlain
-  | ImgSkull
-
 myHand
   :: forall t.
      String
@@ -137,32 +133,32 @@ myHand
   -> Player
   -> HTML t (Query Unit)
 myHand urlRoot phase pl =
-  let renderImg imgCard =
-        let str = case imgCard of
-              ImgPlain -> "plain"
-              ImgSkull -> "skull"
+  let renderImg card =
+        let str = case card of
+              Plain -> "plain"
+              Skull -> "skull"
         in img
              [ src $ urlRoot <> "img/card-" <> str <> ".svg"
              ]
-      renderButton contents = button
+      renderButton card = button
         [ cl "button--pure"
-        , Events.onClick $ Events.input_ $ PlayCard Skull
+        , Events.onClick $ Events.input_ $ PlayCard card
         ]
-        [ contents
+        [ renderImg card
         ]
-      renderCard img =
+      renderCard card =
         cldiv_ "col col-3 pl1"
           [ case phase of
-               FirstCard -> renderButton $ renderImg img
-               CardOrBet -> renderButton $ renderImg img
-               _         -> renderImg img
+               FirstCard -> renderButton card
+               CardOrBet -> renderButton card
+               _         -> renderImg card
           ]
       skull =
         if pl ^. plAgent ^. aHand ^. hHasSkull
-            then [ renderCard ImgSkull ]
+            then [ renderCard Skull ]
             else []
       n = pl ^. plAgent ^. aHand ^. hNumPlains
-      plains = replicate n $ renderCard ImgPlain
+      plains = replicate n $ renderCard Plain
   in  clsection_ "container--small"
         [ cldiv_ "clearfix" $ skull <> plains
         ]

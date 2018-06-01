@@ -170,3 +170,6 @@ instance IOConstraint m => Db.Delete (HandlerT m) where
 instance IOConstraint m => Db.Update (HandlerT m) where
   update = runQuery . Esqueleto.update
   updateCount = runQuery . Esqueleto.updateCount
+
+instance IOConstraint m => Db.Replace (HandlerT m) where
+  replace key record = runQuery $ Esqueleto.replace key record

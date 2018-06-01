@@ -26,4 +26,16 @@ instance ToSample PlayCardRq where
         _pcrqAuth = sampleAuthInfo
     in  singleSample PlayCardRq{..}
 
+data PlaceBetRq = PlaceBetRq
+  { _pbrqValue :: Int
+  , _pbrqAuth  :: AuthInfo
+  } deriving (Generic, FromJSON, ToJSON)
+
+instance ToSample PlaceBetRq where
+  toSamples _ =
+    let _pbrqValue = 3
+        _pbrqAuth = sampleAuthInfo
+    in  singleSample PlaceBetRq{..}
+
 makeLenses ''PlayCardRq
+makeLenses ''PlaceBetRq

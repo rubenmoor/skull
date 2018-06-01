@@ -2,7 +2,6 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings     #-}
 
 module Database.Class where
 
@@ -17,7 +16,7 @@ import           Database.Esqueleto                   (Entity, Key,
 import           Database.Esqueleto.Internal.Language (Insertion)
 import           Database.Esqueleto.Internal.Sql      (SqlSelect)
 
-type Write m = (Delete m, Insert m, Update m)
+type Write m = (Delete m, Insert m, Update m, Replace m)
 type ReadWrite m = (Database.Class.Read m, Write m)
 
 class Functor m => Read m where
@@ -72,6 +71,13 @@ class Update m where
     :: SqlEntity val
     => (SqlExpr (Entity val) -> SqlQuery ())
     -> m Int64
+
+class Replace m where
+  replace
+    :: (ToBackendKey SqlBackend a, PersistEntity a)
+    => Key a
+    -> a
+    -> m ()
 
 (<&>) :: Functor m => m a -> (a -> b) -> m b
 (<&>) = flip fmap

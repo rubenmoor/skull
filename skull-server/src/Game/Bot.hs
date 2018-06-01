@@ -6,7 +6,8 @@ import           Control.Lens         ((^.))
 import           Control.Monad.Random (MonadRandom, getRandom)
 
 import           Game.Moves           (playPlain, playSkull)
-import           Game.Types           (Agent, aHand, hHasSkull, hNumPlains)
+import           Game.Types           (Agent, Game, aHand, hHasSkull,
+                                       hNumPlains)
 
 
 
@@ -19,8 +20,6 @@ playCard a =
   then playRandom a
   else pure $ playPlain a
 
---
-
 playRandom
   :: MonadRandom m
   => Agent
@@ -32,3 +31,11 @@ playRandom a = do
   pure $ if r < prob
     then playSkull a
     else playPlain a
+
+placeBet
+  :: MonadRandom m
+  => Game
+  -> Agent
+  -> m Agent
+placeBet game a = do
+  pure a
