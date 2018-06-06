@@ -17,7 +17,6 @@ import           Control.Monad.Reader                (MonadReader, asks)
 import           Control.Monad.Trans.Maybe           (MaybeT (..), runMaybeT)
 import           Data.Foldable                       (for_)
 import           Data.List                           (sort)
-import           Data.Monoid                         ((<>))
 import           Data.Traversable                    (for)
 import           Database.Esqueleto                  (Entity (..),
                                                       InnerJoin (..), from, set,
@@ -25,7 +24,6 @@ import           Database.Esqueleto                  (Entity (..),
                                                       (==.), (^.))
 import           Servant                             ((:<|>) (..), ServerT)
 import           System.Entropy                      (getEntropy)
-import           TextShow                            (showt)
 
 import           Auth.Types                          (UserInfo (..), uiUserId)
 import qualified Data.ByteString.Base64.URL.Extended as Base64
@@ -33,10 +31,11 @@ import           Data.Functor.Extended               ((<$>))
 import qualified Database.Class                      as Db
 import           Database.Query                      (singleCollectSnd)
 import           Game
-import           Game.Api.Types                      (AuthInfo (..),
-                                                      ErrorOr (..))
-import           Game.Play                           (botMoves, withGame)
-
+import           Game.Agent                          (agentDoBot)
+import           Game.Api.Types                      (AuthInfo (..))
+import qualified Game.Bot                            as Bot
+import           Game.Play                           (withGame, withPlayer)
+import           Game.Play.Types                     (envStdGen)
 import           Handler.Types                       (AppError (..),
                                                       HandlerAuthT)
 import           HttpApp.Model                       (EntityField (..))
@@ -111,13 +110,16 @@ new PNNewRq{..} = do
         { _aiGameKey = _gKey
         , _aiPlayerKey = humanKey
         }
-  eGame <- withGame authInfo $ botMoves botPlayers
+  eGame <- withGame authInfo $ do
+    stdGen <- view envStdGen
+    for_ botPlayers $ withPlayer $ agentDoBot stdGen Bot.playCard
+
   case eGame of
-    Error err -> throwError $ ErrBug $ "Error on first move: " <> showt err
-    Result newGame -> pure PNNewResp
-      { _nrespGame = newGame
-      , _nrespPlayerKey = humanKey
-      }
+    Error err -> throwError $ ErrBug "Error on first move: " <> err
+  pure PNNewResp
+    { _nrespGame = game
+    , _nrespPlayerKey = humanKey
+    }
 
 active
   :: (Monad m, MonadError AppError m, MonadReader UserInfo m, Db.Read m)

@@ -4,30 +4,30 @@
 
 module Game.Agent where
 
-import           Control.Lens         ((^.))
-import           Control.Monad        (unless)
-import           Control.Monad.Except (Except, MonadError, throwError,
-                                       withExceptT)
+import           Control.Lens              ((^.))
+import           Control.Monad             (unless)
+import           Control.Monad.Except      (Except, MonadError, throwError,
+                                            withExceptT)
+import           Control.Monad.Random      (Rand, StdGen)
 
+import           Control.Monad.Trans.Class (lift)
+import           Data.List                 (partition)
+import           Data.Text                 (Text)
 
-
-
-import           Control.Monad.Random (Rand, StdGen, evalRand)
-import           Data.List            (partition)
-import           Data.Text            (Text)
-
-import           Game.Api.Types       (GameError (..))
-import           Game.Types           (Agent (..), BetState (..), Card (..),
-                                       Player (..), aBetState, aHand, aStack,
-                                       hHasSkull, hNumPlains, plAgent, stCards)
+import           Game.Api.Types            (GameError (..))
+import           Game.Play.Types           (WithBot)
+import           Game.Types                (Agent (..), BetState (..),
+                                            Card (..), Player (..), aBetState,
+                                            aHand, aStack, hHasSkull,
+                                            hNumPlains, plAgent, stCards)
 
 
 
 agentDo
-  :: Player
-  -> (Agent -> Agent)
+  :: (Agent -> Agent)
+  -> Player
   -> Except GameError Player
-agentDo player f = withExceptT GameError $ do
+agentDo f player = withExceptT GameError $ do
     oldAgent <- maybe (throwError "basic agent inconcistency before move") pure $
       toAgent player
     let newAgent = f oldAgent
@@ -35,14 +35,15 @@ agentDo player f = withExceptT GameError $ do
     pure $ player { _plAgent = newAgent }
 
 agentDoBot
-  :: StdGen
+  :: (Agent -> Rand StdGen Agent)
   -> Player
-  -> (Agent -> Rand StdGen Agent)
-  -> Except GameError Player
-agentDoBot stdGen player f = withExceptT GameError $ do
+  -> WithBot Player
+agentDoBot f player = withExceptT GameError $ do
+    -- stdGen <- mkStdGen <$> getRandom
     oldAgent <- maybe (throwError "basic agent inconcistency before move") pure $
       toAgent player
-    let newAgent = flip evalRand stdGen $ f oldAgent
+    -- let newAgent = flip evalRand stdGen $ f oldAgent
+    newAgent <- lift $ f oldAgent
     checkAgentMove oldAgent newAgent
     pure $ player { _plAgent = newAgent }
 

@@ -29,11 +29,12 @@ samplePlayerKey = Base64.fromTextUnsafe "f40jf920s0"
 -- game info
 
 data Game = Game
-  { _gKey     :: GameKey
-  , _gState   :: GState
-  , _gPhase   :: Phase
-  , _gRound   :: Int
-  , _gPlayers :: [Player]
+  { _gKey         :: GameKey
+  , _gState       :: GState
+  , _gPhase       :: Phase
+  , _gRound       :: Int
+  , _gPlayers     :: [Player]
+  , _gStartPlayer :: Player
   }
   deriving (Generic, Show, Read, Eq, ToJSON)
 
@@ -45,6 +46,7 @@ sampleGame = Game
   , _gPhase = samplePhase
   , _gRound = 0
   , _gPlayers = samplePlayers
+  , _gStartPlayer = samplePlayer1
   }
 
 instance ToSample Game where
@@ -77,7 +79,7 @@ data VictoryType
 data Phase
   = FirstCard
   | CardOrBet
-  | Bet
+  | Bet Int
   | Reveal
   deriving (Generic, ToJSON, Show, Read, Eq)
 

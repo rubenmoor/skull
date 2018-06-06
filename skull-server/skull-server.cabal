@@ -30,9 +30,11 @@ library
                      , Game.Api.Types
                      , Game.Bot
                      , Game.Handler
+                     , Game.Play
                      , Game.Play.Api
                      , Game.Play.Api.Types
                      , Game.Play.Handler
+                     , Game.Play.Types
                      , Game.Types
                      , Handler.Types
                      , HttpApp.Api

@@ -14,4 +14,7 @@ playSkull agent = agent & aHand . hHasSkull .~ False
                         & aStack . stCards %~ (:) Skull
 
 placeBet :: Int -> Agent -> Agent
-placeBet value agent = agent & aBetState .~ BetSet value
+placeBet value = aBetState .~ BetSet value
+
+placeBetFold :: Agent -> Agent
+placeBetFold = aBetState .~ Fold
