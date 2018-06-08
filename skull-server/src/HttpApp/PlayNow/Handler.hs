@@ -93,6 +93,7 @@ new PNNewRq{..} = do
       _gPhase = FirstCard
       _gRound = 0
       _gPlayers = allPlayers
+      _gStartPlayer = head allPlayers
       game = Game{..}
 
   -- persist

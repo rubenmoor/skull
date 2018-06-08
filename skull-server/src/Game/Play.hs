@@ -18,6 +18,7 @@ import           Control.Monad.Except      (Except, MonadError, runExcept,
 import           Control.Monad.Random      (MonadRandom, evalRand, evalRandT,
                                             getRandom, mkStdGen)
 import           Control.Monad.Trans.Class (lift)
+import           Data.Monoid               ((<>))
 
 
 import           Control.Monad.Reader      (MonadReader, ask)
@@ -48,7 +49,8 @@ import           Game.Play.Types           (Seating (..), WithBot, WithGame)
 
 import           Game.Types                (Game (..), GameKey, Player,
                                             PlayerKey, aStack, gPlayers,
-                                            plAgent, plKey, stCards)
+                                            gStartPlayer, plAgent, plKey,
+                                            stCards)
 
 getMaxBetValue
   :: Game
@@ -68,12 +70,12 @@ withGame authInfo action = do
     stdGen <- mkStdGen <$> getRandom
     userInfo <- ask
     let gameKey = authInfo ^. aiGameKey
-        playerKey = authInfo ^. aiPlayerKey
+        humanKey = authInfo ^. aiPlayerKey
         mBotKey = userInfo ^. uiActiveBotKey
         uId = userInfo ^. uiUserId
         check = maybe (Left uId) Right mBotKey
     (dbKey, game) <- getGame gameKey
-    seating <- sortCheckPlayers check playerKey $ game ^. gPlayers
+    seating <- sortCheckPlayers check humanKey (game ^. gPlayers) (game ^. gStartPlayer)
     let eResult = evalRand (runExceptT $ execRWST action seating game) stdGen
     case eResult of
       Left err -> pure $ Error err
@@ -121,33 +123,38 @@ sortCheckPlayers
   => Either Model.UserId BotKey
   -> PlayerKey
   -> [Player]
+  -> Player
   -> m Seating
-sortCheckPlayers check key players = do
+sortCheckPlayers check humanKey players startPlayer = do
   case check of
     Left uId -> do
       ls <- Db.select $ from $ \p -> do
-        where_ $ (p Q.^. PlayerKey ==. val key)
+        where_ $ (p Q.^. PlayerKey ==. val humanKey)
              &&. (p Q.^. PlayerFkUser ==. just (val uId))
         pure p
       when (null ls) $ throwError $ ErrUnauthorized "No player for given key and user found"
     Right botKey -> do
       ls <- Db.select $ from $ \(p `InnerJoin` bk) -> do
-        where_ $ (p Q.^. PlayerKey ==. val key)
+        where_ $ (p Q.^. PlayerKey ==. val humanKey)
              &&. (just (bk Q.^. BotKeyId) ==. p Q.^. PlayerFkBotKey)
              &&. (bk Q.^. BotKeySecret ==. val (botKey ^. bkSecret))
         pure p
-      when (null ls) $ throwError $ ErrUnauthorized "No player for given key and botkey"
-  case sortPlayers key players of
+      when (null ls) $ throwError $ ErrUnauthorized "No player for given key and botKey"
+  case sortPlayers players humanKey startPlayer of
     Just pls -> pure pls
     Nothing  -> throwError $ ErrDatabase "Player not found in game"
 
--- sort player by key and rotate active player to front
+-- sort player by key and rotate current start player to front
 sortPlayers
-  :: PlayerKey
-  -> [Player]
+  :: [Player]
+  -> PlayerKey
+  -> Player
   -> Maybe Seating
-sortPlayers key players =
-  let (_seatLeft, right) = break (\p -> p ^. plKey == key) $ sort players
-  in  case right of
-        _seatMe:_seatRight -> Just Seating{..}
-        []                 -> Nothing
+sortPlayers players humanKey startPlayer =
+  case right of
+    _seatMe:_seatRight -> Just Seating{..}
+    []                 -> Nothing
+  where
+    rotated = let (firstHalf, secondHalf) = break (== startPlayer) $ sort players
+              in  firstHalf <> secondHalf
+    (_seatLeft, right) = break (\p -> p ^. plKey == humanKey) rotated
