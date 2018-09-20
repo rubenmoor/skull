@@ -11,7 +11,7 @@ import           Prelude              (IO, flip, pure, ($), (+), (<), (<$>),
 import           Control.Lens         (use, view, (.=), (^.))
 import           Control.Monad        (when)
 import           Control.Monad.Except (MonadError, throwError)
-import           Control.Monad.RWS    (get)
+import           Control.Monad.RWS    (ask, get)
 
 import           Control.Monad.Random (MonadRandom)
 
@@ -32,8 +32,7 @@ import qualified Game.Moves           as Moves
 import           Game.Play            (getMaxBetValue, withGame, withPlayer)
 import qualified Game.Play.Api        as Api
 import           Game.Play.Api.Types
-import           Game.Play.Types      (Seating, envSeating, seatLeft, seatMe,
-                                       seatRight)
+import           Game.Play.Types      (Seating, seatLeft, seatMe, seatRight)
 import           Game.Types
 
 handlers :: ServerT Api.Routes (HandlerAuthT IO)
@@ -46,7 +45,7 @@ placeBet
   => PlaceBetRq
   -> m (ErrorOr Game)
 placeBet req = withGame (req ^. pbrqAuth) $ do
-  seating <- view envSeating
+  seating <- ask
   min <- use gPhase >>= \case
     CardOrBet -> pure 1
     Bet n    -> pure $ n + 1
@@ -64,10 +63,10 @@ playCard
   => PlayCardRq
   -> m (ErrorOr Game)
 playCard req = withGame (req ^. pcrqAuth) $ do
-  seating <- view envSeating
+  seating <- ask
   next <- use gPhase >>= \case
     FirstCard -> do gPhase .= CardOrBet
-                    pure $ seating ^. seatLeft
+                    view seatLeft
     CardOrBet -> pure $ nextInLine seating
     _         -> throwError $ GameError "playCard in wrong phase"
   flip withPlayer (seating ^. seatMe) $

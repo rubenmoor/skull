@@ -35,7 +35,8 @@ import           Database.Query                      (singleCollectSnd)
 import           Game
 import           Game.Api.Types                      (AuthInfo (..),
                                                       ErrorOr (..))
-import           Game.Play                           (botMoves, withGame)
+import           Game.Bot                            (botMoves)
+import           Game.Play                           (withGame)
 
 import           Handler.Types                       (AppError (..),
                                                       HandlerAuthT)

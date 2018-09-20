@@ -129,7 +129,6 @@ executable psclient-generator
                      , servant-server
                      , servant-purescript
                      , servant-subscriber
-                     , temporary
                      , text
 
 -- executable api-doc-generator

@@ -4,8 +4,7 @@ module PlayNowGame.Render
 
 import Control.Applicative (pure)
 import Control.Bind (bind)
-import DOM.HTML.HTMLProgressElement (position)
-import Data.Array (findIndex, length, replicate, slice, (!!), null, (:))
+import Data.Array (findIndex, length, replicate, slice, (!!), null)
 import Data.Function (($))
 import Data.Functor (mapFlipped)
 import Data.FunctorWithIndex (mapWithIndex)
@@ -22,7 +21,7 @@ import Game.Types (Card(..), Kind(HumanPlayNow), Phase(Reveal, Bet, CardOrBet, F
 import Halogen.Component (ComponentHTML)
 import Halogen.HTML.Events as Events
 import Halogen.HTML.Extended (HTML, button, cl, cldiv_, clsection_, clspan_, div_, faIcon_, img, text)
-import Halogen.HTML.Properties (class_, src, width)
+import Halogen.HTML.Properties (src, width)
 import PlayNowGame.Types (Query(..), State, game)
 import Types (UrlRoot)
 
@@ -40,7 +39,7 @@ render urlRoot st =
         [ case st ^. game ^. gPhase of
             FirstCard -> text "First card: all players put down one card"
             CardOrBet -> text "Either put down a card, or initiate the betting"
-            Bet -> text "Either bet a higher number or pass"
+            Bet _ -> text "Either bet a higher number or pass"
             Reveal -> text "The highest bidder reveals the required number of cards"
         ]
     , clsection_ "container" $ case createSeating $ st ^. game ^. gPlayers of

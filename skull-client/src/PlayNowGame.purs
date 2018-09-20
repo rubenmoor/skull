@@ -2,22 +2,17 @@ module PlayNowGame
   ( playNowGame
   ) where
 
-import BotKey.Types as BotKey
 import Control.Applicative (pure)
 import Control.Bind (discard, bind)
 import Control.Monad.State (get, put)
-import Data.Foldable (for_)
-import Data.Function (const, ($), (<<<), (>>>))
+import Data.Function (($), (<<<))
 import Data.Functor (($>))
-import Data.Lens (au, (.=), (^.), (^?))
-import Data.Lens.Fold.Partial ((^?!))
-import Data.Maybe (Maybe(..))
+import Data.Lens ((.=), (^.))
 import Data.NaturalTransformation (type (~>))
-import Data.Unit (unit)
-import Game.Api.Types (AuthInfo(..), ErrorOr(..), GameError(..), _Error, _GameError)
+import Game.Api.Types (AuthInfo(..), ErrorOr(..), GameError(..))
 import Game.Play.Api.Types (PlayCardRq(..))
 import Game.Types (GState(..), gKey, gState)
-import Halogen (Component, action, lifecycleParentComponent)
+import Halogen (Component)
 import Halogen.Component (ComponentDSL, component)
 import Halogen.HTML (HTML)
 import Halogen.HTML.Events as Events
@@ -25,7 +20,7 @@ import Halogen.Query (raise)
 import HttpApp.PlayNow.Api.Types (PNDeleteRq(..))
 import PlayNowGame.Render (render)
 import PlayNowGame.Types (Effects, Input, Message(..), Query(HandleInput, PlayCard, AbortGame), State, game, humanPlayerKey, initial)
-import ServerAPI (deletePlayNow, getPlayNowActive, postPlayNowNew, postGamePlayCard)
+import ServerAPI (deletePlayNow, postGamePlayCard)
 import Types (UrlRoot)
 import Ulff (Ulff, mkRequest)
 

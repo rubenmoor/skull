@@ -89,6 +89,7 @@ types =
   , mkSumType (Proxy :: Proxy Game.AuthInfo)
   , mkSumType (Proxy :: Proxy (Game.ErrorOr A))
   , mkSumType (Proxy :: Proxy Game.Play.PlayCardRq)
+  , mkSumType (Proxy :: Proxy Game.Play.PlaceBetRq)
   ]
 
 base64Bridge :: BridgePart

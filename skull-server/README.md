@@ -2,6 +2,10 @@
 
 # nix
 
+in case the .cabal changed
+
+   $ cabal2nix . > default.nix
+
 configure
 
     $ nix-shell -I ~ --command 'cabal configure'
@@ -11,6 +15,7 @@ and build
     $ cabal build
 
 run code generator
+note: code generator broken for nix build, because of package servant_purescript
 
     # dist/build/psclient-generator/psclient-generator
     
