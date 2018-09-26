@@ -13,7 +13,7 @@ import           GHC.Generics    (Generic)
 import           Servant.Docs    (ToSample (..), singleSample)
 
 import           Game.Api.Types  (AuthInfo, sampleAuthInfo)
-import           Game.Types      (Card (..))
+import           Game.Types      (Card (..), CardFace (..), CardKind (..))
 
 data PlayCardRq = PlayCardRq
   { _pcrqCard :: Card
@@ -22,7 +22,7 @@ data PlayCardRq = PlayCardRq
 
 instance ToSample PlayCardRq where
   toSamples _ =
-    let _pcrqCard = Plain
+    let _pcrqCard = Card Plain FaceDown
         _pcrqAuth = sampleAuthInfo
     in  singleSample PlayCardRq{..}
 

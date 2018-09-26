@@ -76,11 +76,14 @@ data VictoryType
 
 -- phase
 
+type Bid = Int
+
 data Phase
   = FirstCard
   | CardOrBet
   | Bet Int
-  | Reveal
+  | Reveal Bid
+  | RoundFinished
   deriving (Generic, ToJSON, Show, Read, Eq)
 
 samplePhase :: Phase
@@ -89,9 +92,10 @@ samplePhase = CardOrBet
 -- player
 
 data Agent = Agent
-  { _aHand     :: Hand
-  , _aStack    :: Stack
-  , _aBetState :: BetState
+  { _aHand      :: Hand
+  , _aStack     :: Stack
+  , _aBetState  :: BetState
+  , _aHandLimit :: Int
   } deriving (Generic, ToJSON, Show, Read)
 
 sampleAgent1 :: Agent
@@ -99,6 +103,7 @@ sampleAgent1 = Agent
   { _aHand = sampleHand1
   , _aStack = Stack []
   , _aBetState = NothingYet
+  , _aHandLimit = 4
   }
 
 data Player = Player
@@ -155,9 +160,20 @@ newtype Stack = Stack
   { _stCards :: [Card]
   } deriving (Generic, Show, Read, Eq, ToJSON)
 
-data Card
+data Card = Card
+  { _cardKind :: CardKind
+  , _cardFace :: CardFace
+  }
+  deriving (Generic, Show, Read, Eq, ToJSON, FromJSON)
+
+data CardKind
   = Skull
   | Plain
+  deriving (Generic, Show, Read, Eq, ToJSON, FromJSON)
+
+data CardFace
+  = FaceUp
+  | FaceDown
   deriving (Generic, Show, Read, Eq, ToJSON, FromJSON)
 
 data Kind

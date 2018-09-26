@@ -48,6 +48,7 @@ Game
   state           GState
   phase           Phase
   round           Int
+  startPlayerKey  Base64
 Player
   fkGame          GameId
   fkBotKey        BotKeyId Maybe -- Just => Kind: BotUser

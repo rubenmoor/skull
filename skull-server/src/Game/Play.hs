@@ -13,19 +13,17 @@ import           Prelude                   (Either (..), Int, Maybe (..),
 import           Control.Lens              ((%=), (^.))
 import           Control.Monad             (Monad)
 import           Control.Monad.Except      (Except, MonadError, runExcept,
-                                            runExceptT, throwError, when,
-                                            withExceptT)
-import           Control.Monad.Random      (MonadRandom, evalRand, evalRandT,
-                                            getRandom, mkStdGen)
-import           Control.Monad.Trans.Class (lift)
-import           Data.Monoid               ((<>))
-
+                                            runExceptT, throwError, when)
+import           Control.Monad.Random      (MonadRandom, evalRand, getRandom,
+                                            mkStdGen)
 
 import           Control.Monad.Reader      (MonadReader, ask)
-import           Control.Monad.Trans.RWS   (execRWST, runRWS, runRWST)
+import           Control.Monad.Trans.Class (lift)
+import           Control.Monad.Trans.RWS   (execRWST)
 import           Data.Functor              (fmap, (<$>))
-import           Data.List                 (break, length, null, sort)
+import           Data.List                 (break, find, length, null, sort)
 import           Data.List.Ordered         (insertSet)
+import           Data.Monoid               ((<>))
 import           Data.Traversable          (for)
 
 import qualified Database.Class            as Db
@@ -37,7 +35,8 @@ import           Auth                      (UserInfo, uiActiveBotKey, uiUserId)
 import qualified Database.Esqueleto        as Q ((^.))
 import           Handler.Types             (AppError (..))
 import           HttpApp.BotKey.Types      (BotKey, bkSecret)
-import           HttpApp.Model             (EntityField (..))
+import           HttpApp.Model             (EntityField (..),
+                                            gameStartPlayerKey)
 import qualified HttpApp.Model             as Model
 
 import           Game                      (gameFromModel, gameToModel,
@@ -84,21 +83,23 @@ withGame authInfo action = do
         pure $ Result newGame
 
 withPlayer
-  :: (Player -> Except GameError Player)
+  :: (Player -> WithPlayer Player)
   -> Player
   -> WithGame ()
 withPlayer move player = do
-  let ePlayer = runExcept $ move player
-  newPlayer <- either throwError pure ePlayer
+  newPlayer <- lift $ move player
   gPlayers %= insertSet newPlayer
 
-withBot
-  :: (Player -> WithBot Player)
+-- like withPlayer, but allow an additional result in the
+-- 'move' function that gets passed on
+withPlayer'
+  :: (Player -> WithPlayer (Player, a))
   -> Player
-  -> WithGame ()
-withBot move player = do
-    newPlayer <- lift $ move player
-    gPlayers %= insertSet newPlayer
+  -> WithGame a
+withPlayer' move player = do
+  (newPlayer, x) <- lift $ move player
+  gPlayers %= insertSet newPlayer
+  pure x
 
 getGame
   :: (Db.Read m, MonadError AppError m)
@@ -113,7 +114,8 @@ getGame gameKey = do
         (Entity key game, players) <- singleCollectSnd ls
         pls <- for players $ \(Entity _ player) ->
           playerFromModel gameKey player
-        pure (key, gameFromModel (sort pls) game)
+        startPlayer <- find (\pl -> pl ^. plKey == gameStartPlayerKey game) pls
+        pure (key, gameFromModel (sort pls) startPlayer game)
   maybe (throwError $ ErrDatabase "Game not found")
         pure
         mGame

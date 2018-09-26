@@ -68,13 +68,15 @@ gameToModel gameFkUser Game{..} =
       gameState = _gState
       gamePhase = _gPhase
       gameRound = _gRound
+      gameStartPlayerKey = _gStartPlayer ^. plKey
   in  Model.Game{..}
 
 gameFromModel
   :: [Player]
+  -> Player
   -> Model.Game
   -> Game
-gameFromModel _gPlayers Model.Game{..} =
+gameFromModel _gPlayers _gStartPlayer Model.Game{..} =
   let _gKey = gameKey
       _gState = gameState
       _gPhase = gamePhase

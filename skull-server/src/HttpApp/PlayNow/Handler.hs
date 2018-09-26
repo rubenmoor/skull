@@ -9,13 +9,12 @@ module HttpApp.PlayNow.Handler where
 import           Control.Lens                        (view)
 import           Control.Monad                       (when)
 import           Control.Monad.Except                (MonadError, throwError)
-
 import           Control.Monad.IO.Class              (MonadIO, liftIO)
 import           Control.Monad.Random                (MonadRandom)
-
 import           Control.Monad.Reader                (MonadReader, asks)
-import           Control.Monad.Trans.Maybe           (MaybeT (..), runMaybeT)
-import           Data.Foldable                       (for_)
+import           Control.Monad.Trans.Maybe.Extended  (MaybeT (..), runMaybeT)
+
+import           Data.Foldable                       (find, for_)
 import           Data.List                           (sort)
 import           Data.Monoid                         ((<>))
 import           Data.Traversable                    (for)
@@ -40,7 +39,8 @@ import           Game.Play                           (withGame)
 
 import           Handler.Types                       (AppError (..),
                                                       HandlerAuthT)
-import           HttpApp.Model                       (EntityField (..))
+import           HttpApp.Model                       (EntityField (..),
+                                                      playerKey)
 import qualified HttpApp.Model                       as Model
 import qualified HttpApp.PlayNow.Api                 as Api
 import           HttpApp.PlayNow.Api.Types
@@ -70,6 +70,7 @@ new PNNewRq{..} = do
         { _aHand = startHand
         , _aStack = Stack []
         , _aBetState = NothingYet
+        , _aHandLimit = 4
         }
       humanPlayer = Player
         { _plKey = humanKey
@@ -138,7 +139,8 @@ active = do
         Just p  -> pure p
         Nothing -> throwError $ ErrBug "playerFromModel failed"
     human <- MaybeT . pure $ findHumanPlayer players
-    let game = gameFromModel players g
+    startPlayer <- MaybeT . pure $ find (\pl -> view plKey pl == Model.gameStartPlayerKey g) players
+    let game = gameFromModel players startPlayer g
     pure PNActive
       { _activeGame = game
       , _activePlayerKey = view plKey human

@@ -11,7 +11,7 @@ import           Game.Api.Types          (GameError)
 import           Game.Types              (Game, Player)
 
 type WithGame a = RWST Seating () Game (ExceptT GameError (Rand StdGen)) a
-type WithBot a = ExceptT GameError (Rand StdGen) a
+type WithPlayer a = ExceptT GameError (Rand StdGen) a
 
 data Seating = Seating
   { _seatMe    :: Player

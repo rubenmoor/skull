@@ -19,6 +19,7 @@ library
                      , Api.Types
                      , Auth
                      , Auth.Types
+                     , Control.Monad.Trans.Maybe.Extended
                      , Data.ByteString.Base64.URL.Extended
                      , Data.Functor.Extended
                      , Database.Class
@@ -79,6 +80,7 @@ library
                      , product-profunctors
                      , pwstore-fast
                      , random
+                     , safe
                      , servant
                      , servant-docs
                      , servant-server

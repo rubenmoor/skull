@@ -17,9 +17,10 @@ import           Data.Text                 (Text)
 import           Game.Api.Types            (GameError (..))
 import           Game.Play.Types           (WithBot)
 import           Game.Types                (Agent (..), BetState (..),
-                                            Card (..), Player (..), aBetState,
-                                            aHand, aStack, hHasSkull,
-                                            hNumPlains, plAgent, stCards)
+                                            Card (..), CardKind (..),
+                                            Player (..), aBetState, aHand,
+                                            aStack, hHasSkull, hNumPlains,
+                                            plAgent, stCards)
 
 
 
@@ -53,7 +54,7 @@ checkAgent
 checkAgent a =
   let nPlainsHand = a ^. aHand . hNumPlains
       nSkullHand = if a ^. aHand . hHasSkull then 1 else 0
-      (plainsStack, skullsStack) = partition (Plain ==) $ a ^. aStack . stCards
+      (plainsStack, skullsStack) = partition isPlainCard $ a ^. aStack . stCards
       nPlainsStack = length plainsStack
       nSkullsStack = length skullsStack
       nHand = nPlainsHand + nSkullHand
@@ -106,3 +107,9 @@ toAgent player =
   in  if checkAgent agent
       then Just agent
       else Nothing
+
+isPlainCard
+  :: Card
+  -> Bool
+isPlainCard card =
+  _cardKind card == Plain
