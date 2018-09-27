@@ -59,6 +59,7 @@ Player
   alive           Bool
   stack           Stack
   betState        BetState
+  handLimit       Int
 |]
 
 instance Eq Game where

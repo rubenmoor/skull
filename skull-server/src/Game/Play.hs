@@ -6,14 +6,16 @@
 
 module Game.Play where
 
-import           Prelude                   (Either (..), Int, Maybe (..),
-                                            either, flip, maybe, pure, sum, ($),
-                                            (.), (==))
+import           Prelude                   (Either (..), Int, Maybe (..), flip,
+                                            maybe, pure, sum, ($), (.), (==))
+
+
 
 import           Control.Lens              ((%=), (^.))
 import           Control.Monad             (Monad)
-import           Control.Monad.Except      (Except, MonadError, runExcept,
-                                            runExceptT, throwError, when)
+import           Control.Monad.Except      (MonadError, runExceptT, throwError,
+                                            when)
+
 import           Control.Monad.Random      (MonadRandom, evalRand, getRandom,
                                             mkStdGen)
 
@@ -41,10 +43,9 @@ import qualified HttpApp.Model             as Model
 
 import           Game                      (gameFromModel, gameToModel,
                                             playerFromModel)
-import           Game.Api.Types            (AuthInfo, ErrorOr (..),
-                                            GameError (..), aiGameKey,
+import           Game.Api.Types            (AuthInfo, ErrorOr (..), aiGameKey,
                                             aiPlayerKey)
-import           Game.Play.Types           (Seating (..), WithBot, WithGame)
+import           Game.Play.Types           (Seating (..), WithGame, WithPlayer)
 
 import           Game.Types                (Game (..), GameKey, Player,
                                             PlayerKey, aStack, gPlayers,

@@ -15,7 +15,7 @@ import           Data.List                 (partition)
 import           Data.Text                 (Text)
 
 import           Game.Api.Types            (GameError (..))
-import           Game.Play.Types           (WithBot)
+import           Game.Play.Types           (WithPlayer)
 import           Game.Types                (Agent (..), BetState (..),
                                             Card (..), CardKind (..),
                                             Player (..), aBetState, aHand,
@@ -27,7 +27,7 @@ import           Game.Types                (Agent (..), BetState (..),
 agentDo
   :: (Agent -> Agent)
   -> Player
-  -> Except GameError Player
+  -> WithPlayer Player
 agentDo f player = withExceptT GameError $ do
     oldAgent <- maybe (throwError "basic agent inconcistency before move") pure $
       toAgent player
@@ -38,7 +38,7 @@ agentDo f player = withExceptT GameError $ do
 agentDoBot
   :: (Agent -> Rand StdGen Agent)
   -> Player
-  -> WithBot Player
+  -> WithPlayer Player
 agentDoBot f player = withExceptT GameError $ do
     -- stdGen <- mkStdGen <$> getRandom
     oldAgent <- maybe (throwError "basic agent inconcistency before move") pure $

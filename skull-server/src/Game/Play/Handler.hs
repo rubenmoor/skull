@@ -70,7 +70,7 @@ playCard req = withGame (req ^. pcrqAuth) $ do
     CardOrBet -> pure $ nextInLine seating
     _         -> throwError $ GameError "playCard in wrong phase"
   flip withPlayer (seating ^. seatMe) $
-    agentDo $ case req ^. pcrqCard of
+    agentDo $ case req ^. pcrqCardKind of
       Plain -> Moves.playPlain
       Skull -> Moves.playSkull
   botMoves next

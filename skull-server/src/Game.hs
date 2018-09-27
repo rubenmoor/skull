@@ -38,6 +38,7 @@ playerToModel playerFkGame playerFkBotKey playerFkUser Player{..} = do
       playerHand = _aHand
       playerStack = _aStack
       playerBetState = _aBetState
+      playerHandLimit = _aHandLimit
   pure Model.Player{..}
 
 playerFromModel
@@ -51,6 +52,7 @@ playerFromModel _plGameKey Model.Player{..} = do
       _aHand = playerHand
       _aStack = playerStack
       _aBetState = playerBetState
+      _aHandLimit = playerHandLimit
       _plAgent = Agent{..}
   _plKind <- case (playerFkUser, playerFkBotKey) of
                (Just _, Nothing)  -> Just HumanPlayNow

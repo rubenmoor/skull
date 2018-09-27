@@ -13,16 +13,16 @@ import           GHC.Generics    (Generic)
 import           Servant.Docs    (ToSample (..), singleSample)
 
 import           Game.Api.Types  (AuthInfo, sampleAuthInfo)
-import           Game.Types      (Card (..), CardFace (..), CardKind (..))
+import           Game.Types      (CardKind (..))
 
 data PlayCardRq = PlayCardRq
-  { _pcrqCard :: Card
-  , _pcrqAuth :: AuthInfo
+  { _pcrqCardKind :: CardKind
+  , _pcrqAuth     :: AuthInfo
   } deriving (Generic, FromJSON, ToJSON)
 
 instance ToSample PlayCardRq where
   toSamples _ =
-    let _pcrqCard = Card Plain FaceDown
+    let _pcrqCardKind = Plain
         _pcrqAuth = sampleAuthInfo
     in  singleSample PlayCardRq{..}
 

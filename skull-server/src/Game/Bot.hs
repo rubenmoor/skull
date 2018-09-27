@@ -24,9 +24,8 @@ import           Game.Agent           (agentDo, agentDoBot)
 import           Game.Api.Types       (GameError (..))
 import           Game.Moves           (placeBet, placeBetFold, playPlain,
                                        playSkull)
-import           Game.Play            (getMaxBetValue, withBot, withPlayer,
-                                       withPlayer')
-import           Game.Play.Types      (WithGame)
+import           Game.Play            (getMaxBetValue, withPlayer, withPlayer')
+import           Game.Play.Types      (WithGame, WithPlayer)
 import           Game.Types           (Agent, Bid, Card (..), CardFace (..),
                                        CardKind (..), Phase (..), Player, aHand,
                                        aHandLimit, aStack, gPhase, gPlayers,
@@ -40,7 +39,7 @@ botMoves players = do
   phase <- use gPhase
   for_ players $ case phase of
     FirstCard ->
-      withBot $ agentDoBot playCard
+      withPlayer $ agentDoBot playCard
     CardOrBet ->
       moveCardOrBet
     Bet highest -> moveBet highest
@@ -94,7 +93,7 @@ moveReveal bid player = do
 
 reduceHandLimit
   :: Player
-  -> Except GameError Player
+  -> WithPlayer Player
 reduceHandLimit player = pure $ player &
   case player ^. plAgent . aHandLimit of
     1 -> plAlive .~ False
@@ -109,7 +108,7 @@ data RevealResult
 reveal
   :: Int
   -> Player
-  -> Except GameError (Player, RevealResult)
+  -> WithPlayer (Player, RevealResult)
 reveal _ player | getLatestRevealedCard player == Just Skull =
   pure (player, RevealSkull)
 reveal 0 player =
@@ -156,7 +155,7 @@ moveCardOrBet player = do
         _ -> throwError $ GameError "more than 4 cards in hand"
   dye <- getRandom -- TODO: depend on player position
   if dye < playCardProb
-    then withBot (agentDoBot playCard) player
+    then withPlayer (agentDoBot playCard) player
     else moveBet 0 player
 
 moveBet
